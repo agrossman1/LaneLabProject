@@ -135,13 +135,13 @@ p{color:var(--muted);line-height:1.5}
 .key:disabled{opacity:.28;cursor:not-allowed}
 .pinTracker{display:none;margin:12px 0;padding:16px;border:1px solid var(--line);border-radius:18px;background:var(--panel2);text-align:center}
 .pinTracker.active{display:block}
-.pinRack{display:grid;grid-template-columns:repeat(7,42px);grid-template-rows:repeat(4,42px);justify-content:center;gap:8px 10px;margin:16px auto}
-.pinButton{width:42px;height:42px;border-radius:50%;border:5px solid #ff1515;background:#fff;color:#111;font-weight:900;font-size:20px;box-shadow:none;padding:0}
+.pinRack{display:grid;grid-template-columns:repeat(7,42px);grid-template-rows:repeat(4,42px);justify-content:center;gap:4px 6px;margin:16px auto}
+.pinButton{width:42px;height:42px;border-radius:50%;border:1px solid var(--line);background:#f5f7ff;color:#16213a;font-weight:900;font-size:20px;box-shadow:0 3px 8px rgba(0,0,0,.2);padding:0}
 .pinButton:nth-child(1){grid-column:1;grid-row:1}.pinButton:nth-child(2){grid-column:3;grid-row:1}.pinButton:nth-child(3){grid-column:5;grid-row:1}.pinButton:nth-child(4){grid-column:7;grid-row:1}
 .pinButton:nth-child(5){grid-column:2;grid-row:2}.pinButton:nth-child(6){grid-column:4;grid-row:2}.pinButton:nth-child(7){grid-column:6;grid-row:2}
 .pinButton:nth-child(8){grid-column:3;grid-row:3}.pinButton:nth-child(9){grid-column:5;grid-row:3}.pinButton:nth-child(10){grid-column:4;grid-row:4}
 .pinButton.down{opacity:.22;background:#5b6680;color:transparent;box-shadow:none}
-.pinButton.selected{background:var(--accent);border-color:var(--accent);color:#fff;opacity:1}
+.pinButton.selected{background:#ff1515;border-color:#ff1515;color:#fff;opacity:1}
 .pinTrackerActions{display:flex;gap:8px;flex-wrap:wrap}.pinTrackerActions button{flex:1;min-width:130px}
 .formRow{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:10px}
 .gameDateRow{display:flex;justify-content:flex-end;margin:4px 0 10px}
