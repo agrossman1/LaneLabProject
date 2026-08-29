@@ -376,7 +376,10 @@ select,input{
   padding-right:10px;
   cursor:grab;
 }
-.chartArea .chart.is-dragging{cursor:grabbing}
+.chartArea.chart.is-dragging{cursor:grabbing}
+.chartArea.chart.scoreMode{gap:5px}
+.chartArea.chart.scoreMode .chartCol{flex-basis:28px}
+.chartArea.chart.scoreMode .chartValue{font-size:9px}
 .chartValue{
   font-size:10px;
   font-weight:850;
@@ -1898,6 +1901,7 @@ function renderChart(){
   axis.innerHTML=Array.from({length:5},(_,i)=>Math.round(max-(step*i))).map(v=>`<span>${v}</span>`).join('');
 
   const box=document.getElementById('avgChart');
+  box.classList.toggle('scoreMode',isScores);
   box.innerHTML=vals.length ? vals.map((v,i)=>{
     const h=Math.max(8, ((v-min)/(max-min))*112);
     const label=isScores ? i+1 : formatChartDate(chartGames[i]?.date);
