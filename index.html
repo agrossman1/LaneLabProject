@@ -2267,7 +2267,7 @@ function renderChart(){
   const isScores=trendView==='scores';
   const chartGames=isScores ? state.games : LaneLabStats.groupSessions(state.games).map(session=>{
     const scores=session.games.map(game=>Number(game.score)).filter(Number.isFinite);
-    return {date:session.date,score:scores.length?scores.reduce((sum,value)=>sum+value,0)/scores.length,games:session.games};
+    return {date:session.date,score:scores.length ? (scores.reduce((sum,value)=>sum+value,0)/scores.length) : null,games:session.games};
   }).filter(session=>session.score!==null);
   const scores=chartGames.map(game=>game.score);
   const vals=scores;
