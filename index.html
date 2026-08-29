@@ -874,7 +874,7 @@ body.light-mode .ballMatchPreview img{
       </div>
 
       <div class="card">
-        <h2>Common leaves</h2>
+        <h2>Common leaves & conversion</h2>
         <div class="list">
           <div class="listItem" id="commonLeavesStats"><div class="row"><span>Calculating…</span><b>—</b></div></div>
         </div>
@@ -1558,15 +1558,15 @@ function frameAnalysis(games){
   return {frames:frames.length,open,single,leaves};
 }
 function renderHistoryMetrics(){
-  const analysis=frameAnalysis(state.games);
+  const analysis=LaneLabStats.summarizeGames(state.games);
   const openFrames=document.getElementById('openFrames');
   const openMeta=document.getElementById('openFramesMeta');
-  if(openFrames) openFrames.textContent=analysis.frames?analysis.open:'—';
+  if(openFrames) openFrames.textContent=analysis.openPerGame===null?'—':analysis.openPerGame.toFixed(1);
   if(openMeta) openMeta.textContent=analysis.frames?`${analysis.frames} frames tracked`:'no frame data';
   const single=document.getElementById('singlePinCount');
   const singleMeta=document.getElementById('singlePinMeta');
-  if(single) single.textContent=analysis.frames?analysis.single:'—';
-  if(singleMeta) singleMeta.textContent=analysis.frames?`${Math.round(analysis.single/analysis.frames*100)}% of frames`:'no frame data';
+  if(single) single.textContent=analysis.singlePct===null?'—':`${Math.round(analysis.singlePct)}%`;
+  if(singleMeta) singleMeta.textContent=analysis.singleAttempts?`${analysis.singleMakes} / ${analysis.singleAttempts} converted`:'no exact pin data';
   const leaves=document.getElementById('commonLeavesStats');
   if(leaves){
     const ranked=Object.entries(analysis.leaves).sort((a,b)=>b[1]-a[1]).slice(0,3);
@@ -1575,7 +1575,7 @@ function renderHistoryMetrics(){
   return analysis;
 }
 function syncGameSummaries(){
-  const scores=state.games.map(game=>game.score);
+  const scores=state.games.map(game=>Number(game.score)).filter(Number.isFinite);
   const high=scores.length ? Math.max(...scores) : null;
   const highGame=document.getElementById('highGame');
   if(highGame) highGame.textContent=high ?? '—';
