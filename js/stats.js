@@ -20,6 +20,55 @@
     return Math.round(total / validScores.length);
   }
 
+  function frameIsOpen(frame) {
+    const token = String(frame || '').trim();
+    return Boolean(token) && !token.startsWith('X') && !token.includes('/');
+  }
+
+  function groupSessions(games) {
+    const groups = new Map();
+    (Array.isArray(games) ? games : []).forEach(game => {
+      const key = game?.date ? String(game.date).slice(0, 10) : 'undated';
+      if (!groups.has(key)) groups.set(key, []);
+      groups.get(key).push(game);
+    });
+    return [...groups.entries()].sort((a, b) => a[0].localeCompare(b[0])).map(([date, list]) => ({date, games: list}));
+  }
+
+  function summarizeGames(games) {
+    const list = (Array.isArray(games) ? games : []).filter(game => Number.isFinite(Number(game?.score)));
+    const frames = list.flatMap(game => Array.isArray(game.frames) ? game.frames.slice(0, 10) : []);
+    const scores = list.map(game => Number(game.score));
+    const strikes = list.reduce((sum, game) => sum + (Number.isFinite(Number(game.strikes)) ? Number(game.strikes) : (game.frames || []).filter(frame => String(frame).trim().startsWith('X')).length), 0);
+    const spares = list.reduce((sum, game) => sum + (game.frames || []).filter(frame => String(frame).includes('/')).length, 0);
+    const pinLeaves = [];
+    list.forEach(game => (Array.isArray(game.pinData) ? game.pinData : []).forEach(frame => {
+      const pins = Array.isArray(frame?.pinsLeftAfterFirst) ? frame.pinsLeftAfterFirst.map(Number).filter(pin => pin >= 1 && pin <= 10).sort((a, b) => a - b) : null;
+      if (!pins || pins.length === 0 || pins.length === 10) return;
+      const after = Array.isArray(frame?.pinsLeftAfterSecond) ? frame.pinsLeftAfterSecond : null;
+      pinLeaves.push({key: pins.join('-'), pins, converted: Array.isArray(after) && after.length === 0});
+    }));
+    const leaveMap = new Map();
+    pinLeaves.forEach((item, index) => {
+      const value = leaveMap.get(item.key) || {key: item.key, pins: item.pins, attempts: 0, makes: 0, last: index};
+      value.attempts += 1; if (item.converted) value.makes += 1; value.last = index; leaveMap.set(item.key, value);
+    });
+    const singles = pinLeaves.filter(item => item.pins.length === 1);
+    return {
+      games: list.length, average: scores.length ? scores.reduce((a, b) => a + b, 0) / scores.length : null,
+      openFrames: frames.filter(frameIsOpen).length, openPerGame: list.length ? frames.filter(frameIsOpen).length / list.length : null,
+      strikeRate: frames.length ? strikes / frames.length * 100 : null, spareRate: frames.length ? spares / frames.length * 100 : null,
+      singleAttempts: singles.length, singleMakes: singles.filter(item => item.converted).length,
+      singlePct: singles.length ? singles.filter(item => item.converted).length / singles.length * 100 : null,
+      leaves: [...leaveMap.values()].sort((a, b) => b.attempts - a.attempts || b.last - a.last)
+    };
+  }
+
+  function compareSessions(games) {
+    const sessions = groupSessions(games);
+    return {current: summarizeGames(sessions.at(-1)?.games || []), previous: sessions.length > 1 ? summarizeGames(sessions.at(-2).games) : null, currentDate: sessions.at(-1)?.date || null, previousDate: sessions.at(-2)?.date || null};
+  }
+
   function loadScores(storage, fallbackScores = []) {
     try {
       const savedScores = JSON.parse(storage?.getItem(STORAGE_KEY));
@@ -139,6 +188,10 @@
     MAX_GAME_RECORDS,
     normalizeScores,
     calculateAverage,
+    frameIsOpen,
+    groupSessions,
+    summarizeGames,
+    compareSessions,
     loadScores,
     saveScores,
     normalizeGameRecord,
@@ -150,3 +203,4 @@
   if (root) root.LaneLabStats = api;
   if (typeof module === 'object' && module.exports) module.exports = api;
 })(typeof window === 'undefined' ? null : window);
+
