@@ -202,8 +202,13 @@ select,input{
 .center{text-align:center}
 @media (min-width:700px){
   body{padding:22px 0}
-  .app{min-height:calc(100vh - 44px);border:1px solid #22304d;border-radius:30px;overflow:hidden}
-  .nav{bottom:22px;border-radius:0 0 30px 30px}
+  .app{width:min(100%,820px);min-height:calc(100vh - 44px);border:1px solid #22304d;border-radius:30px;overflow:hidden}
+  header{padding-left:28px;padding-right:28px}
+  main{padding-left:28px;padding-right:28px}
+  .nav{width:min(100%,820px);bottom:22px;border-radius:0 0 30px 30px}
+  .grid{grid-template-columns:repeat(4,1fr)}
+  .scoreboard{grid-template-columns:repeat(10,1fr);gap:7px}
+  .modal .sheet{width:min(100%,520px);border-radius:24px}
 }
 
 .profileHero{
