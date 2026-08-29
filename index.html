@@ -133,6 +133,9 @@ p{color:var(--muted);line-height:1.5}
 .key.special{background:#243760;color:#dce5ff}
 .key:disabled{opacity:.28;cursor:not-allowed}
 .formRow{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:10px}
+.gameDateRow{display:flex;justify-content:flex-end;margin:4px 0 10px}
+.gameDateRow label{display:flex;align-items:center;gap:8px}
+.gameDateRow input{width:auto;margin:0;padding:7px 9px;font-size:12px}
 label{font-size:12px;color:var(--muted);font-weight:700}
 select,input{
   width:100%;margin-top:6px;padding:11px 12px;border-radius:12px;
@@ -663,6 +666,12 @@ body.light-mode .ballMatchPreview img{
     <section class="screen" id="score">
       <div class="eyebrow">Record game</div>
       <h1 id="gameTitle">Game 1</h1>
+
+      <div class="gameDateRow">
+        <label for="gameDate">Game date
+          <input id="gameDate" type="date" aria-label="Game date">
+        </label>
+      </div>
 
       <div class="formRow">
         <label>Hand
@@ -1220,6 +1229,7 @@ function saveImportedGames(){
   recordGameScore(primary.final,{
     hand:document.getElementById('hand').value,
     ball:document.getElementById('ballSelect').value,
+    date:gameDateValue(),
     source:'scoreboard import'
   });
 
@@ -1229,6 +1239,15 @@ function saveImportedGames(){
 
 function getGameStorage(){
   try{return window.localStorage}catch(error){return null}
+}
+
+function localDateInputValue(date=new Date()){
+  const offset=date.getTimezoneOffset()*60000;
+  return new Date(date.getTime()-offset).toISOString().slice(0,10);
+}
+function gameDateValue(){
+  const input=document.getElementById('gameDate');
+  return input?.value ? `${input.value}T12:00:00` : undefined;
 }
 
 function loadAnthonyHistory(){
@@ -1745,6 +1764,7 @@ function saveGame(){
   recordGameScore(score,{
     hand:document.getElementById('hand').value,
     ball:document.getElementById('ballSelect').value,
+    date:gameDateValue(),
     source:'manual',
     ...stats
   });
@@ -2046,6 +2066,8 @@ function toast(msg){
 function renderAll(){renderScoreboard();renderKeypad()}
 loadSavedTheme();
 preloadBallCatalogImages();
+const gameDateInput=document.getElementById('gameDate');
+if(gameDateInput) gameDateInput.value=localDateInputValue();
 renderAll();renderChart();renderRecent();renderGameBreakdown();renderProfile();
 syncAverageDisplays();syncGameSummaries();renderPersonalStats();renderArsenal();
 </script>
