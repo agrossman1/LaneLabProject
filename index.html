@@ -27,6 +27,12 @@ body{
   background:radial-gradient(circle at top,#172443 0,#0b1020 38%,#080c18 100%);
   color:var(--text);
   min-height:100vh;
+  user-select:none;
+  -webkit-user-select:none;
+}
+input,textarea,select,[contenteditable="true"]{
+  user-select:text;
+  -webkit-user-select:text;
 }
 button,input,select{
   font:inherit;
