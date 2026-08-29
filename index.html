@@ -864,6 +864,11 @@ body.light-mode .ballMatchPreview img{
         </div>
       </div>
 
+      <div class="card">
+        <div class="row"><h2>Session metrics</h2><span class="muted small">vs previous session</span></div>
+        <div class="grid" id="sessionMetrics"></div>
+      </div>
+
       <div class="grid">
         <div class="stat"><small>Single-pin leaves</small><b id="singlePinCount">—</b><span class="muted small" id="singlePinMeta">calculated from frame history</span></div>
       </div>
@@ -1399,6 +1404,7 @@ function renderCoach(){
   const goal=Number(profile?.goalAverage)||180;
   const frames=games.flatMap(game=>Array.isArray(game.frames)?game.frames.slice(0,10):[]).map(frame=>String(frame).trim());
   const opens=frames.filter(frame=>frame && !frame.startsWith('X') && !frame.includes('/')).length;
+  const openPerGame=games.length?opens/games.length:0;
   const openPct=frames.length?Math.round(opens/frames.length*100):0;
   const averageMetric=(key)=>{const values=games.map(game=>Number(game[key])).filter(Number.isFinite);return values.length?Math.round(values.reduce((sum,value)=>sum+value,0)/values.length):0};
   const strikePct=averageMetric('strikeRate');
@@ -1416,7 +1422,7 @@ function renderCoach(){
   const drills=[
     ['Strike rate',`${strikePct}%`,strikePct<30?'Priority':'Based on history'],
     ['Spare rate',`${sparePct}%`,sparePct<20?'Priority':'Based on history'],
-    ['Open frames',`${openPct}%`,openPct>45?'Priority':'Trend']
+    ['Open frames',`${openPerGame.toFixed(1)}/game`,openPct>45?'Priority':'Trend']
   ];
   [['coachDrillOneLabel','coachDrillOneValue','coachDrillOneTag'],['coachDrillTwoLabel','coachDrillTwoValue','coachDrillTwoTag'],['coachDrillThreeLabel','coachDrillThreeValue','coachDrillThreeTag']].forEach((ids,index)=>{const d=drills[index]; ids.forEach((id,part)=>{const el=document.getElementById(id); if(el) el.textContent=d[part]});});
   const worst=sparePct<strikePct&&sparePct<=openPct?['Spare rate',sparePct]:openPct>strikePct&&openPct>sparePct?['Open frames',openPct]:['Strike rate',strikePct];
@@ -1574,6 +1580,11 @@ function syncGameSummaries(){
   const highGame=document.getElementById('highGame');
   if(highGame) highGame.textContent=high ?? '—';
   renderHistoryMetrics();
+  const comparison=LaneLabStats.compareSessions(state.games);
+  const meta=document.getElementById('openFramesMeta');
+  if(meta && comparison.current.openPerGame!==null){
+    meta.textContent=comparison.previous ? `${comparison.current.openPerGame.toFixed(1)}/game vs ${comparison.previous.openPerGame.toFixed(1)} prior` : `${comparison.current.openPerGame.toFixed(1)}/game`;
+  }
 }
 
 function formatGameDate(value){
@@ -1742,8 +1753,31 @@ function renderPersonalStats(){
   document.getElementById('personalHighMessage').textContent=high===null
     ? 'Save a game to start your story.'
     : next ? `${next-high} pins to your next medal` : 'Perfect game achieved — every medal unlocked!';
+  const summary=LaneLabStats.summarizeGames(state.games);
+  const single=document.getElementById('singlePinCount');
+  const singleMeta=document.getElementById('singlePinMeta');
+  if(single) single.textContent=summary.singlePct===null?'—':`${Math.round(summary.singlePct)}%`;
+  if(singleMeta) singleMeta.textContent=summary.singlePct===null?'No exact pin data':`${summary.singleMakes} / ${summary.singleAttempts} converted`;
+  const leaves=document.getElementById('commonLeavesStats');
+  if(leaves){
+    leaves.innerHTML=summary.leaves.length ? summary.leaves.slice(0,3).map(leave=>`<div class="listItem"><div class="row"><span>${leave.pins.length===1?`${leave.pins[0]} pin` : leave.pins.join('-')}</span><b>${leave.attempts?`${Math.round(leave.makes/leave.attempts*100)}%`: '—'}</b></div><div class="muted small">${leave.makes} / ${leave.attempts} converted</div></div>`).join('') : '<div class="listItem"><div class="row"><span>Exact leaves</span><b>—</b></div><div class="muted small">Pin-level leave tracking will appear for games recorded with exact pin tracking.</div></div>';
+  }
   renderPersonalHistory();
   renderMedals();
+}
+function renderSessionMetrics(){
+  const box=document.getElementById('sessionMetrics'); if(!box) return;
+  const comparison=LaneLabStats.compareSessions(state.games), current=comparison.current, previous=comparison.previous;
+  const metric=(label,value,key,unit,lowerBetter=false)=>{
+    let trend='— No previous session', cls='muted';
+    if(previous && current[key]!==null && previous[key]!==null){
+      const delta=current[key]-previous[key], rounded=Math.round(delta*10)/10;
+      if(Math.abs(delta)<0.05) trend='→ 0';
+      else {const good=lowerBetter?delta<0:delta>0; trend=`${delta>0?'▲':'▼'} ${delta>0?'+':''}${rounded} ${unit}`; cls=good?'tagGood':'tagWarn';}
+    }
+    return `<div class="stat"><small>${label}</small><b>${value===null?'—':(key==='average'?Math.round(value):key==='openPerGame'?value.toFixed(1):`${Math.round(value)}%`)}</b><span class="${cls} small">${trend}</span></div>`;
+  };
+  box.innerHTML=metric('Average score',current.average,'average','pins')+metric('Strike rate',current.strikeRate,'strikeRate','pp')+metric('Spare rate',current.spareRate,'spareRate','pp')+metric('Open frames / game',current.openPerGame,'openPerGame','/game',true);
 }
 
 function openPersonalStats(){
@@ -1827,6 +1861,7 @@ function go(id){
   document.querySelectorAll('.nav button').forEach(b=>b.classList.toggle('active',b.dataset.target===id));
   if(id==='arsenal') renderArsenal();
   if(id==='personalStats') renderPersonalStats();
+  if(id==='stats') renderSessionMetrics();
   window.scrollTo({top:0,behavior:'smooth'});
 }
 
@@ -2494,7 +2529,7 @@ loadSavedTheme();
 preloadBallCatalogImages();
 const gameDateInput=document.getElementById('gameDate');
 if(gameDateInput) gameDateInput.value=localDateInputValue();
-renderAll();renderChart();renderRecent();renderGameBreakdown();renderProfile();
+renderAll();renderChart();renderRecent();renderGameBreakdown();renderProfile();renderSessionMetrics();
 syncAverageDisplays();syncGameSummaries();renderPersonalStats();renderArsenal();
 </script>
 </body>
