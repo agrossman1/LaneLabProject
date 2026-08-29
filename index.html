@@ -730,7 +730,7 @@ body.light-mode .ballMatchPreview img{
           <select id="hand"><option>Right</option><option>Left</option></select>
         </label>
         <label>Ball
-          <select id="ballSelect"><option>Ascent</option><option>Hy-Road</option><option>Other</option></select>
+          <select id="ballSelect" onchange="rememberBallSelection()"><option>Ascent</option><option>Hy-Road</option><option>Other</option></select>
         </label>
       </div>
 
@@ -1043,6 +1043,10 @@ body.light-mode .ballMatchPreview img{
         <div class="toggleRow">
           <div><b>Track ball used</b><div class="muted small">Measure performance by ball</div></div>
           <button class="switch on" id="ballToggle" onclick="toggleSwitch(this)" aria-label="Toggle ball tracking"></button>
+        </div>
+        <div class="toggleRow">
+          <div><b>Track exact pin leaves</b><div class="muted small">Show pin diagrams after first-ball results</div></div>
+          <button class="switch on" id="pinTrackingToggle" onclick="togglePinTracking(this)" aria-label="Toggle exact pin leave tracking"></button>
         </div>
         <div class="toggleRow">
           <div>
@@ -1361,6 +1365,8 @@ let profile=LaneLabProfile.load(getGameStorage());
 let historyRange='all';
 let homeAverageMode='last10';
 let homeAverageHoldTimer=null;
+let pinTrackingEnabled=true;
+try{pinTrackingEnabled=getGameStorage()?.getItem('lanelab-pin-tracking')!=='off'}catch(e){}
 
 function syncAverageDisplays(){
   const lastTenAverage=LaneLabStats.calculateAverage(state.recent);
@@ -1515,6 +1521,7 @@ function renderProfile(){
   renderAvatarPicker();
   const gameHand=document.getElementById('hand');
   if(gameHand && profile.hand!=='Ambidextrous') gameHand.value=profile.hand;
+  document.getElementById('pinTrackingToggle')?.classList.toggle('on',pinTrackingEnabled);
   syncAverageDisplays();
 }
 
@@ -1745,6 +1752,11 @@ function openProfile(){
 function toggleSwitch(el){
   el.classList.toggle('on');
   toast(el.classList.contains('on') ? 'Preference enabled' : 'Preference disabled');
+}
+function togglePinTracking(el){
+  pinTrackingEnabled=el.classList.contains('on');
+  try{getGameStorage()?.setItem('lanelab-pin-tracking',pinTrackingEnabled?'on':'off')}catch(e){}
+  toast(pinTrackingEnabled ? 'Exact pin tracking enabled' : 'Quick numeric scoring enabled');
 }
 function profileSaved(){
   profile=LaneLabProfile.save(getGameStorage(),{
@@ -1990,7 +2002,7 @@ function recordRoll(pins){
   const frameIndex=state.currentFrame;
   if(pins===10){
     state.frames[frameIndex].rolls.push(pins);
-  }else if(isFreshRack(frameIndex)){
+  }else if(isFreshRack(frameIndex) && pinTrackingEnabled){
     state.pinTracking={frameIndex,firstBall:pins,phase:'leave',leave:[],standing:[],knocked:[]};
     renderAll();
     return;
@@ -2275,7 +2287,13 @@ function syncBallSelect(){
   if(!select) return;
   const previous=select.value;
   select.innerHTML=arsenal.map(ball=>`<option>${escapeHtml(ball.name)}</option>`).join('')+'<option>Other</option>';
-  if([...select.options].some(option=>option.value===previous)) select.value=previous;
+  let preferred=previous;
+  try{preferred=preferred||getGameStorage()?.getItem('lanelab-last-ball')||''}catch(e){}
+  if([...select.options].some(option=>option.value===preferred)) select.value=preferred;
+}
+function rememberBallSelection(){
+  const value=document.getElementById('ballSelect')?.value;
+  try{if(value)getGameStorage()?.setItem('lanelab-last-ball',value)}catch(e){}
 }
 
 function renderArsenal(){
