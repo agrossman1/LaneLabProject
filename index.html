@@ -2293,7 +2293,7 @@ function renderChart(){
     const attrs=isScores ? '' : ' role="button" tabindex="0" data-session-date="'+sessionDate+'" aria-label="Session average '+Math.round(v)+'"';
     const selectedClass=!isScores && selectedSessionDate===sessionDate ? ' selected' : '';
     return `<div class="chartCol${isScores?'':' sessionBar'}${selectedClass}"${attrs}>
-      <div class="chartValue">${v}</div>
+      <div class="chartValue">${isScores ? v : Math.round(v)}</div>
       <div class="chartBar" style="height:${h}px"></div>
       <div>${label}</div>
     </div>`;
