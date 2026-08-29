@@ -313,11 +313,14 @@ select,input{
   border:1px solid var(--line);
   background:var(--panel);
 }
+.medal{cursor:pointer;text-align:left}
 .medal.unlocked{background:linear-gradient(145deg,rgba(255,204,102,.17),rgba(124,156,255,.08));border-color:#7d6a42}
 .medal.locked{filter:saturate(.3);opacity:.55}
-.medalIcon{font-size:34px;line-height:1}
+.medalIcon{font-size:34px;line-height:1;width:68px;height:68px;border-radius:50%;overflow:hidden;display:grid;place-items:center;background:var(--panel2)}
+.medalIcon img{width:100%;height:100%;object-fit:cover;display:block}
 .medal b{font-size:16px}
-.medal small{color:var(--muted)}
+.medal small{color:var(--muted);display:block;margin-top:4px}
+.historyScroll{max-height:360px;overflow-y:auto;padding-right:4px;overscroll-behavior:contain}
 .historyGame{display:block}
 .historyBreakdown{
   display:grid;
@@ -444,8 +447,8 @@ select,input{
 
 
 .importOptions{
-  display:grid;
-  grid-template-columns:1fr 1fr;
+  display:flex;
+  justify-content:center;
   gap:10px;
   margin:12px 0;
 }
@@ -1071,7 +1074,7 @@ body.light-mode .ballMatchPreview img{
           <button data-history-range="7" onclick="setHistoryRange('7')">7 days</button>
           <button data-history-range="30" onclick="setHistoryRange('30')">30 days</button>
         </div>
-        <div class="list" id="personalHistory" style="margin-top:12px"></div>
+        <div class="historyScroll"><div class="list" id="personalHistory" style="margin-top:12px"></div></div>
       </div>
 
       <div class="card">
@@ -1155,6 +1158,13 @@ body.light-mode .ballMatchPreview img{
     <div class="historyBreakdown" id="gameDetailStats"></div>
     <h3 style="margin:18px 0 8px">Frame notation</h3>
     <div class="gameDetailFrames" id="gameDetailFrames"></div>
+  </div>
+</div>
+
+<div class="modal" id="medalDetailModal" onclick="if(event.target===this) closeMedalDetail()">
+  <div class="sheet" role="dialog" aria-modal="true" aria-labelledby="medalDetailTitle">
+    <div class="row"><h2 id="medalDetailTitle" style="margin:0">Achievement</h2><button class="key" style="padding:8px 12px" onclick="closeMedalDetail()" aria-label="Close achievement details">✕</button></div>
+    <div id="medalDetailContent" style="margin-top:14px"></div>
   </div>
 </div>
 
@@ -1625,26 +1635,46 @@ function deleteHistoryGame(event,id){
   toast('Game deleted');
 }
 
+const MEDAL_DEFINITIONS=[
+  {id:'first100',name:'First 100',description:'Reach three digits in a game for the first time.',image:'first_100_bowling_achievement_badge.png',test:game=>game.score>=100},
+  {id:'first150',name:'First 150',description:'Break 150 and mark a new scoring tier.',image:'bowling_150_achievement_badge.png',test:game=>game.score>=150},
+  {id:'first175',name:'First 175',description:'Join the 175 club with a strong all-around game.',image:'royal_bowling_champion_175_badge.png',test:game=>game.score>=175},
+  {id:'first200',name:'First 200',description:'Breaking 200 is a major milestone that takes sustained strike-making and spare shooting.',image:'premium_bowling_200_achievement_badge.png',test:game=>game.score>=200},
+  {id:'clean',name:'Clean Game',description:'Complete all 10 frames with a strike or spare in every frame—zero open frames.',image:'clean_game_bowling_achievement_badge.png',test:game=>{const frames=Array.isArray(game.frames)?game.frames.slice(0,10):[];return frames.length===10&&frames.every(frame=>String(frame).trim().startsWith('X')||String(frame).includes('/'))}},
+  {id:'dutch200',name:'Dutch 200',description:'Score exactly 200 by alternating strikes and spares through the game.',image:'dutch_200_bowling_achievement_badge.png',test:game=>{const frames=Array.isArray(game.frames)?game.frames.slice(0,10):[];return game.score===200&&frames.length===10&&frames.every((frame,index)=>index%2===0?String(frame).trim().startsWith('X'):String(frame).includes('/'))}},
+  {id:'turkey',name:'Turkey',description:'String three strikes in a row.',image:'turkey_bowling_achievement_badge.png',streak:3},
+  {id:'hambone',name:'Hambone',description:'String four strikes in a row.',image:'hambone_bowling_champion_badge.png',streak:4},
+  {id:'sixpack',name:'Six-Pack',description:'String six strikes in a row.',image:'glossy_six_pack_bowling_medal_badge.png',streak:6},
+  {id:'highfive',name:'High Five',description:'Celebrate five consecutive strikes.',icon:'🖐️',streak:5},
+  {id:'wildturkey',name:'Wild Turkey',description:'String nine strikes in a row.',image:'wild_turkey_bowling_championship_badge.png',streak:9}
+];
+function strikeStreak(game){
+  let best=0,current=0;
+  (Array.isArray(game.frames)?game.frames:[]).forEach(frame=>{const token=String(frame).trim().match(/^X+/);if(token){current+=token[0].length;best=Math.max(best,current)}else current=0;});
+  return best;
+}
+function achievedMedal(def){
+  const games=[...state.games].sort((a,b)=>new Date(a.date||0)-new Date(b.date||0));
+  return games.find(game=>def.streak?strikeStreak(game)>=def.streak:def.test(game))||null;
+}
 function renderMedals(){
-  const milestones=[
-    {score:100,icon:'🥉',name:'Triple Digits'},
-    {score:150,icon:'🥈',name:'Rising Star'},
-    {score:200,icon:'🥇',name:'Club 200'},
-    {score:250,icon:'🏆',name:'Elite 250'},
-    {score:300,icon:'💎',name:'Perfect Game'}
-  ];
-  const scores=state.games.map(game=>game.score);
-  const high=scores.length ? Math.max(...scores) : 0;
-  const unlocked=milestones.filter(milestone=>high>=milestone.score).length;
-  document.getElementById('medalCount').textContent=`${unlocked} / ${milestones.length}`;
-  document.getElementById('medalGrid').innerHTML=milestones.map(milestone=>{
-    const earned=high>=milestone.score;
-    return `<div class="medal ${earned?'unlocked':'locked'}">
-      <div class="medalIcon">${earned?milestone.icon:'🔒'}</div>
-      <div><b>${milestone.name}</b><small>${earned?`Earned with a ${high} high`:`Score ${milestone.score} to unlock`}</small></div>
-    </div>`;
+  const results=MEDAL_DEFINITIONS.map(def=>({def,game:achievedMedal(def)}));
+  const unlocked=results.filter(result=>result.game).length;
+  document.getElementById('medalCount').textContent=`${unlocked} / ${MEDAL_DEFINITIONS.length}`;
+  document.getElementById('medalGrid').innerHTML=results.map(({def,game})=>{
+    const earned=Boolean(game);
+    const icon=earned?(def.image?`<img src="./assets/medals/${def.image}" alt="${escapeHtml(def.name)} medal" onerror="this.remove();this.parentElement.textContent='🏅'">`:def.icon):'🔒';
+    return `<button type="button" class="medal ${earned?'unlocked':'locked'}" onclick="openMedalDetail('${def.id}')"><div class="medalIcon">${icon}</div><div><b>${def.name}</b><small>${earned?`Earned ${formatGameDate(game.date)}`:'Tap for requirements'}</small></div></button>`;
   }).join('');
 }
+function openMedalDetail(id){
+  const def=MEDAL_DEFINITIONS.find(item=>item.id===id); if(!def) return;
+  const game=achievedMedal(def); const icon=def.image?`<img src="./assets/medals/${def.image}" alt="${escapeHtml(def.name)} medal" style="width:110px;height:110px;object-fit:contain;display:block;margin:0 auto 12px" onerror="this.remove();this.parentElement.insertAdjacentText('afterbegin','🏅')">`:`<div style="font-size:62px;text-align:center;margin-bottom:12px">${def.icon||'🔒'}</div>`;
+  document.getElementById('medalDetailTitle').textContent=def.name;
+  document.getElementById('medalDetailContent').innerHTML=`${icon}<p>${escapeHtml(def.description)}</p><div class="listItem row"><span>${game?'Achieved on':'Status'}</span><b>${game?formatGameDate(game.date):'Not yet unlocked'}</b></div>${game?`<div class="listItem row" style="margin-top:8px"><span>Game score</span><b>${game.score}</b></div>`:''}`;
+  document.getElementById('medalDetailModal').classList.add('show');
+}
+function closeMedalDetail(){document.getElementById('medalDetailModal').classList.remove('show')}
 
 function renderPersonalStats(){
   const high=state.games.length ? Math.max(...state.games.map(game=>game.score)) : null;
