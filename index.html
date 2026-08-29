@@ -133,6 +133,13 @@ p{color:var(--muted);line-height:1.5}
 }
 .key.special{background:#243760;color:#dce5ff}
 .key:disabled{opacity:.28;cursor:not-allowed}
+.pinTracker{display:none;margin:12px 0;padding:16px;border:1px solid var(--line);border-radius:18px;background:var(--panel2);text-align:center}
+.pinTracker.active{display:block}
+.pinRack{display:grid;grid-template-columns:repeat(4,42px);justify-content:center;gap:8px 10px;margin:16px auto}
+.pinButton{width:42px;height:42px;border-radius:50%;border:1px solid var(--line);background:#f5f7ff;color:#16213a;font-weight:900;box-shadow:0 3px 8px rgba(0,0,0,.2)}
+.pinButton.down{opacity:.22;background:#5b6680;color:transparent;box-shadow:none}
+.pinButton.selected{background:var(--accent);color:#fff;opacity:1}
+.pinTrackerActions{display:flex;gap:8px;flex-wrap:wrap}.pinTrackerActions button{flex:1;min-width:130px}
 .formRow{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:10px}
 .gameDateRow{display:flex;justify-content:flex-end;margin:4px 0 10px}
 .gameDateRow label{display:flex;align-items:center;gap:8px}
@@ -740,6 +747,8 @@ body.light-mode .ballMatchPreview img{
         <b id="pinPrompt">How many pins?</b>
       </div>
 
+      <div class="pinTracker" id="pinTracker" aria-live="polite"></div>
+
       <div class="keypad" id="keypad"></div>
       <button class="cta secondary" onclick="undoRoll()">↶ Undo last roll</button>
       <button class="cta danger" onclick="resetGame()">Reset game</button>
@@ -1338,7 +1347,8 @@ const state = {
   currentFrame:0,
   completed:false,
   recent:initialRecent,
-  games:initialGames
+  games:initialGames,
+  pinTracking:null
 };
 state.recent=LaneLabStats.saveScores(getGameStorage(),state.recent);
 state.games=LaneLabStats.saveGameRecords(getGameStorage(),state.games);
@@ -1845,6 +1855,12 @@ function renderScoreboard(){
 function renderKeypad(){
   const pad=document.getElementById('keypad');
   pad.innerHTML='';
+  const tracker=document.getElementById('pinTracker');
+  if(state.pinTracking){
+    if(tracker) renderPinTracker();
+    return;
+  }
+  if(tracker) tracker.classList.remove('active');
   if(state.completed){
     pad.innerHTML='<button class="cta" style="grid-column:1/-1" onclick="saveGame()">Save finished game</button>';
     document.getElementById('rollLabel').textContent='Game complete';
@@ -1881,22 +1897,102 @@ function renderKeypad(){
   pad.appendChild(spare);
 }
 
+function isFreshRack(frameIndex){
+  const r=state.frames[frameIndex].rolls;
+  if(currentMaxPins()!==10) return false;
+  if(frameIndex<9) return r.length===0;
+  if(r.length===0) return true;
+  if(r.length===1) return r[0]===10;
+  if(r.length===2) return (r[0]===10 && r[1]===10) || (r[0]!==10 && r[0]+r[1]===10);
+  return false;
+}
+
+function renderPinTracker(){
+  const box=document.getElementById('pinTracker');
+  const t=state.pinTracking;
+  if(!box || !t) return;
+  box.classList.add('active');
+  const leavePhase=t.phase==='leave';
+  const selectable=leavePhase ? Array.from({length:10},(_,i)=>i+1) : t.standing;
+  const selected=leavePhase ? t.leave : t.knocked;
+  const selectedCount=selected.length;
+  const target=leavePhase ? t.firstBall===0 ? 10 : 10-t.firstBall : t.standing.length;
+  const prompt=leavePhase ? 'Which pins are still standing?' : 'Which pins did you knock down?';
+  const detail=leavePhase ? `${target} pins left · ${selectedCount} selected` : `${selectedCount} pin${selectedCount===1?'':'s'} knocked down`;
+  const buttons=[7,8,9,10,4,5,6,2,3,1].map(pin=>{
+    const active=selectable.includes(pin);
+    const on=selected.includes(pin);
+    return `<button class="pinButton ${on?(leavePhase?'selected':'selected'):''} ${!active?'down':''}" ${active?`onclick="toggleTrackedPin(${pin})"`: 'disabled'} aria-label="Pin ${pin}">${active?pin:''}</button>`;
+  }).join('');
+  box.innerHTML=`<div class="muted small">${prompt}</div><b>${detail}${!leavePhase && selectedCount===t.standing.length?' ✓':''}</b><div class="pinRack">${buttons}</div><div class="pinTrackerActions"><button class="cta secondary" onclick="skipPinTracking()">Skip pin tracking</button>${leavePhase?`<button class="cta secondary" onclick="selectAllStanding()">All pins still up</button><button class="cta" ${selectedCount===target?'':'disabled'} onclick="saveTrackedLeave()">Save Leave</button>`:`<button class="cta secondary" onclick="selectAllStanding();saveTrackedThrow()">Knock Down All / Spare</button><button class="cta secondary" onclick="clearBallTwo()">Clear Ball 2</button><button class="cta" onclick="saveTrackedThrow()">Save Throw</button>`}</div>`;
+}
+
+function toggleTrackedPin(pin){
+  const t=state.pinTracking;
+  if(!t) return;
+  const list=t.phase==='leave'?t.leave:t.knocked;
+  const idx=list.indexOf(pin);
+  if(idx>=0) list.splice(idx,1); else if(t.phase==='leave' || t.standing.includes(pin)) list.push(pin);
+  renderPinTracker();
+}
+function selectAllStanding(){
+  const t=state.pinTracking;
+  if(!t) return;
+  if(t.phase==='leave') t.leave=Array.from({length:10},(_,i)=>i+1);
+  else t.knocked=t.standing.slice();
+  renderPinTracker();
+}
+function saveTrackedLeave(){
+  const t=state.pinTracking;
+  if(!t || t.phase!=='leave') return;
+  const frame=state.frames[t.frameIndex];
+  frame.rolls.push(t.firstBall); frame.pinsLeftAfterFirst=t.leave.slice();
+  t.standing=t.leave.slice(); t.knocked=[]; t.phase='throw';
+  renderAll();
+}
+function saveTrackedThrow(){
+  const t=state.pinTracking;
+  if(!t || t.phase!=='throw') return;
+  const frame=state.frames[t.frameIndex];
+  frame.rolls.push(t.knocked.length); frame.pinsKnockedDownSecond=t.knocked.slice(); frame.pinsLeftAfterSecond=t.standing.filter(pin=>!t.knocked.includes(pin));
+  state.pinTracking=null;
+  if(isFrameComplete(t.frameIndex)){ if(t.frameIndex===9) state.completed=true; else state.currentFrame++; }
+  renderAll();
+}
+function clearBallTwo(){ if(state.pinTracking){state.pinTracking.knocked=[];renderPinTracker();} }
+function skipPinTracking(){
+  const t=state.pinTracking; if(!t) return;
+  state.frames[t.frameIndex].rolls.push(t.firstBall); state.pinTracking=null;
+  if(isFrameComplete(t.frameIndex)){if(t.frameIndex===9) state.completed=true; else state.currentFrame++;}
+  renderAll();
+}
+
 function recordRoll(pins){
   if(state.completed) return;
   const max=currentMaxPins();
   if(pins<0 || pins>max) return;
-  state.frames[state.currentFrame].rolls.push(pins);
-  if(isFrameComplete(state.currentFrame)){
-    if(state.currentFrame===9){
+  const frameIndex=state.currentFrame;
+  if(pins===10){
+    state.frames[frameIndex].rolls.push(pins);
+  }else if(isFreshRack(frameIndex)){
+    state.pinTracking={frameIndex,firstBall:pins,phase:'leave',leave:[],standing:[],knocked:[]};
+    renderAll();
+    return;
+  }else{
+    state.frames[frameIndex].rolls.push(pins);
+  }
+  if(isFrameComplete(frameIndex)){
+    if(frameIndex===9){
       state.completed=true;
     }else{
-      state.currentFrame++;
+      state.currentFrame=frameIndex+1;
     }
   }
   renderAll();
 }
 
 function undoRoll(){
+  if(state.pinTracking){ state.pinTracking=null; renderAll(); return; }
   if(state.completed) state.completed=false;
   let i=state.currentFrame;
   if(state.frames[i] && state.frames[i].rolls.length){
@@ -1916,6 +2012,7 @@ function resetGame(){
   state.frames=Array.from({length:10},()=>({rolls:[]}));
   state.currentFrame=0;
   state.completed=false;
+  state.pinTracking=null;
   renderAll();
   toast('Game reset');
 }
@@ -1947,6 +2044,7 @@ function saveGame(){
     ball:document.getElementById('ballSelect').value,
     date:gameDateValue(),
     source:'manual',
+    frames:state.frames.map(frame=>({rolls:frame.rolls.slice(),...(Array.isArray(frame.pinsLeftAfterFirst)?{pinsLeftAfterFirst:frame.pinsLeftAfterFirst.slice()}:{}),...(Array.isArray(frame.pinsKnockedDownSecond)?{pinsKnockedDownSecond:frame.pinsKnockedDownSecond.slice()}:{}),...(Array.isArray(frame.pinsLeftAfterSecond)?{pinsLeftAfterSecond:frame.pinsLeftAfterSecond.slice()}: {})})),
     ...stats
   });
   document.getElementById('strikeRate').textContent=stats.strikeRate+'%';
