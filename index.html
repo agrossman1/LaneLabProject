@@ -2301,6 +2301,8 @@ function renderGameBreakdown(){
   const box=document.getElementById('gameBreakdown');
   if(!box) return;
   const activeGames=getActiveGames();
+  const source=document.getElementById('gameBreakdownMessage');
+  if(source) source.textContent=`Historical scores are shown from ${homeDataMode==='ian'?'Ian’s':'Anthony’s'} recorded games.`;
   const games=activeGames.slice(-3).reverse();
   box.innerHTML=games.length ? games.map((game,index)=>`<div class="listItem row"><span>Game ${activeGames.length-index}</span><b>${game.score}</b></div>`).join('') : '<div class="listItem center"><b>No games recorded yet.</b></div>';
 }
