@@ -427,6 +427,7 @@ select,input{
 }
 .chartCol.sessionBar{cursor:pointer;border-radius:8px;padding:4px 2px 0;transition:background .15s ease,transform .15s ease}
 .chartCol.sessionBar:hover,.chartCol.sessionBar:focus-visible{background:var(--panel);transform:translateY(-2px);outline:none}
+.chartCol.sessionBar.selected{background:var(--panel);box-shadow:0 0 0 1px var(--accent) inset}
 .sessionMetricHeading{grid-column:1/-1;display:flex;align-items:center;justify-content:space-between;margin-bottom:2px;color:var(--muted);font-size:11px}
 
 
@@ -692,14 +693,14 @@ body.light-mode .ballMatchPreview img{
           <div class="pill" id="homeAvgWindow">Last 10</div>
         </div>
         <div class="delta" id="trendDelta">Historical average</div>
-        <div class="muted small" style="margin-top:4px">Hold the average to toggle all games</div>
+        <div class="muted small" style="margin-top:4px">Hold “Last 10” to toggle all games</div>
       </div>
 
       <div class="grid">
         <div class="stat"><small>Strike rate</small><b id="strikeRate">—</b><span class="muted small">historical</span></div>
         <div class="stat"><small>Spare rate</small><b id="spareRate">—</b><span class="muted small">historical</span></div>
         <div class="stat"><small>High game</small><b id="highGame">—</b><span class="muted small">historical</span></div>
-        <div class="stat"><small>Open frames</small><b id="openFrames">—</b><span class="muted small" id="openFramesMeta">history total</span></div>
+        <div class="stat"><small>Open frames</small><b id="openFrames">—</b><span class="muted small" id="openFramesMeta">historical average</span></div>
       </div>
 
       <div class="card">
@@ -1102,11 +1103,11 @@ body.light-mode .ballMatchPreview img{
   </main>
 
   <nav class="nav">
-    <button class="active" data-target="home" onclick="go('home')"><span>⌂</span>Home</button>
-    <button data-target="score" onclick="go('score')"><span>＋</span>Score</button>
-    <button data-target="stats" onclick="go('stats')"><span>⌁</span>Stats</button>
+    <button class="active" data-target="home" onclick="go('home')"><span>🏠</span>Home</button>
+    <button data-target="score" onclick="go('score')"><span>🎳</span>Score</button>
+    <button data-target="stats" onclick="go('stats')"><span>📊</span>Stats</button>
     <button data-target="arsenal" onclick="go('arsenal')"><span>🎳</span>Arsenal</button>
-    <button data-target="coach" onclick="go('coach')"><span>✦</span>Coach</button>
+    <button data-target="coach" onclick="go('coach')"><span>🧠</span>Coach</button>
   </nav>
 </div>
 
@@ -1565,7 +1566,7 @@ function renderHistoryMetrics(){
   const openFrames=document.getElementById('openFrames');
   const openMeta=document.getElementById('openFramesMeta');
   if(openFrames) openFrames.textContent=analysis.openPerGame===null?'—':analysis.openPerGame.toFixed(1);
-  if(openMeta) openMeta.textContent=analysis.frames?`${analysis.frames} frames tracked`:'no frame data';
+  if(openMeta) openMeta.textContent='historical average';
   const single=document.getElementById('singlePinCount');
   const singleMeta=document.getElementById('singlePinMeta');
   if(single) single.textContent=analysis.singlePct===null?'—':`${Math.round(analysis.singlePct)}%`;
@@ -1583,11 +1584,6 @@ function syncGameSummaries(){
   const highGame=document.getElementById('highGame');
   if(highGame) highGame.textContent=high ?? '—';
   renderHistoryMetrics();
-  const comparison=LaneLabStats.compareSessions(state.games);
-  const meta=document.getElementById('openFramesMeta');
-  if(meta && comparison.current.openPerGame!==null){
-    meta.textContent=comparison.previous ? `${comparison.current.openPerGame.toFixed(1)}/game vs ${comparison.previous.openPerGame.toFixed(1)} prior` : `${comparison.current.openPerGame.toFixed(1)}/game`;
-  }
 }
 
 function formatGameDate(value){
@@ -1791,6 +1787,7 @@ function renderSessionMetrics(date=selectedSessionDate){
 function showSessionMetrics(date){
   selectedSessionDate=date;
   renderSessionMetrics(date);
+  if(trendView==='average') renderChart();
   document.getElementById('sessionMetrics')?.scrollIntoView({behavior:'smooth',block:'nearest'});
 }
 
@@ -2261,6 +2258,7 @@ function setTrendView(view){
   document.getElementById('scoreViewBtn').classList.toggle('active',view==='scores');
   document.getElementById('averageViewBtn').classList.toggle('active',view==='average');
   renderChart();
+  if(view==='average') renderSessionMetrics();
 }
 
 function renderChart(){
@@ -2293,7 +2291,8 @@ function renderChart(){
     const label=isScores ? i+1 : formatChartDate(chartGames[i]?.date);
     const sessionDate=chartGames[i]?.date||'';
     const attrs=isScores ? '' : ' role="button" tabindex="0" data-session-date="'+sessionDate+'" aria-label="Session average '+Math.round(v)+'"';
-    return `<div class="chartCol${isScores?'':' sessionBar'}"${attrs}>
+    const selectedClass=!isScores && selectedSessionDate===sessionDate ? ' selected' : '';
+    return `<div class="chartCol${isScores?'':' sessionBar'}${selectedClass}"${attrs}>
       <div class="chartValue">${v}</div>
       <div class="chartBar" style="height:${h}px"></div>
       <div>${label}</div>
