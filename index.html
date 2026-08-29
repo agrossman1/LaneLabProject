@@ -306,6 +306,11 @@ select,input{
 .historyActions{display:flex;gap:8px;margin-top:10px}
 .historyActions button{flex:1;padding:8px 10px;border-radius:10px;border:1px solid var(--line);background:var(--panel2);color:var(--text);font-weight:800;font-size:12px}
 .historyActions .danger{color:var(--bad)}
+.gameDetailMeta{display:flex;flex-wrap:wrap;gap:6px;margin:10px 0 16px}
+.gameDetailMeta span{padding:6px 9px;border-radius:999px;background:var(--panel2);color:var(--muted);font-size:12px}
+.gameDetailFrames{display:grid;grid-template-columns:repeat(5,1fr);gap:7px;margin-top:12px}
+.gameDetailFrame{padding:9px 4px;text-align:center;border:1px solid var(--line);border-radius:11px;background:var(--panel2)}
+.gameDetailFrame small{display:block;color:var(--muted);font-size:10px;margin-bottom:3px}
 .ballListButton{
   width:100%;
   color:var(--text);
@@ -1075,6 +1080,16 @@ body.light-mode .ballMatchPreview img{
   </div>
 </div>
 
+<div class="modal" id="gameDetailModal" onclick="if(event.target===this) closeGameDetail()">
+  <div class="sheet" role="dialog" aria-modal="true" aria-labelledby="gameDetailTitle">
+    <div class="row"><h2 id="gameDetailTitle" style="margin:0">Game details</h2><button class="key" style="padding:8px 12px" onclick="closeGameDetail()" aria-label="Close game details">✕</button></div>
+    <div class="gameDetailMeta" id="gameDetailMeta"></div>
+    <div class="historyBreakdown" id="gameDetailStats"></div>
+    <h3 style="margin:18px 0 8px">Frame notation</h3>
+    <div class="gameDetailFrames" id="gameDetailFrames"></div>
+  </div>
+</div>
+
 <script src="./js/stats.js"></script>
 <script src="./js/profile.js"></script>
 <script src="./js/arsenal.js"></script>
@@ -1342,14 +1357,8 @@ function renderPersonalHistory(){
   box.innerHTML=games.length ? games.map(game=>{
     const details=[game.hand,game.ball].filter(Boolean).join(' · ') || 'Details unavailable';
     const metric=(value,label)=>`<span class="historyMetric"><b>${value}</b><small>${label}</small></span>`;
-    return `<div class="listItem historyGame" data-game-id="${escapeHtml(game.id)}" onpointerdown="startHistoryHold(event,'${escapeHtml(game.id)}')" onpointerup="cancelHistoryHold()" onpointerleave="cancelHistoryHold()" onpointercancel="cancelHistoryHold()" oncontextmenu="event.preventDefault()">
-      <div class="row"><div><b>${formatGameDate(game.date)}</b><div class="muted small">${escapeHtml(details)}</div></div><b class="scoreBig">${game.score}</b></div>
-      <div class="historyBreakdown">
-        ${metric(game.strikeRate===null?'—':`${game.strikeRate}%`,'Strike rate')}
-        ${metric(game.spareRate===null?'—':`${game.spareRate}%`,'Spare rate')}
-        ${metric(game.strikes===null?'—':game.strikes,'Strikes')}
-      </div>
-      ${game.strikeRate===null && game.spareRate===null && game.strikes===null ? '<div class="muted small" style="margin-top:8px">Breakdown unavailable for this older score-only game.</div>' : ''}
+    return `<div class="listItem historyGame" data-game-id="${escapeHtml(game.id)}" onclick="openGameDetail(event,'${escapeHtml(game.id)}')">
+      <div class="row"><div><b>${formatGameDate(game.date)}</b><div class="muted small">${escapeHtml(details)}</div><div class="muted small" style="margin-top:5px">Tap for breakdown · hold score for options</div></div><b class="scoreBig" onpointerdown="startHistoryHold(event,'${escapeHtml(game.id)}')" onpointerup="cancelHistoryHold()" onpointerleave="cancelHistoryHold()" onpointercancel="cancelHistoryHold()" onclick="event.stopPropagation()">${game.score}</b></div>
       <div class="historyActions" hidden>
         <button type="button" onclick="editHistoryGame(event,'${escapeHtml(game.id)}')">Edit score</button>
         <button type="button" class="danger" onclick="deleteHistoryGame(event,'${escapeHtml(game.id)}')">Delete game</button>
@@ -1360,6 +1369,7 @@ function renderPersonalHistory(){
 
 let historyHoldTimer=null;
 function startHistoryHold(event,id){
+  event.stopPropagation();
   cancelHistoryHold();
   historyHoldTimer=setTimeout(()=>{
     const card=document.querySelector(`[data-game-id="${CSS.escape(id)}"]`);
@@ -1368,6 +1378,26 @@ function startHistoryHold(event,id){
     if(navigator.vibrate) navigator.vibrate(25);
   },550);
 }
+
+function openGameDetail(event,id){
+  if(event) event.stopPropagation();
+  const game=state.games.find(item=>item.id===id);
+  if(!game) return;
+  const metrics=[
+    ['Score',game.score],
+    ['Strike rate',game.strikeRate===null?'—':`${game.strikeRate}%`],
+    ['Spare rate',game.spareRate===null?'—':`${game.spareRate}%`],
+    ['Strikes',game.strikes===null?'—':game.strikes]
+  ];
+  document.getElementById('gameDetailTitle').textContent=`Game ${state.games.indexOf(game)+1}`;
+  document.getElementById('gameDetailMeta').innerHTML=[formatGameDate(game.date),game.hand,game.ball].filter(Boolean).map(item=>`<span>${escapeHtml(String(item))}</span>`).join('');
+  document.getElementById('gameDetailStats').innerHTML=metrics.map(([label,value])=>`<span class="historyMetric"><b>${value}</b><small>${label}</small></span>`).join('');
+  document.getElementById('gameDetailFrames').innerHTML=Array.isArray(game.frames)&&game.frames.length
+    ? game.frames.map((frame,index)=>`<div class="gameDetailFrame"><small>Frame ${index+1}</small><b>${escapeHtml(frame)}</b></div>`).join('')
+    : '<div class="muted small">Frame notation is unavailable for this game.</div>';
+  document.getElementById('gameDetailModal').classList.add('show');
+}
+function closeGameDetail(){document.getElementById('gameDetailModal').classList.remove('show')}
 function cancelHistoryHold(){
   if(historyHoldTimer){clearTimeout(historyHoldTimer);historyHoldTimer=null;}
 }
