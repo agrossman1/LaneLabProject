@@ -12,3 +12,6 @@ Upload:
 Then enable GitHub Pages from the repository's main branch and root folder.
 
 Note: The native Google ML Kit scanner is not included in this browser-only build.
+
+Mobile controls use `touch-action: manipulation` so rapid taps do not trigger
+double-tap zoom. Normal page scrolling and pinch-to-zoom remain available.
