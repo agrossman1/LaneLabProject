@@ -54,6 +54,9 @@
     const text = value => typeof value === 'string' && value.trim()
       ? value.trim().slice(0, 80)
       : null;
+    const frames = Array.isArray(record.frames)
+      ? record.frames.filter(frame => typeof frame === 'string').map(frame => frame.slice(0, 20))
+      : null;
     const percentage = value => {
       const number = Number(value);
       return Number.isFinite(number) && number >= 0 && number <= 100
@@ -68,6 +71,7 @@
       hand: text(record.hand),
       ball: text(record.ball),
       source: text(record.source) || 'manual',
+      frames,
       strikes: Number.isInteger(Number(record.strikes)) && Number(record.strikes) >= 0
         ? Math.min(12, Number(record.strikes))
         : null,
