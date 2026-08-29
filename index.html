@@ -1972,6 +1972,11 @@ function saveTrackedThrow(){
 function clearBallTwo(){ if(state.pinTracking){state.pinTracking.knocked=[];renderPinTracker();} }
 function skipPinTracking(){
   const t=state.pinTracking; if(!t) return;
+  if(t.phase==='throw'){
+    state.pinTracking=null;
+    renderAll();
+    return;
+  }
   state.frames[t.frameIndex].rolls.push(t.firstBall); state.pinTracking=null;
   if(isFrameComplete(t.frameIndex)){if(t.frameIndex===9) state.completed=true; else state.currentFrame++;}
   renderAll();
