@@ -366,7 +366,7 @@ select,input{
   overflow:hidden;
   overscroll-behavior-x:contain;
 }
-.chartArea .chart{
+.chartArea.chart{
   width:100%;
   min-width:0;
   overflow-x:auto;
@@ -374,7 +374,9 @@ select,input{
   -webkit-overflow-scrolling:touch;
   touch-action:pan-x;
   padding-right:10px;
+  cursor:grab;
 }
+.chartArea .chart.is-dragging{cursor:grabbing}
 .chartValue{
   font-size:10px;
   font-weight:850;
@@ -832,7 +834,7 @@ body.light-mode .ballMatchPreview img{
             <span>140</span>
             <span>120</span>
           </div>
-          <div class="chart chartArea" id="avgChart"></div>
+        <div class="chart chartArea" id="avgChart" onpointerdown="startChartDrag(event)" onpointermove="moveChartDrag(event)" onpointerup="endChartDrag(event)" onpointercancel="endChartDrag(event)" onpointerleave="endChartDrag(event)"></div>
         </div>
 
         <div class="chartSubtext" id="trendDescription">
@@ -1836,6 +1838,38 @@ function formatChartDate(value){
   return new Intl.DateTimeFormat(undefined,{month:'short',day:'numeric'}).format(date);
 }
 
+function dailyAverageRecords(games){
+  const groups=new Map();
+  games.forEach(game=>{
+    const date=game.date ? new Date(game.date) : null;
+    const key=date && !Number.isNaN(date.getTime()) ? date.toISOString().slice(0,10) : 'undated';
+    const group=groups.get(key) || {date:game.date,scores:[]};
+    group.scores.push(Number(game.score));
+    groups.set(key,group);
+  });
+  return [...groups.values()].map(group=>({date:group.date,score:Math.round(group.scores.reduce((sum,value)=>sum+value,0)/group.scores.length)}));
+}
+
+let chartDragState=null;
+function startChartDrag(event){
+  const chart=event.currentTarget;
+  chartDragState={chart,startX:event.clientX,startScroll:chart.scrollLeft,moved:false};
+  chart.classList.add('is-dragging');
+  if(chart.setPointerCapture) chart.setPointerCapture(event.pointerId);
+}
+function moveChartDrag(event){
+  if(!chartDragState) return;
+  const delta=event.clientX-chartDragState.startX;
+  if(Math.abs(delta)>3) chartDragState.moved=true;
+  chartDragState.chart.scrollLeft=chartDragState.startScroll-delta;
+}
+function endChartDrag(event){
+  if(!chartDragState) return;
+  chartDragState.chart.classList.remove('is-dragging');
+  if(chartDragState.chart.releasePointerCapture && chartDragState.chart.hasPointerCapture?.(event.pointerId)) chartDragState.chart.releasePointerCapture(event.pointerId);
+  chartDragState=null;
+}
+
 function setTrendView(view){
   trendView=view;
   document.getElementById('scoreViewBtn').classList.toggle('active',view==='scores');
@@ -1845,8 +1879,9 @@ function setTrendView(view){
 
 function renderChart(){
   const isScores=trendView==='scores';
-  const scores=state.games.map(game=>game.score);
-  const vals=isScores ? scores : runningAverages(scores);
+  const chartGames=isScores ? state.games : dailyAverageRecords(state.games);
+  const scores=chartGames.map(game=>game.score);
+  const vals=scores;
   const rawMin=vals.length ? Math.min(...vals) : 0;
   const rawMax=vals.length ? Math.max(...vals) : 0;
   const min=Math.floor((rawMin-10)/10)*10;
@@ -1856,7 +1891,7 @@ function renderChart(){
   document.getElementById('trendBadge').textContent=isScores ? 'Raw scores' : 'Rolling avg';
   document.getElementById('trendDescription').textContent=isScores
     ? 'Each bar is the score from that individual game.'
-    : 'Each bar is your average after all games played up to that point.';
+    : 'Each bar is the average of games entered on that date.';
 
   const axis=document.getElementById('trendYAxis');
   const step=(max-min)/4;
@@ -1865,7 +1900,7 @@ function renderChart(){
   const box=document.getElementById('avgChart');
   box.innerHTML=vals.length ? vals.map((v,i)=>{
     const h=Math.max(8, ((v-min)/(max-min))*112);
-    const label=isScores ? i+1 : formatChartDate(state.games[i]?.date);
+    const label=isScores ? i+1 : formatChartDate(chartGames[i]?.date);
     return `<div class="chartCol">
       <div class="chartValue">${v}</div>
       <div class="chartBar" style="height:${h}px"></div>
