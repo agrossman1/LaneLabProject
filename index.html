@@ -141,6 +141,7 @@ p{color:var(--muted);line-height:1.5}
 .pinButton:nth-child(5){grid-column:2;grid-row:2}.pinButton:nth-child(6){grid-column:4;grid-row:2}.pinButton:nth-child(7){grid-column:6;grid-row:2}
 .pinButton:nth-child(8){grid-column:3;grid-row:3}.pinButton:nth-child(9){grid-column:5;grid-row:3}.pinButton:nth-child(10){grid-column:4;grid-row:4}
 .pinButton.down{opacity:.22;background:#5b6680;color:transparent;box-shadow:none}
+.pinButton.unavailable{opacity:.35;background:#5b6680;color:#16213a;box-shadow:none}
 .pinButton.selected{background:#ff1515;border-color:#ff1515;color:#fff;opacity:1}
 .pinTrackerActions{display:flex;gap:8px;flex-wrap:wrap}.pinTrackerActions button{flex:1;min-width:130px}
 .formRow{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:10px}
@@ -1926,7 +1927,8 @@ function renderPinTracker(){
     const active=selectable.includes(pin);
     const on=selected.includes(pin);
     const canSelect=active && !(leavePhase && selectedCount>=target && !on);
-    return `<button class="pinButton ${on?'selected':''} ${!active?'down':''}" ${canSelect?`onclick="toggleTrackedPin(${pin})"`: 'disabled'} aria-label="Pin ${pin}">${active?pin:''}</button>`;
+    const unavailable=leavePhase && active && !on && selectedCount>=target;
+    return `<button class="pinButton ${on?'selected':''} ${!active?'down':''} ${unavailable?'unavailable':''}" ${canSelect?`onclick="toggleTrackedPin(${pin})"`: 'disabled'} aria-label="Pin ${pin}">${active?pin:''}</button>`;
   }).join('');
   box.innerHTML=`<div class="muted small">${prompt}</div><b>${detail}${!leavePhase && selectedCount===t.standing.length?' ✓':''}</b><div class="pinRack">${buttons}</div><div class="pinTrackerActions"><button class="cta secondary" onclick="skipPinTracking()">Skip pin tracking</button>${leavePhase?`<button class="cta secondary" onclick="selectAllStanding()">All pins still up</button><button class="cta" ${selectedCount===target?'':'disabled'} onclick="saveTrackedLeave()">Save Leave</button>`:`<button class="cta secondary" onclick="selectAllStanding();saveTrackedThrow()">Knock Down All / Spare</button><button class="cta secondary" onclick="clearBallTwo()">Clear Ball 2</button><button class="cta" onclick="saveTrackedThrow()">Save Throw</button>`}</div>`;
 }
