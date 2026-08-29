@@ -136,6 +136,9 @@ p{color:var(--muted);line-height:1.5}
 .gameDateRow{display:flex;justify-content:flex-end;margin:4px 0 10px}
 .gameDateRow label{display:flex;align-items:center;gap:8px}
 .gameDateRow input{width:auto;margin:0;padding:7px 9px;font-size:12px}
+.scoreHeaderRow{display:flex;align-items:flex-start;justify-content:space-between;gap:10px}
+.scoreHeaderRow h1{margin-top:6px}
+.scoreHeaderRow .gameDateRow{margin:0}
 label{font-size:12px;color:var(--muted);font-weight:700}
 select,input{
   width:100%;margin-top:6px;padding:11px 12px;border-radius:12px;
@@ -630,14 +633,15 @@ body.light-mode .ballMatchPreview img{
       <p class="small">Your history updates when you finish a game.</p>
 
       <div class="card hero">
-        <div class="row">
+        <div class="row" onpointerdown="startHomeAverageHold(event)" onpointerup="cancelHomeAverageHold()" onpointerleave="cancelHomeAverageHold()" onpointercancel="cancelHomeAverageHold()">
           <div>
-            <div class="muted small">10-game average</div>
+            <div class="muted small" id="homeAvgLabel">10-game average</div>
             <div class="heroScore" id="homeAvg">—</div>
           </div>
-          <div class="pill">Last 10</div>
+          <div class="pill" id="homeAvgWindow">Last 10</div>
         </div>
         <div class="delta" id="trendDelta">Historical average</div>
+        <div class="muted small" style="margin-top:4px">Hold the average to toggle all games</div>
       </div>
 
       <div class="grid">
@@ -665,12 +669,13 @@ body.light-mode .ballMatchPreview img{
 
     <section class="screen" id="score">
       <div class="eyebrow">Record game</div>
-      <h1 id="gameTitle">Game 1</h1>
-
-      <div class="gameDateRow">
-        <label for="gameDate">Game date
-          <input id="gameDate" type="date" aria-label="Game date">
-        </label>
+      <div class="scoreHeaderRow">
+        <h1 id="gameTitle">Game 1</h1>
+        <div class="gameDateRow">
+          <label for="gameDate">Game date
+            <input id="gameDate" type="date" aria-label="Game date">
+          </label>
+        </div>
       </div>
 
       <div class="formRow">
@@ -1289,17 +1294,26 @@ state.games=LaneLabStats.saveGameRecords(getGameStorage(),state.games);
 
 let profile=LaneLabProfile.load(getGameStorage());
 let historyRange='all';
+let homeAverageMode='last10';
+let homeAverageHoldTimer=null;
 
 function syncAverageDisplays(){
-  const average=LaneLabStats.calculateAverage(state.recent);
+  const lastTenAverage=LaneLabStats.calculateAverage(state.recent);
+  const allScores=state.games.map(game=>Number(game.score)).filter(Number.isFinite);
+  const allAverage=LaneLabStats.calculateAverage(allScores);
+  const average=homeAverageMode==='all' ? allAverage : lastTenAverage;
   const displayValue=average ?? '—';
   const homeAverage=document.getElementById('homeAvg');
+  const homeAverageLabel=document.getElementById('homeAvgLabel');
+  const homeAverageWindow=document.getElementById('homeAvgWindow');
   const profileAverage=document.getElementById('profileAverage');
   const profileAverageBadge=document.getElementById('profileAverageBadge');
 
   if(homeAverage) homeAverage.textContent=displayValue;
-  if(profileAverage) profileAverage.textContent=displayValue;
-  if(profileAverageBadge) profileAverageBadge.textContent=average===null ? 'No games yet' : `${average} avg`;
+  if(homeAverageLabel) homeAverageLabel.textContent=homeAverageMode==='all' ? 'All-game average' : '10-game average';
+  if(homeAverageWindow) homeAverageWindow.textContent=homeAverageMode==='all' ? 'All games' : 'Last 10';
+  if(profileAverage) profileAverage.textContent=lastTenAverage ?? '—';
+  if(profileAverageBadge) profileAverageBadge.textContent=lastTenAverage===null ? 'No games yet' : `${lastTenAverage} avg`;
   const metricAverage=(key)=>{
     const values=state.games.map(game=>Number(game[key])).filter(value=>Number.isFinite(value));
     return values.length ? `${Math.round(values.reduce((sum,value)=>sum+value,0)/values.length)}%` : '—';
@@ -1308,6 +1322,19 @@ function syncAverageDisplays(){
   const spareRate=document.getElementById('spareRate');
   if(strikeRate) strikeRate.textContent=metricAverage('strikeRate');
   if(spareRate) spareRate.textContent=metricAverage('spareRate');
+}
+
+function startHomeAverageHold(event){
+  event.stopPropagation();
+  cancelHomeAverageHold();
+  homeAverageHoldTimer=setTimeout(()=>{
+    homeAverageMode=homeAverageMode==='last10' ? 'all' : 'last10';
+    syncAverageDisplays();
+    if(navigator.vibrate) navigator.vibrate(25);
+  },550);
+}
+function cancelHomeAverageHold(){
+  if(homeAverageHoldTimer){clearTimeout(homeAverageHoldTimer);homeAverageHoldTimer=null;}
 }
 
 function recordGameScore(score,details={}){
