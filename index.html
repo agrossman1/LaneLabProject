@@ -603,43 +603,39 @@ body.light-mode .ballMatchPreview img{
     <section class="screen active" id="home">
       <div class="eyebrow">Bowling improvement tracker</div>
       <h1>Your game, decoded.</h1>
-      <p class="small">Demo data updates when you finish a game.</p>
+      <p class="small">Your history updates when you finish a game.</p>
 
       <div class="card hero">
         <div class="row">
           <div>
             <div class="muted small">10-game average</div>
-            <div class="heroScore" id="homeAvg">164</div>
+            <div class="heroScore" id="homeAvg">—</div>
           </div>
           <div class="pill">Last 10</div>
         </div>
-        <div class="delta">▲ 7 pins vs previous 10</div>
+        <div class="delta" id="trendDelta">Historical average</div>
       </div>
 
       <div class="grid">
-        <div class="stat"><small>Strike rate</small><b id="strikeRate">34%</b><span class="tagGood small">+3%</span></div>
-        <div class="stat"><small>Spare rate</small><b id="spareRate">68%</b><span class="tagWarn small">-2%</span></div>
-        <div class="stat"><small>High game</small><b id="highGame">203</b><span class="muted small">this season</span></div>
-        <div class="stat"><small>Open frames</small><b>2.1</b><span class="tagGood small">-0.4/game</span></div>
+        <div class="stat"><small>Strike rate</small><b id="strikeRate">—</b><span class="muted small">historical</span></div>
+        <div class="stat"><small>Spare rate</small><b id="spareRate">—</b><span class="muted small">historical</span></div>
+        <div class="stat"><small>High game</small><b id="highGame">—</b><span class="muted small">historical</span></div>
+        <div class="stat"><small>Open frames</small><b id="openFrames">—</b><span class="muted small">historical</span></div>
       </div>
 
       <div class="card">
         <div class="row"><h2>Biggest opportunity</h2><span class="pill">Coach</span></div>
         <div class="insight">
           <strong>Single-pin spare conversion</strong>
-          <div class="muted small">You’re at 71%. Reaching 80% is worth roughly 4–6 pins/game.</div>
-          <div class="bar"><span style="width:71%"></span></div>
+          <div class="muted small">Detailed spare-conversion coaching will appear as frame data is collected.</div>
+          <div class="bar"><span style="width:0%"></span></div>
         </div>
         <button class="cta" onclick="go('coach')">See today’s practice →</button>
       </div>
 
       <div class="card">
         <div class="row"><h2>Recent games</h2><span class="muted small">Practice</span></div>
-        <div class="list" id="recentGames">
-          <div class="listItem row"><span>Game 3 · Tonight</span><b>171</b></div>
-          <div class="listItem row"><span>Game 2 · Tonight</span><b>158</b></div>
-          <div class="listItem row"><span>Game 1 · Tonight</span><b>166</b></div>
-        </div>
+        <div class="list" id="recentGames"></div>
       </div>
     </section>
 
@@ -798,36 +794,21 @@ body.light-mode .ballMatchPreview img{
       </div>
 
       <div class="grid">
-        <div class="stat"><small>Pocket hits</small><b>61%</b><span class="tagGood small">+5%</span></div>
-        <div class="stat"><small>Single pins</small><b>71%</b><span class="tagWarn small">goal 80%</span></div>
+        <div class="stat"><small>Pocket hits</small><b>—</b><span class="muted small">frame detail unavailable</span></div>
+        <div class="stat"><small>Single pins</small><b>—</b><span class="muted small">frame detail unavailable</span></div>
       </div>
 
       <div class="card">
         <h2>Common leaves</h2>
         <div class="list">
-          <div class="listItem">
-            <div class="row"><span>10 pin</span><b>47%</b></div>
-            <div class="bar"><span style="width:47%"></span></div>
-          </div>
-          <div class="listItem">
-            <div class="row"><span>7 pin</span><b>72%</b></div>
-            <div class="bar"><span style="width:72%"></span></div>
-          </div>
-          <div class="listItem">
-            <div class="row"><span>6 pin</span><b>81%</b></div>
-            <div class="bar"><span style="width:81%"></span></div>
-          </div>
+          <div class="listItem"><div class="row"><span>Frame-level leave data</span><b>—</b></div><div class="muted small">Not available in the historical notation.</div></div>
         </div>
       </div>
 
       <div class="card">
         <h2>Game-by-game</h2>
-        <div class="list">
-          <div class="listItem row"><span>Game 1</span><b>168 avg</b></div>
-          <div class="listItem row"><span>Game 2</span><b>165 avg</b></div>
-          <div class="listItem row"><span>Game 3</span><b>157 avg</b></div>
-        </div>
-        <p class="small">Your third game is currently 11 pins below Game 1. That may indicate fatigue or lane-transition adjustments.</p>
+        <div class="list" id="gameBreakdown"></div>
+        <p class="small" id="gameBreakdownMessage">Historical scores are shown from Anthony’s recorded games.</p>
       </div>
     </section>
 
@@ -1094,6 +1075,7 @@ body.light-mode .ballMatchPreview img{
 <script src="./js/stats.js"></script>
 <script src="./js/profile.js"></script>
 <script src="./js/arsenal.js"></script>
+<script src="./js/history.js"></script>
 <script>
 
 const demoScanPlayers = [
@@ -1214,20 +1196,46 @@ function saveImportedGames(){
   toast(`${scannedPlayers.length} game${scannedPlayers.length>1?'s':''} imported`);
 }
 
-const DEFAULT_RECENT_SCORES=[171,158,166,162,175,149,170,160,155,164];
-
 function getGameStorage(){
   try{return window.localStorage}catch(error){return null}
 }
+
+function loadAnthonyHistory(){
+  const history=window.LaneLabData?.anthonyHistory;
+  if(!history || history.player!=='Anthony' || !Array.isArray(history.sessions)) return [];
+  return history.sessions.flatMap(session=>Array.isArray(session.games) ? session.games.map(game=>{
+    const frames=Array.isArray(game.frames) ? game.frames.slice() : [];
+    const strikes=frames.reduce((count,frame)=>count+(String(frame).trim().startsWith('X')?1:0),0);
+    const spareFrames=frames.filter(frame=>!String(frame).trim().startsWith('X') && String(frame).includes('/')).length;
+    const spareChances=frames.filter(frame=>!String(frame).trim().startsWith('X') && String(frame).length>=2).length;
+    return LaneLabStats.normalizeGameRecord({
+      id:`history-${session.session}-${game.game}`,
+      date:`${session.date}T12:00:00.000Z`,
+      score:game.score,
+      hand:'Ambidextrous',
+      source:'historical',
+      frames,
+      strikes,
+      strikeRate:Math.round(strikes/10*100),
+      spareRate:spareChances ? Math.round(spareFrames/spareChances*100) : 0
+    });
+  }) : []).filter(Boolean);
+}
+
+const historicalGames=loadAnthonyHistory();
+const savedGames=LaneLabStats.loadGameRecords(getGameStorage(),[]).filter(game=>!['previous','historical'].includes(game.source));
+const initialGames=[...historicalGames,...savedGames];
+const initialRecent=initialGames.slice(-LaneLabStats.MAX_RECENT_GAMES).map(game=>game.score).reverse();
 
 const state = {
   frames: Array.from({length:10},()=>({rolls:[]})),
   currentFrame:0,
   completed:false,
-  recent:LaneLabStats.loadScores(getGameStorage(),DEFAULT_RECENT_SCORES),
-  games:[]
+  recent:initialRecent,
+  games:initialGames
 };
-state.games=LaneLabStats.loadGameRecords(getGameStorage(),state.recent);
+state.recent=LaneLabStats.saveScores(getGameStorage(),state.recent);
+state.games=LaneLabStats.saveGameRecords(getGameStorage(),state.games);
 
 let profile=LaneLabProfile.load(getGameStorage());
 let historyRange='all';
@@ -1242,6 +1250,14 @@ function syncAverageDisplays(){
   if(homeAverage) homeAverage.textContent=displayValue;
   if(profileAverage) profileAverage.textContent=displayValue;
   if(profileAverageBadge) profileAverageBadge.textContent=average===null ? 'No games yet' : `${average} avg`;
+  const metricAverage=(key)=>{
+    const values=state.games.map(game=>Number(game[key])).filter(value=>Number.isFinite(value));
+    return values.length ? `${Math.round(values.reduce((sum,value)=>sum+value,0)/values.length)}%` : '—';
+  };
+  const strikeRate=document.getElementById('strikeRate');
+  const spareRate=document.getElementById('spareRate');
+  if(strikeRate) strikeRate.textContent=metricAverage('strikeRate');
+  if(spareRate) spareRate.textContent=metricAverage('spareRate');
 }
 
 function recordGameScore(score,details={}){
@@ -1252,11 +1268,12 @@ function recordGameScore(score,details={}){
   state.recent=LaneLabStats.saveScores(getGameStorage(),state.recent);
   const gameRecord=LaneLabStats.createGameRecord(normalizedScore,details);
   if(gameRecord){
-    state.games=LaneLabStats.saveGameRecords(getGameStorage(),[gameRecord,...state.games]);
+    state.games=LaneLabStats.saveGameRecords(getGameStorage(),[...state.games,gameRecord]);
   }
   syncAverageDisplays();
   syncGameSummaries();
   renderRecent();
+  renderGameBreakdown();
   renderPersonalStats();
   renderArsenal();
   return true;
@@ -1282,6 +1299,13 @@ function syncGameSummaries(){
   const high=scores.length ? Math.max(...scores) : null;
   const highGame=document.getElementById('highGame');
   if(highGame) highGame.textContent=high ?? '—';
+  const openFrames=document.getElementById('openFrames');
+  if(openFrames){
+    const values=state.games.map(game=>Array.isArray(game.frames)
+      ? game.frames.filter(frame=>!String(frame).includes('/')&&!String(frame).trim().startsWith('X')).length
+      : null).filter(value=>value!==null);
+    openFrames.textContent=values.length ? (values.reduce((sum,value)=>sum+value,0)/values.length).toFixed(1) : '—';
+  }
 }
 
 function formatGameDate(value){
@@ -1631,7 +1655,6 @@ function renderRecent(){
   box.innerHTML=state.recent.slice(0,3).map((s,i)=>`<div class="listItem row"><span>Game ${3-i} · Recent</span><b>${s}</b></div>`).join('');
 }
 
-const demoGameScores=[148,172,159,181,164,176,155,169];
 let trendView='scores';
 
 function runningAverages(values){
@@ -1651,10 +1674,12 @@ function setTrendView(view){
 
 function renderChart(){
   const isScores=trendView==='scores';
-  const vals=isScores ? demoGameScores : runningAverages(demoGameScores);
-
-  const min=isScores ? 120 : 140;
-  const max=isScores ? 200 : 180;
+  const scores=state.games.map(game=>game.score);
+  const vals=isScores ? scores : runningAverages(scores);
+  const rawMin=vals.length ? Math.min(...vals) : 0;
+  const rawMax=vals.length ? Math.max(...vals) : 0;
+  const min=Math.floor((rawMin-10)/10)*10;
+  const max=Math.ceil((rawMax+10)/10)*10 || 10;
 
   document.getElementById('trendTitle').textContent=isScores ? 'Game scores' : 'Average trend';
   document.getElementById('trendBadge').textContent=isScores ? 'Raw scores' : 'Rolling avg';
@@ -1663,20 +1688,25 @@ function renderChart(){
     : 'Each bar is your average after all games played up to that point.';
 
   const axis=document.getElementById('trendYAxis');
-  axis.innerHTML=(isScores
-    ? [200,180,160,140,120]
-    : [180,170,160,150,140]
-  ).map(v=>`<span>${v}</span>`).join('');
+  const step=(max-min)/4;
+  axis.innerHTML=Array.from({length:5},(_,i)=>Math.round(max-(step*i))).map(v=>`<span>${v}</span>`).join('');
 
   const box=document.getElementById('avgChart');
-  box.innerHTML=vals.map((v,i)=>{
+  box.innerHTML=vals.length ? vals.map((v,i)=>{
     const h=Math.max(8, ((v-min)/(max-min))*112);
     return `<div class="chartCol">
       <div class="chartValue">${v}</div>
       <div class="chartBar" style="height:${h}px"></div>
       <div>${i+1}</div>
     </div>`;
-  }).join('');
+  }).join('') : '<div class="muted small" style="padding:16px">No games recorded yet.</div>';
+}
+
+function renderGameBreakdown(){
+  const box=document.getElementById('gameBreakdown');
+  if(!box) return;
+  const games=state.games.slice(-3).reverse();
+  box.innerHTML=games.length ? games.map((game,index)=>`<div class="listItem row"><span>Game ${state.games.length-index}</span><b>${game.score}</b></div>`).join('') : '<div class="listItem center"><b>No games recorded yet.</b></div>';
 }
 
 
@@ -1911,7 +1941,7 @@ function toast(msg){
 function renderAll(){renderScoreboard();renderKeypad()}
 loadSavedTheme();
 preloadBallCatalogImages();
-renderAll();renderChart();renderRecent();renderProfile();
+renderAll();renderChart();renderRecent();renderGameBreakdown();renderProfile();
 syncAverageDisplays();syncGameSummaries();renderPersonalStats();renderArsenal();
 </script>
 </body>
