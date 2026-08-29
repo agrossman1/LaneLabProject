@@ -1,7 +1,7 @@
 (function attachLaneLabProfile(root) {
   const STORAGE_KEY = 'lanelab-profile-v1';
   const DEFAULT_PROFILE = Object.freeze({
-    name: 'Anthony',
+    name: '',
     hand: 'Ambidextrous',
     style: 'Two-handed',
     goalAverage: 180,
