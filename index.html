@@ -452,7 +452,7 @@ select,input{
 }
 .detectedFrame small{display:block;color:var(--muted);font-size:9px;margin-bottom:4px}
 .detectedFrame b{font-size:13px}
-.scoreBig{font-size:30px;font-weight:900;letter-spacing:-.05em}
+.scoreBig{font-size:30px;font-weight:900;letter-spacing:-.05em;user-select:none;-webkit-user-select:none;cursor:pointer}
 .editGrid{
   display:grid;
   grid-template-columns:repeat(5,1fr);
@@ -1369,6 +1369,18 @@ function renderPersonalHistory(){
 }
 
 let historyHoldTimer=null;
+function closeHistoryMenus(){
+  cancelHistoryHold();
+  document.querySelectorAll('.historyGame.historyMenuOpen').forEach(card=>{
+    const actions=card.querySelector('.historyActions');
+    if(actions) actions.hidden=true;
+    card.classList.remove('historyMenuOpen');
+  });
+}
+document.addEventListener('pointerdown',event=>{
+  if(!event.target.closest('.historyGame .scoreBig')&&!event.target.closest('.historyActions')) closeHistoryMenus();
+},true);
+document.addEventListener('input',closeHistoryMenus,true);
 function startHistoryHold(event,id){
   event.stopPropagation();
   cancelHistoryHold();
