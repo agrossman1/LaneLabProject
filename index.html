@@ -1359,8 +1359,9 @@ let homeDataMode='me';
 const ianGames=Array.isArray(window.LaneLabData?.ianHistory?.sessions)
   ? window.LaneLabData.ianHistory.sessions.flatMap(session=>session.games.map(game=>({id:`ian-${session.date}-${game.game}`,date:`${session.date}T12:00:00Z`,score:game.score,frames:game.frames,source:'ian',hand:null})))
   : [];
-function getHomeGames(){return homeDataMode==='ian'?ianGames:state.games;}
-function setHomeDataMode(mode){homeDataMode=mode==='ian'?'ian':'me';document.getElementById('homeMineBtn')?.classList.toggle('active',homeDataMode==='me');document.getElementById('homeIanBtn')?.classList.toggle('active',homeDataMode==='ian');syncAverageDisplays();syncGameSummaries();renderRecent();}
+function getActiveGames(){return homeDataMode==='ian'?ianGames:state.games;}
+function getHomeGames(){return getActiveGames();}
+function setHomeDataMode(mode){homeDataMode=mode==='ian'?'ian':'me';document.getElementById('homeMineBtn')?.classList.toggle('active',homeDataMode==='me');document.getElementById('homeIanBtn')?.classList.toggle('active',homeDataMode==='ian');syncAverageDisplays();syncGameSummaries();renderRecent();renderChart();renderSessionMetrics();renderPersonalStats();}
 
 let profile=LaneLabProfile.load(getGameStorage());
 let historyRange='all';
@@ -1413,7 +1414,7 @@ function generateCoachRecommendation(current,previous){
   return {title:'Create more strike opportunities',label:'Spare rate',value:current.spareRate===null?'—':Math.round(current.spareRate)+'%',trend:previous?.spareRate!==null&&previous?.spareRate!==undefined?current.spareRate-previous.spareRate:null,explanation:'Your tracked spare rate is the best available guide when pin-level leaves are not recorded. More conversions create more chances for higher scores.',drillTitle:'Spare conversion drill',drillValue:'Play 1 practice game focused on first-ball accuracy',drillGoal:'Goal: convert at least 7 spares',opportunity:'Potential improvement: ~5 pins/game'};
 }
 function renderCoach(){
-  const sessions=LaneLabStats.groupSessions(state.games), current=LaneLabStats.summarizeGames(sessions.at(-1)?.games||[]), previous=sessions.length>1?LaneLabStats.summarizeGames(sessions.at(-2).games):null;
+  const sessions=LaneLabStats.groupSessions(getActiveGames()), current=LaneLabStats.summarizeGames(sessions.at(-1)?.games||[]), previous=sessions.length>1?LaneLabStats.summarizeGames(sessions.at(-2).games):null;
   const rec=generateCoachRecommendation(current,previous);
   const set=(id,value)=>{const el=document.getElementById(id);if(el)el.textContent=value};
   set('coachFocusTitle',sessions.length?rec.title:'Collect another session'); set('coachMetricValue',sessions.length?rec.value:'—'); set('coachMetricLabel',sessions.length?rec.label:'Latest session');
@@ -1733,14 +1734,15 @@ function openMedalDetail(id){
 function closeMedalDetail(){document.getElementById('medalDetailModal').classList.remove('show')}
 
 function renderPersonalStats(){
-  const high=state.games.length ? Math.max(...state.games.map(game=>game.score)) : null;
+  const activeGames=getActiveGames();
+  const high=activeGames.length ? Math.max(...activeGames.map(game=>game.score)) : null;
   const next=[100,150,200,250,300].find(score=>(high??0)<score);
   document.getElementById('personalHigh').textContent=high ?? '—';
-  document.getElementById('personalGameCount').textContent=`${state.games.length} game${state.games.length===1?'':'s'}`;
+  document.getElementById('personalGameCount').textContent=`${activeGames.length} game${activeGames.length===1?'':'s'}`;
   document.getElementById('personalHighMessage').textContent=high===null
     ? 'Save a game to start your story.'
     : next ? `${next-high} pins to your next medal` : 'Perfect game achieved — every medal unlocked!';
-  const summary=LaneLabStats.summarizeGames(state.games);
+  const summary=LaneLabStats.summarizeGames(activeGames);
   const single=document.getElementById('singlePinCount');
   const singleMeta=document.getElementById('singlePinMeta');
   if(single) single.textContent=summary.singlePct===null?'—':`${Math.round(summary.singlePct)}%`;
@@ -1755,7 +1757,7 @@ function renderPersonalStats(){
 let selectedSessionDate=null;
 function renderSessionMetrics(date=selectedSessionDate){
   const box=document.getElementById('sessionMetrics'); if(!box) return;
-  const sessions=LaneLabStats.groupSessions(state.games);
+  const sessions=LaneLabStats.groupSessions(getActiveGames());
   if(!sessions.length){ box.innerHTML='<div class="muted small">Record games to see session comparisons.</div>'; return; }
   let index=date ? sessions.findIndex(session=>session.date===date) : sessions.length-1;
   if(index<0) index=sessions.length-1;
@@ -2253,7 +2255,7 @@ function setTrendView(view){
 
 function renderChart(){
   const isScores=trendView==='scores';
-  const chartGames=isScores ? state.games : LaneLabStats.groupSessions(state.games).map(session=>{
+  const chartGames=isScores ? getActiveGames() : LaneLabStats.groupSessions(getActiveGames()).map(session=>{
     const scores=session.games.map(game=>Number(game.score)).filter(Number.isFinite);
     return {date:session.date,score:scores.length ? (scores.reduce((sum,value)=>sum+value,0)/scores.length) : null,games:session.games};
   }).filter(session=>session.score!==null);
@@ -2297,8 +2299,9 @@ function renderChart(){
 function renderGameBreakdown(){
   const box=document.getElementById('gameBreakdown');
   if(!box) return;
-  const games=state.games.slice(-3).reverse();
-  box.innerHTML=games.length ? games.map((game,index)=>`<div class="listItem row"><span>Game ${state.games.length-index}</span><b>${game.score}</b></div>`).join('') : '<div class="listItem center"><b>No games recorded yet.</b></div>';
+  const activeGames=getActiveGames();
+  const games=activeGames.slice(-3).reverse();
+  box.innerHTML=games.length ? games.map((game,index)=>`<div class="listItem row"><span>Game ${activeGames.length-index}</span><b>${game.score}</b></div>`).join('') : '<div class="listItem center"><b>No games recorded yet.</b></div>';
 }
 
 
