@@ -20,6 +20,7 @@
   --radius:22px;
 }
 *{box-sizing:border-box}
+.hidden{display:none!important}
 *,*::before,*::after{
   user-select:none!important;
   -webkit-user-select:none!important;
@@ -726,10 +727,10 @@ body.light-mode .ballMatchPreview img{
       </div>
 
       <div class="formRow">
-        <label>Hand
+        <label id="handField">Hand
           <select id="hand"><option>Right</option><option>Left</option></select>
         </label>
-        <label>Ball
+        <label id="ballField">Ball
           <select id="ballSelect" onchange="rememberBallSelection()"><option>Ascent</option><option>Hy-Road</option><option>Other</option></select>
         </label>
       </div>
@@ -1367,6 +1368,12 @@ let homeAverageMode='last10';
 let homeAverageHoldTimer=null;
 let pinTrackingEnabled=true;
 try{pinTrackingEnabled=getGameStorage()?.getItem('lanelab-pin-tracking')!=='off'}catch(e){}
+let handTrackingEnabled=true;
+let ballTrackingEnabled=true;
+try{
+  handTrackingEnabled=getGameStorage()?.getItem('lanelab-hand-tracking')!=='off';
+  ballTrackingEnabled=getGameStorage()?.getItem('lanelab-ball-tracking')!=='off';
+}catch(e){}
 
 function syncAverageDisplays(){
   const lastTenAverage=LaneLabStats.calculateAverage(state.recent);
@@ -1522,6 +1529,9 @@ function renderProfile(){
   const gameHand=document.getElementById('hand');
   if(gameHand && profile.hand!=='Ambidextrous') gameHand.value=profile.hand;
   document.getElementById('pinTrackingToggle')?.classList.toggle('on',pinTrackingEnabled);
+  document.getElementById('handToggle')?.classList.toggle('on',handTrackingEnabled);
+  document.getElementById('ballToggle')?.classList.toggle('on',ballTrackingEnabled);
+  syncScoreTrackingFields();
   syncAverageDisplays();
 }
 
@@ -1751,7 +1761,21 @@ function openProfile(){
 }
 function toggleSwitch(el){
   el.classList.toggle('on');
+  if(el.id==='handToggle'){
+    handTrackingEnabled=el.classList.contains('on');
+    try{getGameStorage()?.setItem('lanelab-hand-tracking',handTrackingEnabled?'on':'off')}catch(e){}
+    syncScoreTrackingFields();
+  }
+  if(el.id==='ballToggle'){
+    ballTrackingEnabled=el.classList.contains('on');
+    try{getGameStorage()?.setItem('lanelab-ball-tracking',ballTrackingEnabled?'on':'off')}catch(e){}
+    syncScoreTrackingFields();
+  }
   toast(el.classList.contains('on') ? 'Preference enabled' : 'Preference disabled');
+}
+function syncScoreTrackingFields(){
+  document.getElementById('handField')?.classList.toggle('hidden',!handTrackingEnabled);
+  document.getElementById('ballField')?.classList.toggle('hidden',!ballTrackingEnabled);
 }
 function togglePinTracking(el){
   pinTrackingEnabled=el.classList.contains('on');
