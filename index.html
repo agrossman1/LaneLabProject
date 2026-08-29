@@ -1324,8 +1324,13 @@ function loadAnthonyHistory(){
   return history.sessions.flatMap(session=>Array.isArray(session.games) ? session.games.map(game=>{
     const frames=Array.isArray(game.frames) ? game.frames.slice() : [];
     const strikes=frames.reduce((count,frame)=>count+(String(frame).trim().startsWith('X')?1:0),0);
-    const spareFrames=frames.filter(frame=>!String(frame).trim().startsWith('X') && String(frame).includes('/')).length;
-    const spareChances=frames.filter(frame=>!String(frame).trim().startsWith('X') && String(frame).length>=2).length;
+    const spareFrames=frames.filter(frame=>String(frame).replace(/\s+/g,'').includes('/')).length;
+    const spareChances=frames.filter(frame=>{
+      const token=String(frame||'').replace(/\s+/g,'').trim();
+      if(!token) return false;
+      if(!token.startsWith('X')) return token.length>=2;
+      return token.length>=3 && token[1]!=='X';
+    }).length;
     return LaneLabStats.normalizeGameRecord({
       id:`history-${session.session}-${game.game}`,
       date:`${session.date}T12:00:00.000Z`,
@@ -2164,6 +2169,13 @@ function calculateGameStats(){
   });
   const tenth=state.frames[9].rolls;
   if(tenth[0]===10) strikes++;
+  if(tenth[0]!==10 && tenth.length>=2){
+    spareChances++;
+    if(tenth[0]+tenth[1]===10) spares++;
+  } else if(tenth[0]===10 && tenth.length>=3 && tenth[1]!==10){
+    spareChances++;
+    if(tenth[1]+tenth[2]===10) spares++;
+  }
   return {strikes, strikeRate:Math.round(strikes/10*100), spareRate:spareChances?Math.round(spares/spareChances*100):0};
 }
 
