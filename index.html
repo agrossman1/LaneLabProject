@@ -332,6 +332,10 @@ select,input{
 .medalIcon img{width:100%;height:100%;object-fit:cover;display:block}
 .medal b{font-size:16px;color:#fff}
 .medal small{color:var(--muted);display:block;margin-top:4px}
+.onboardingModal{z-index:1000}
+.onboardingCard{width:min(100%,520px);max-height:90vh;overflow:auto}
+.onboardingStep{display:none}.onboardingStep.active{display:block}
+.onboardingConcepts{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:18px 0}.onboardingConcepts .card{padding:12px}
 .historyScroll{max-height:360px;overflow-y:auto;padding-right:4px;overscroll-behavior:contain}
 .historyGame{display:block}
 .historyBreakdown{
@@ -1049,6 +1053,7 @@ body.light-mode .ballMatchPreview img{
           </div>
           <button class="switch" id="themeToggle" onclick="toggleTheme()" aria-label="Toggle light mode"></button>
         </div>
+        <button class="menuBtn" onclick="replayOnboarding()" style="margin-top:10px"><span class="left"><span class="menuIcon">↻</span><span><b>Replay onboarding</b><div class="muted small">Review the LaneLab quick start</div></span></span><span class="chev">›</span></button>
       </div>
 
       <div class="card">
@@ -1104,6 +1109,35 @@ body.light-mode .ballMatchPreview img{
     <button data-target="arsenal" onclick="go('arsenal')"><span>🎳</span>Arsenal</button>
     <button data-target="coach" onclick="go('coach')"><span>🧠</span>Coach</button>
   </nav>
+</div>
+
+<div class="modal onboardingModal" id="onboardingModal">
+  <div class="sheet onboardingCard" role="dialog" aria-modal="true" aria-labelledby="onboardingTitle">
+    <div class="onboardingStep active" data-step="1">
+      <div class="eyebrow">LaneLab</div><h1 id="onboardingTitle">Your game, decoded.</h1>
+      <p>Track your bowling.<br>Find what costs you pins.<br>Know what to practice next.</p>
+      <button class="cta" onclick="onboardingNext()">Get Started</button>
+      <button class="textButton" onclick="onboardingSkipToReady()">I already have data</button>
+    </div>
+    <div class="onboardingStep" data-step="2">
+      <h2>Tell us about you</h2><p class="muted small">Only the basics LaneLab uses.</p>
+      <label>Name<input id="onboardingName" type="text" placeholder="Your name" autocomplete="name" required></label>
+      <label>Bowling hand<select id="onboardingHand"><option value="Right">Right</option><option value="Left">Left</option><option value="Ambidextrous">Both / Ambidextrous</option></select></label>
+      <label>Style <span class="muted small">(optional)</span><select id="onboardingStyle"><option value="">Not sure</option><option value="One-handed">One-handed</option><option value="Two-handed">Two-handed</option></select></label>
+      <div class="row"><button class="textButton" onclick="onboardingBack()">Back</button><button class="cta" onclick="onboardingProfileNext()">Continue</button></div>
+    </div>
+    <div class="onboardingStep" data-step="3">
+      <h2>What are you throwing?</h2><p>Adding your bowling ball lets LaneLab track performance by equipment.</p>
+      <label>Ball name <span class="muted small">(optional)</span><input id="onboardingBallName" placeholder="Ball name"></label>
+      <label>Weight <span class="muted small">(optional)</span><input id="onboardingBallWeight" type="number" min="6" max="16" placeholder="lb"></label>
+      <div class="row"><button class="textButton" onclick="onboardingBack()">Back</button><button class="textButton" onclick="onboardingFinish()">Skip for now</button><button class="cta" onclick="onboardingFinish()">Add Ball</button></div>
+    </div>
+    <div class="onboardingStep" data-step="4">
+      <h2>You’re ready.</h2><p>Record a few games and LaneLab will start finding patterns in your bowling.</p>
+      <div class="onboardingConcepts"><div class="card"><b>Score</b><div class="muted small">Track every game</div></div><div class="card"><b>Stats</b><div class="muted small">See what costs pins</div></div><div class="card"><b>Coach</b><div class="muted small">Know what to practice</div></div></div>
+      <button class="cta" onclick="onboardingFinish(true)">Start Bowling</button><button class="textButton" onclick="onboardingFinish(false)">Explore LaneLab</button>
+    </div>
+  </div>
 </div>
 
 <div class="modal" id="avatarModal" onclick="if(event.target===this) closeAvatarPicker()">
@@ -1347,7 +1381,9 @@ function loadAnthonyHistory(){
 
 const historicalGames=loadAnthonyHistory();
 const savedGames=LaneLabStats.loadGameRecords(getGameStorage(),[]).filter(game=>!['previous','historical'].includes(game.source));
-const initialGames=[...historicalGames,...savedGames];
+let hasExistingProfile=false;
+try{hasExistingProfile=Boolean(getGameStorage()?.getItem(LaneLabProfile.STORAGE_KEY))}catch(e){}
+const initialGames=[...(hasExistingProfile?historicalGames:[]),...savedGames];
 const initialRecent=initialGames.slice(-LaneLabStats.MAX_RECENT_GAMES).map(game=>game.score).reverse();
 
 const state = {
@@ -1369,6 +1405,44 @@ function getHomeGames(){return getActiveGames();}
 function setHomeDataMode(mode){homeDataMode=mode==='ian'?'ian':'me';document.getElementById('homeMineBtn')?.classList.toggle('active',homeDataMode==='me');document.getElementById('homeIanBtn')?.classList.toggle('active',homeDataMode==='ian');syncAverageDisplays();syncGameSummaries();renderRecent();renderChart();renderSessionMetrics();renderPersonalStats();}
 
 let profile=LaneLabProfile.load(getGameStorage());
+let onboardingStep=1;
+function showOnboardingStep(step){
+  onboardingStep=step;
+  document.querySelectorAll('.onboardingStep').forEach(el=>el.classList.toggle('active',Number(el.dataset.step)===step));
+  document.getElementById('onboardingModal')?.classList.add('show');
+}
+function onboardingNext(){showOnboardingStep(2)}
+function onboardingBack(){showOnboardingStep(Math.max(1,onboardingStep-1))}
+function onboardingProfileNext(){
+  const name=document.getElementById('onboardingName')?.value.trim();
+  if(!name){document.getElementById('onboardingName')?.focus();toast('Enter your name to continue');return}
+  showOnboardingStep(3);
+}
+function onboardingSkipToReady(){showOnboardingStep(4)}
+function onboardingFinish(startScore=false){
+  const name=document.getElementById('onboardingName')?.value.trim() || profile.name;
+  const hand=document.getElementById('onboardingHand')?.value || profile.hand;
+  const style=document.getElementById('onboardingStyle')?.value || profile.style;
+  profile=LaneLabProfile.save(getGameStorage(),{...profile,name,hand,style});
+  try{getGameStorage()?.setItem('laneLabOnboardingComplete','true')}catch(e){}
+  document.getElementById('onboardingModal')?.classList.remove('show');
+  renderProfile(); syncAverageDisplays();
+  if(startScore) go('score'); else go('home');
+}
+function replayOnboarding(){
+  document.getElementById('onboardingName').value=profile.name==='Anthony'?'':profile.name;
+  document.getElementById('onboardingHand').value=profile.hand;
+  document.getElementById('onboardingStyle').value=profile.style==='Spinner'?'':profile.style;
+  showOnboardingStep(1);
+}
+function maybeStartOnboarding(){
+  let complete=false;
+  try{complete=getGameStorage()?.getItem('laneLabOnboardingComplete')==='true'}catch(e){}
+  if(!hasExistingProfile && !savedGames.length && !complete){
+    document.getElementById('onboardingName').value='';
+    showOnboardingStep(1);
+  }
+}
 let historyRange='all';
 let homeAverageMode='last10';
 let homeAverageHoldTimer=null;
@@ -2561,6 +2635,7 @@ const gameDateInput=document.getElementById('gameDate');
 if(gameDateInput) gameDateInput.value=localDateInputValue();
 renderAll();renderChart();renderRecent();renderGameBreakdown();renderProfile();renderSessionMetrics();
 syncAverageDisplays();syncGameSummaries();renderPersonalStats();renderArsenal();
+maybeStartOnboarding();
 </script>
 </body>
 </html>
