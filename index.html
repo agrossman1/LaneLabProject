@@ -2291,13 +2291,17 @@ function renderChart(){
   box.innerHTML=vals.length ? vals.map((v,i)=>{
     const h=Math.max(8, ((v-min)/(max-min))*112);
     const label=isScores ? i+1 : formatChartDate(chartGames[i]?.date);
-    const sessionAttrs=isScores ? '' : ` role="button" tabindex="0" aria-label="Session ${formatChartDate(chartGames[i]?.date)} average ${Math.round(v)}" onclick="showSessionMetrics('${chartGames[i]?.date||''}')" onkeydown="if(event.key==='Enter'||event.key===' ')showSessionMetrics('${chartGames[i]?.date||''}')"`;
+    const sessionAttrs=isScores ? '' : ' role="button" tabindex="0" data-session-date="'+(chartGames[i]?.date||'')+'" aria-label="Session average '+Math.round(v)+'"';
     return `<div class="chartCol${isScores?'':' sessionBar'}"${sessionAttrs}>
       <div class="chartValue">${v}</div>
       <div class="chartBar" style="height:${h}px"></div>
       <div>${label}</div>
     </div>`;
   }).join('') : '<div class="muted small" style="padding:16px">No games recorded yet.</div>';
+  if(!isScores) box.querySelectorAll('.sessionBar').forEach(bar=>{
+    bar.addEventListener('click',()=>showSessionMetrics(bar.dataset.sessionDate));
+    bar.addEventListener('keydown',event=>{if(event.key==='Enter'||event.key===' '){event.preventDefault();showSessionMetrics(bar.dataset.sessionDate)}});
+  });
 }
 
 function renderGameBreakdown(){
