@@ -1097,11 +1097,21 @@ body.light-mode .ballMatchPreview img{
     <input id="profilePhotoCamera" type="file" accept="image/*" capture="user" hidden onchange="handleProfilePhotoUpload(event)">
     <input id="profilePhotoInput" type="file" accept="image/*" hidden onchange="handleProfilePhotoUpload(event)">
     <div class="avatarActions">
-      <button class="cta secondary" type="button" onclick="document.getElementById('profilePhotoCamera').click()">Take a photo</button>
-      <button class="profileBack" type="button" onclick="document.getElementById('profilePhotoInput').click()">Choose from camera roll</button>
+      <button class="cta secondary" type="button" onclick="openPhotoSourcePicker()">Upload from device</button>
       <button class="profileBack" type="button" onclick="clearProfilePhoto()">Use initials</button>
     </div>
     <div class="avatarPicker" id="avatarPicker" aria-label="Choose an avatar"></div>
+  </div>
+</div>
+
+<div class="modal" id="photoSourceModal" onclick="if(event.target===this) closePhotoSourcePicker()">
+  <div class="sheet avatarSheet" role="dialog" aria-modal="true" aria-labelledby="photoSourceTitle">
+    <div class="row"><h2 id="photoSourceTitle" style="margin:0">Upload from device</h2><button class="key" style="padding:8px 12px" onclick="closePhotoSourcePicker()" aria-label="Close upload source picker">✕</button></div>
+    <p class="small" style="margin:8px 0 0">Choose where you want to get your profile photo.</p>
+    <div class="avatarActions">
+      <button class="cta secondary" type="button" onclick="chooseProfilePhotoSource('camera')">Take a photo</button>
+      <button class="profileBack" type="button" onclick="chooseProfilePhotoSource('roll')">Choose from camera roll</button>
+    </div>
   </div>
 </div>
 
@@ -1446,6 +1456,13 @@ function openAvatarPicker(){
   document.getElementById('avatarModal')?.classList.add('show');
 }
 function closeAvatarPicker(){document.getElementById('avatarModal')?.classList.remove('show')}
+function openPhotoSourcePicker(){document.getElementById('photoSourceModal')?.classList.add('show')}
+function closePhotoSourcePicker(){document.getElementById('photoSourceModal')?.classList.remove('show')}
+function chooseProfilePhotoSource(source){
+  closePhotoSourcePicker();
+  const input=document.getElementById(source==='camera'?'profilePhotoCamera':'profilePhotoInput');
+  if(input) input.click();
+}
 
 function renderProfile(){
   const initials=LaneLabProfile.initials(profile.name);
