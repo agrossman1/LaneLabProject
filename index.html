@@ -363,6 +363,17 @@ select,input{
 }
 .chartArea{
   position:relative;
+  overflow:hidden;
+  overscroll-behavior-x:contain;
+}
+.chartArea .chart{
+  width:100%;
+  min-width:0;
+  overflow-x:auto;
+  overscroll-behavior-x:contain;
+  -webkit-overflow-scrolling:touch;
+  touch-action:pan-x;
+  padding-right:10px;
 }
 .chartValue{
   font-size:10px;
@@ -376,6 +387,7 @@ select,input{
   display:flex;
   flex-direction:column;
   justify-content:flex-end;
+  flex:0 0 46px;
 }
 
 
@@ -1817,6 +1829,13 @@ function runningAverages(values){
   });
 }
 
+function formatChartDate(value){
+  if(!value) return '—';
+  const date=new Date(value);
+  if(Number.isNaN(date.getTime())) return '—';
+  return new Intl.DateTimeFormat(undefined,{month:'short',day:'numeric'}).format(date);
+}
+
 function setTrendView(view){
   trendView=view;
   document.getElementById('scoreViewBtn').classList.toggle('active',view==='scores');
@@ -1846,10 +1865,11 @@ function renderChart(){
   const box=document.getElementById('avgChart');
   box.innerHTML=vals.length ? vals.map((v,i)=>{
     const h=Math.max(8, ((v-min)/(max-min))*112);
+    const label=isScores ? i+1 : formatChartDate(state.games[i]?.date);
     return `<div class="chartCol">
       <div class="chartValue">${v}</div>
       <div class="chartBar" style="height:${h}px"></div>
-      <div>${i+1}</div>
+      <div>${label}</div>
     </div>`;
   }).join('') : '<div class="muted small" style="padding:16px">No games recorded yet.</div>';
 }
