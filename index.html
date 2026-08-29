@@ -1645,7 +1645,7 @@ const MEDAL_DEFINITIONS=[
   {id:'turkey',name:'Turkey',description:'String three strikes in a row.',image:'turkey_bowling_achievement_badge.png',streak:3},
   {id:'hambone',name:'Hambone',description:'String four strikes in a row.',image:'hambone_bowling_champion_badge.png',streak:4},
   {id:'sixpack',name:'Six-Pack',description:'String six strikes in a row.',image:'glossy_six_pack_bowling_medal_badge.png',streak:6},
-  {id:'highfive',name:'High Five',description:'Celebrate five consecutive strikes.',icon:'🖐️',streak:5},
+  {id:'highfive',name:'High Five',description:'Celebrate five consecutive strikes.',streak:5},
   {id:'wildturkey',name:'Wild Turkey',description:'String nine strikes in a row.',image:'wild_turkey_bowling_championship_badge.png',streak:9}
 ];
 function strikeStreak(game){
@@ -1663,13 +1663,13 @@ function renderMedals(){
   document.getElementById('medalCount').textContent=`${unlocked} / ${MEDAL_DEFINITIONS.length}`;
   document.getElementById('medalGrid').innerHTML=results.map(({def,game})=>{
     const earned=Boolean(game);
-    const icon=earned?(def.image?`<img src="./assets/medals/${def.image}" alt="${escapeHtml(def.name)} medal" onerror="this.remove();this.parentElement.textContent='🏅'">`:def.icon):'🔒';
+    const icon=earned?(def.image?`<img src="./assets/medals/${def.image}" alt="${escapeHtml(def.name)} medal">`:'—'):'🔒';
     return `<button type="button" class="medal ${earned?'unlocked':'locked'}" onclick="openMedalDetail('${def.id}')"><div class="medalIcon">${icon}</div><div><b>${def.name}</b><small>${earned?`Earned ${formatGameDate(game.date)}`:'Tap for requirements'}</small></div></button>`;
   }).join('');
 }
 function openMedalDetail(id){
   const def=MEDAL_DEFINITIONS.find(item=>item.id===id); if(!def) return;
-  const game=achievedMedal(def); const icon=def.image?`<img src="./assets/medals/${def.image}" alt="${escapeHtml(def.name)} medal" style="width:110px;height:110px;object-fit:contain;display:block;margin:0 auto 12px" onerror="this.remove();this.parentElement.insertAdjacentText('afterbegin','🏅')">`:`<div style="font-size:62px;text-align:center;margin-bottom:12px">${def.icon||'🔒'}</div>`;
+  const game=achievedMedal(def); const icon=def.image?`<img src="./assets/medals/${def.image}" alt="${escapeHtml(def.name)} medal" style="width:110px;height:110px;object-fit:contain;display:block;margin:0 auto 12px">`:`<div class="muted center" style="margin:18px 0">Artwork not added yet</div>`;
   document.getElementById('medalDetailTitle').textContent=def.name;
   document.getElementById('medalDetailContent').innerHTML=`${icon}<p>${escapeHtml(def.description)}</p><div class="listItem row"><span>${game?'Achieved on':'Status'}</span><b>${game?formatGameDate(game.date):'Not yet unlocked'}</b></div>${game?`<div class="listItem row" style="margin-top:8px"><span>Game score</span><b>${game.score}</b></div>`:''}`;
   document.getElementById('medalDetailModal').classList.add('show');
