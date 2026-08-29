@@ -27,7 +27,10 @@ body{
   color:var(--text);
   min-height:100vh;
 }
-button,input,select{font:inherit}
+button,input,select{
+  font:inherit;
+  touch-action:manipulation;
+}
 button{cursor:pointer}
 .app{
   width:min(100%,430px);
