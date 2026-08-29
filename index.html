@@ -1830,6 +1830,7 @@ function rollDisplay(frameIndex, rollIndex){
   const r=state.frames[frameIndex].rolls;
   const val=r[rollIndex];
   if(val===undefined) return '';
+  if(val===0) return '-';
   if(val===10) return 'X';
   if(rollIndex>0){
     if(frameIndex<9 && r[0]!==10 && r[0]+val===10) return '/';
@@ -1880,7 +1881,7 @@ function renderKeypad(){
   for(let n=0;n<=9;n++){
     const b=document.createElement('button');
     b.className='key';
-    b.textContent=n;
+    b.textContent=n===0?'-':n;
     b.disabled=n>max;
     b.onclick=()=>recordRoll(n);
     pad.appendChild(b);
