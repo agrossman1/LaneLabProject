@@ -924,37 +924,31 @@ body.light-mode .ballMatchPreview img{
 
     <section class="screen" id="coach">
       <div class="eyebrow">Coach</div>
-      <h1>Turn stats into practice.</h1>
+      <h1>What should I work on next?</h1>
 
       <div class="card coach">
-        <div class="muted small">Improvement score</div>
-        <div class="coachScore" id="coachScore" role="button" tabindex="0" onclick="showImprovementExplanation()" onkeydown="if(event.key==='Enter'||event.key===' ')showImprovementExplanation()" title="Tap to learn how this score is calculated">—</div>
-        <p id="coachSummary">Add completed games to generate coaching guidance from your scores.</p>
-      </div>
-
-      <div class="card">
-        <div class="row"><h2>Today’s focus</h2><span class="pill" id="coachFocusTime">—</span></div>
-        <div class="practice">
-          <div class="practiceCard"><div class="muted small" id="coachDrillOneLabel">Spare practice</div><b id="coachDrillOneValue">—</b><div class="tagWarn small" id="coachDrillOneTag">Priority</div></div>
-          <div class="practiceCard"><div class="muted small" id="coachDrillTwoLabel">Strike practice</div><b id="coachDrillTwoValue">—</b><div class="muted small" id="coachDrillTwoTag">Based on history</div></div>
-          <div class="practiceCard"><div class="muted small" id="coachDrillThreeLabel">Open-frame control</div><b id="coachDrillThreeValue">—</b><div class="tagGood small" id="coachDrillThreeTag">Trend</div></div>
-        </div>
+        <div class="eyebrow">Biggest opportunity</div>
+        <h2 id="coachFocusTitle">Collect another session</h2>
+        <div class="coachScore" id="coachMetricValue">—</div>
+        <div class="muted small" id="coachMetricLabel">Latest session</div>
+        <div class="tagWarn small" id="coachMetricTrend">—</div>
+        <p id="coachSummary">Complete a bowling session to get a personalized recommendation.</p>
+        <div class="muted small" id="coachOpportunity"></div>
       </div>
 
       <div class="card">
         <h2>Why this?</h2>
-        <div class="insight">
-          <strong id="coachWhyTitle">Waiting for game data</strong>
-          <div class="muted small" id="coachWhyText">Finish a game to see calculated coaching opportunities.</div>
-        </div>
+        <div class="insight"><div id="coachWhyText">Complete a session to unlock coaching guidance.</div></div>
       </div>
 
       <div class="card">
-        <h2>Hand comparison</h2>
-        <div class="list">
-          <div class="listItem row"><span>Right-hand average</span><b id="coachRightAverage">—</b></div>
-          <div class="listItem row"><span>Left-hand average</span><b id="coachLeftAverage">—</b></div>
-        </div>
+        <div class="row"><h2>Today’s practice</h2><span class="pill" id="coachFocusTime">—</span></div>
+        <div class="practiceCard"><b id="coachDrillTitle">—</b><div id="coachDrillValue">—</div><div class="tagGood small" id="coachDrillGoal">—</div></div>
+      </div>
+
+      <div class="card">
+        <h2>What improved</h2>
+        <div class="list" id="coachImproved"><div class="muted small">Complete another session to unlock trend coaching.</div></div>
       </div>
     </section>
 
@@ -1401,39 +1395,23 @@ function syncAverageDisplays(){
   renderCoach();
 }
 
+function generateCoachRecommendation(current,previous){
+  const pinLeaves=current.leaves||[];
+  const single= current.singlePct!==null ? current.singlePct : null;
+  if(current.openPerGame!==null && current.openPerGame>=3) return {title:'Close more open frames',label:'Open frames',value:current.openPerGame.toFixed(1)+'/game',trend:previous?.openPerGame!==null&&previous?.openPerGame!==undefined?current.openPerGame-previous.openPerGame:null,explanation:`You averaged ${current.openPerGame.toFixed(1)} open frames per game in your latest session. Closing just one more frame is a clear way to raise your average.`,drillTitle:'Open-frame reduction',drillValue:'Play 1 practice game focused on spares',drillGoal:`Goal: ${Math.max(0,Math.ceil(current.openPerGame-1)).toFixed(0)} or fewer open frames`,opportunity:'Potential improvement: ~5–10 pins/game',lower:true};
+  if(single!==null && single<80) return {title:'Improve single-pin spares',label:'Single-pin spare conversion',value:Math.round(single)+'%',trend:previous?.singlePct!==null&&previous?.singlePct!==undefined?single-previous.singlePct:null,explanation:`You converted ${current.singleMakes} of ${current.singleAttempts} tracked single-pin spare attempts. This is your clearest recoverable opportunity.`,drillTitle:'Single-pin spare drill',drillValue:'20 attempts',drillGoal:'Goal: 16 / 20',opportunity:'Potential improvement: ~5–10 pins/game'};
+  if(pinLeaves.length){const leave=pinLeaves[0]; return {title:'Convert your most common leave',label:'Top tracked leave',value:leave.pins.join('-'),trend:null,explanation:`The ${leave.pins.join('-')} leave appeared ${leave.attempts} times in your tracked history. Build a repeatable spare routine for it.`,drillTitle:'Leave conversion drill',drillValue:`Shoot ${Math.max(10,leave.attempts*2)} attempts`,drillGoal:`Goal: ${Math.ceil(Math.max(10,leave.attempts*2)*.7)} makes`,opportunity:'Potential improvement: a few pins/game'};}
+  return {title:'Create more strike opportunities',label:'Spare rate',value:current.spareRate===null?'—':Math.round(current.spareRate)+'%',trend:previous?.spareRate!==null&&previous?.spareRate!==undefined?current.spareRate-previous.spareRate:null,explanation:'Your tracked spare rate is the best available guide when pin-level leaves are not recorded. More conversions create more chances for higher scores.',drillTitle:'Spare conversion drill',drillValue:'Play 1 practice game focused on first-ball accuracy',drillGoal:'Goal: convert at least 7 spares',opportunity:'Potential improvement: ~5 pins/game'};
+}
 function renderCoach(){
-  const games=state.games.filter(game=>Number.isFinite(Number(game.score)));
-  const scores=games.map(game=>Number(game.score));
-  const average=scores.length ? Math.round(scores.reduce((sum,score)=>sum+score,0)/scores.length) : null;
-  const goal=Number(profile?.goalAverage)||180;
-  const frames=games.flatMap(game=>Array.isArray(game.frames)?game.frames.slice(0,10):[]).map(frame=>String(frame).trim());
-  const opens=frames.filter(frame=>frame && !frame.startsWith('X') && !frame.includes('/')).length;
-  const openPerGame=games.length?opens/games.length:0;
-  const openPct=frames.length?Math.round(opens/frames.length*100):0;
-  const averageMetric=(key)=>{const values=games.map(game=>Number(game[key])).filter(Number.isFinite);return values.length?Math.round(values.reduce((sum,value)=>sum+value,0)/values.length):0};
-  const strikePct=averageMetric('strikeRate');
-  const sparePct=averageMetric('spareRate');
-  const scoreEl=document.getElementById('coachScore');
-  const midpoint=Math.max(1,Math.floor(scores.length/2));
-  const earlier=scores.slice(0,midpoint);
-  const recent=scores.slice(-midpoint);
-  const trend=earlier.length&&recent.length ? (recent.reduce((a,b)=>a+b,0)/recent.length)-(earlier.reduce((a,b)=>a+b,0)/earlier.length) : 0;
-  const improvementScore=average===null?null:Math.max(0,Math.min(100,Math.round(50+trend*2)));
-  if(scoreEl) scoreEl.textContent=improvementScore===null?'—':improvementScore;
-  const summary=document.getElementById('coachSummary');
-  if(summary) summary.textContent=average===null?'Add completed games to generate coaching guidance from your scores':`Your ${average} average is ${Math.abs(goal-average)} pins ${average>=goal?'above':'below'} your ${goal} goal. Focus on the lowest calculated part of your game below.`;
-  const focus=document.getElementById('coachFocusTime'); if(focus) focus.textContent=games.length?`${Math.max(10,Math.min(30,10+games.length*2))} min`:'—';
-  const drills=[
-    ['Strike rate',`${strikePct}%`,strikePct<30?'Priority':'Based on history'],
-    ['Spare rate',`${sparePct}%`,sparePct<20?'Priority':'Based on history'],
-    ['Open frames',`${openPerGame.toFixed(1)}/game`,openPct>45?'Priority':'Trend']
-  ];
-  [['coachDrillOneLabel','coachDrillOneValue','coachDrillOneTag'],['coachDrillTwoLabel','coachDrillTwoValue','coachDrillTwoTag'],['coachDrillThreeLabel','coachDrillThreeValue','coachDrillThreeTag']].forEach((ids,index)=>{const d=drills[index]; ids.forEach((id,part)=>{const el=document.getElementById(id); if(el) el.textContent=d[part]});});
-  const worst=sparePct<strikePct&&sparePct<=openPct?['Spare rate',sparePct]:openPct>strikePct&&openPct>sparePct?['Open frames',openPct]:['Strike rate',strikePct];
-  const whyTitle=document.getElementById('coachWhyTitle'); if(whyTitle) whyTitle.textContent=average===null?'Waiting for game data':`${worst[0]}: ${worst[1]}% of tracked frames`;
-  const whyText=document.getElementById('coachWhyText'); if(whyText) whyText.textContent=average===null?'Finish a game to see calculated coaching opportunities':`This focus is calculated from ${games.length} recorded game${games.length===1?'':'s'} and updates whenever you save another score.`;
-  const handAverages={Right:[],Left:[]}; games.forEach(game=>{if(handAverages[game.hand]) handAverages[game.hand].push(Number(game.score));});
-  ['Right','Left'].forEach(hand=>{const values=handAverages[hand]; const el=document.getElementById(`coach${hand}Average`); if(el) el.textContent=values.length?`${Math.round(values.reduce((a,b)=>a+b,0)/values.length)} avg`:'No games';});
+  const sessions=LaneLabStats.groupSessions(state.games), current=LaneLabStats.summarizeGames(sessions.at(-1)?.games||[]), previous=sessions.length>1?LaneLabStats.summarizeGames(sessions.at(-2).games):null;
+  const rec=generateCoachRecommendation(current,previous);
+  const set=(id,value)=>{const el=document.getElementById(id);if(el)el.textContent=value};
+  set('coachFocusTitle',sessions.length?rec.title:'Collect another session'); set('coachMetricValue',sessions.length?rec.value:'—'); set('coachMetricLabel',sessions.length?rec.label:'Latest session');
+  const delta=rec.trend; set('coachMetricTrend',delta===null||delta===undefined?'No previous session':`${delta>0?'▲':'▼'} ${delta>0?'+':''}${Math.round(Math.abs(delta)*10)/10}${rec.lower?' /game':' pp'}${rec.lower?(delta<0?' · good':''):((delta>0)?' · good':'')}`);
+  set('coachSummary',sessions.length?rec.explanation:'Complete a bowling session to get a personalized recommendation.'); set('coachOpportunity',sessions.length?rec.opportunity:''); set('coachFocusTime',sessions.length?'15–20 min':'—'); set('coachWhyText',sessions.length?rec.explanation:'Complete another session to unlock trend coaching.'); set('coachDrillTitle',sessions.length?rec.drillTitle:'—'); set('coachDrillValue',sessions.length?rec.drillValue:'—'); set('coachDrillGoal',sessions.length?rec.drillGoal:'—');
+  const improved=[]; if(previous){[['Average score',current.average,previous.average,'pins',false],['Strike rate',current.strikeRate,previous.strikeRate,'pp',false],['Open frames',current.openPerGame,previous.openPerGame,'/game',true]].forEach(([label,a,b,unit,lower])=>{if(a!==null&&b!==null){const d=a-b;if((lower&&d<0)||(!lower&&d>0)) improved.push(`<div class="listItem row"><span>${label}</span><b>${d>0?'▲':'▼'} ${Math.abs(Math.round(d*10)/10)} ${unit}</b></div>`);}})}
+  const improvedEl=document.getElementById('coachImproved'); if(improvedEl) improvedEl.innerHTML=improved.length?improved.join(''):`<div class="muted small">${previous?'No clear improvement trend yet.':'Complete another session to unlock trend coaching.'}</div>`;
 }
 
 function showImprovementExplanation(){
