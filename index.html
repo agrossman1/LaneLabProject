@@ -2201,7 +2201,8 @@ function saveGame(){
 
 function renderRecent(){
   const box=document.getElementById('recentGames');
-  box.innerHTML=state.recent.slice(0,3).map((s,i)=>`<div class="listItem row"><span>Game ${i+1}</span><b>${s}</b></div>`).join('');
+  const firstGameNumber=Math.max(1,state.games.length);
+  box.innerHTML=state.recent.slice(0,3).map((s,i)=>`<div class="listItem row"><span>Game ${firstGameNumber-i}</span><b>${s}</b></div>`).join('');
 }
 
 let trendView='scores';
