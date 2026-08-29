@@ -25,6 +25,17 @@
     return Boolean(token) && !token.startsWith('X') && !token.includes('/');
   }
 
+  function frameHasSpareOpportunity(frame) {
+    const token = String(frame || '').replace(/\s+/g, '').trim();
+    if (!token) return false;
+    // A regular frame (including an open frame or spare) creates one chance
+    // whenever its first ball is not a strike and a second ball is recorded.
+    if (!token.startsWith('X')) return token.length >= 2;
+    // In the 10th, a strike starts a fresh rack. X9/ therefore contains a
+    // spare opportunity on the second rack; XX9 does not.
+    return token.length >= 3 && token[1] !== 'X';
+  }
+
   function groupSessions(games) {
     const groups = new Map();
     (Array.isArray(games) ? games : []).forEach(game => {
@@ -43,10 +54,7 @@
     const spares = list.reduce((sum, game) => sum + (game.frames || []).filter(frame => String(frame).includes('/')).length, 0);
     // A spare rate is conversion rate: count only frames where a spare was possible.
     // Strike frames do not create a spare opportunity and must not dilute the result.
-    const spareChances = list.reduce((sum, game) => sum + (game.frames || []).filter(frame => {
-      const token = String(frame || '').trim();
-      return token && !token.startsWith('X') && token.length >= 2;
-    }).length, 0);
+    const spareChances = list.reduce((sum, game) => sum + (game.frames || []).filter(frameHasSpareOpportunity).length, 0);
     const pinLeaves = [];
     list.forEach(game => (Array.isArray(game.pinData) ? game.pinData : []).forEach(frame => {
       const pins = Array.isArray(frame?.pinsLeftAfterFirst) ? frame.pinsLeftAfterFirst.map(Number).filter(pin => pin >= 1 && pin <= 10).sort((a, b) => a - b) : null;
