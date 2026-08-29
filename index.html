@@ -274,6 +274,8 @@ select,input{
   letter-spacing:-.04em;
 }
 #profileGoal{font-size:26px;font-weight:900;letter-spacing:-.04em;line-height:1.1}
+.goalAverageField input{margin-top:2px;min-height:44px;padding:7px 10px;border:1px solid var(--line);border-radius:10px}
+.avatarSheet{padding-bottom:22px}
 .historyFilters{
   display:grid;
   grid-template-columns:repeat(3,1fr);
@@ -982,21 +984,10 @@ body.light-mode .ballMatchPreview img{
           <div><div class="muted small" style="font-weight:700">Current average</div>
             <div id="profileAverage" class="calculatedAverage" aria-live="polite" title="Calculated from your last 10 games">164</div>
           </div>
-          <label>Goal average
+          <label class="goalAverageField">Goal average
             <input id="profileGoal" type="number" value="180" min="0" max="300" onchange="profileSaved()">
           </label>
         </div>
-      </div>
-
-      <div class="card" id="profilePhotoCard">
-        <h2>Profile photo</h2>
-        <div class="muted small">Choose an avatar or upload a photo from your device.</div>
-        <input id="profilePhotoInput" type="file" accept="image/*" capture="user" hidden onchange="handleProfilePhotoUpload(event)">
-        <div class="avatarActions">
-          <button class="cta secondary" type="button" onclick="document.getElementById('profilePhotoInput').click()">Upload from device</button>
-          <button class="profileBack" type="button" onclick="clearProfilePhoto()">Use initials</button>
-        </div>
-        <div class="avatarPicker" id="avatarPicker" aria-label="Choose an avatar"></div>
       </div>
 
       <div class="card">
@@ -1097,6 +1088,19 @@ body.light-mode .ballMatchPreview img{
     <button data-target="arsenal" onclick="go('arsenal')"><span>🎳</span>Arsenal</button>
     <button data-target="coach" onclick="go('coach')"><span>✦</span>Coach</button>
   </nav>
+</div>
+
+<div class="modal" id="avatarModal" onclick="if(event.target===this) closeAvatarPicker()">
+  <div class="sheet avatarSheet" role="dialog" aria-modal="true" aria-labelledby="avatarModalTitle">
+    <div class="row"><h2 id="avatarModalTitle" style="margin:0">Profile photo</h2><button class="key" style="padding:8px 12px" onclick="closeAvatarPicker()" aria-label="Close profile photo picker">✕</button></div>
+    <p class="small" style="margin:8px 0 0">Choose an avatar or upload a photo from your device.</p>
+    <input id="profilePhotoInput" type="file" accept="image/*" capture="user" hidden onchange="handleProfilePhotoUpload(event)">
+    <div class="avatarActions">
+      <button class="cta secondary" type="button" onclick="document.getElementById('profilePhotoInput').click()">Upload from device</button>
+      <button class="profileBack" type="button" onclick="clearProfilePhoto()">Use initials</button>
+    </div>
+    <div class="avatarPicker" id="avatarPicker" aria-label="Choose an avatar"></div>
+  </div>
 </div>
 
 <div class="modal" id="ballModal" onclick="if(event.target===this) closeBallModal()">
@@ -1413,11 +1417,13 @@ function selectProfileAvatar(index){
   if(!avatar) return;
   profile=LaneLabProfile.save(getGameStorage(),{...profile,photo:avatar.src});
   renderProfile();
+  closeAvatarPicker();
   toast('Profile photo updated');
 }
 function clearProfilePhoto(){
   profile=LaneLabProfile.save(getGameStorage(),{...profile,photo:''});
   renderProfile();
+  closeAvatarPicker();
   toast('Using initials');
 }
 function handleProfilePhotoUpload(event){
@@ -1427,15 +1433,17 @@ function handleProfilePhotoUpload(event){
   reader.onload=()=>{
     profile=LaneLabProfile.save(getGameStorage(),{...profile,photo:String(reader.result||'')});
     renderProfile();
+    closeAvatarPicker();
     toast('Profile photo uploaded');
   };
   reader.readAsDataURL(file);
   event.target.value='';
 }
 function openAvatarPicker(){
-  const card=document.getElementById('profilePhotoCard');
-  if(card) card.scrollIntoView({behavior:'smooth',block:'center'});
+  renderAvatarPicker();
+  document.getElementById('avatarModal')?.classList.add('show');
 }
+function closeAvatarPicker(){document.getElementById('avatarModal')?.classList.remove('show')}
 
 function renderProfile(){
   const initials=LaneLabProfile.initials(profile.name);
