@@ -694,7 +694,7 @@ body.light-mode .ballMatchPreview img{
       </div>
 
       <div class="card">
-        <div class="row"><h2>Recent games</h2><span class="muted small">Practice</span></div>
+        <div class="row"><h2>Recent Games (Last 3 games)</h2></div>
         <div class="list" id="recentGames"></div>
       </div>
     </section>
@@ -723,10 +723,6 @@ body.light-mode .ballMatchPreview img{
         <button class="importBtn" onclick="startPhotoImport()">
           <span>📷</span>
           Import Scoreboard Photo
-        </button>
-        <button class="importBtn" onclick="toast('Manual scoring is active below')">
-          <span>⌨</span>
-          Enter Manually
         </button>
       </div>
 
@@ -916,32 +912,32 @@ body.light-mode .ballMatchPreview img{
 
       <div class="card coach">
         <div class="muted small">Improvement score</div>
-        <div class="coachScore">76</div>
-        <p>You’re trending up. Spare shooting is currently the fastest path to a higher average.</p>
+        <div class="coachScore" id="coachScore">—</div>
+        <p id="coachSummary">Add completed games to generate coaching guidance from your scores.</p>
       </div>
 
       <div class="card">
-        <div class="row"><h2>Today’s focus</h2><span class="pill">25 min</span></div>
+        <div class="row"><h2>Today’s focus</h2><span class="pill" id="coachFocusTime">—</span></div>
         <div class="practice">
-          <div class="practiceCard"><div class="muted small">10 pin</div><b>20×</b><div class="tagWarn small">Priority</div></div>
-          <div class="practiceCard"><div class="muted small">7 pin</div><b>10×</b><div class="muted small">Maintain</div></div>
-          <div class="practiceCard"><div class="muted small">Pocket</div><b>10×</b><div class="tagGood small">Good trend</div></div>
+          <div class="practiceCard"><div class="muted small" id="coachDrillOneLabel">Spare practice</div><b id="coachDrillOneValue">—</b><div class="tagWarn small" id="coachDrillOneTag">Priority</div></div>
+          <div class="practiceCard"><div class="muted small" id="coachDrillTwoLabel">Strike practice</div><b id="coachDrillTwoValue">—</b><div class="muted small" id="coachDrillTwoTag">Based on history</div></div>
+          <div class="practiceCard"><div class="muted small" id="coachDrillThreeLabel">Open-frame control</div><b id="coachDrillThreeValue">—</b><div class="tagGood small" id="coachDrillThreeTag">Trend</div></div>
         </div>
       </div>
 
       <div class="card">
         <h2>Why this?</h2>
         <div class="insight">
-          <strong>10-pin conversion: 47%</strong>
-          <div class="muted small">This is your most frequent single-pin miss in the demo dataset. Improving it to 70% could recover several pins per game.</div>
+          <strong id="coachWhyTitle">Waiting for game data</strong>
+          <div class="muted small" id="coachWhyText">Finish a game to see calculated coaching opportunities.</div>
         </div>
       </div>
 
       <div class="card">
         <h2>Hand comparison</h2>
         <div class="list">
-          <div class="listItem row"><span>Right-hand average</span><b>168</b></div>
-          <div class="listItem row"><span>Left-hand average</span><b>157</b></div>
+          <div class="listItem row"><span>Right-hand average</span><b id="coachRightAverage">—</b></div>
+          <div class="listItem row"><span>Left-hand average</span><b id="coachLeftAverage">—</b></div>
         </div>
       </div>
     </section>
@@ -1379,6 +1375,38 @@ function syncAverageDisplays(){
   const spareRate=document.getElementById('spareRate');
   if(strikeRate) strikeRate.textContent=metricAverage('strikeRate');
   if(spareRate) spareRate.textContent=metricAverage('spareRate');
+  renderCoach();
+}
+
+function renderCoach(){
+  const games=state.games.filter(game=>Number.isFinite(Number(game.score)));
+  const scores=games.map(game=>Number(game.score));
+  const average=scores.length ? Math.round(scores.reduce((sum,score)=>sum+score,0)/scores.length) : null;
+  const goal=Number(profile?.goalAverage)||180;
+  const frames=games.flatMap(game=>Array.isArray(game.frames)?game.frames:[]).map(frame=>String(frame).trim());
+  const strikes=frames.filter(frame=>frame.startsWith('X')).length;
+  const spares=frames.filter(frame=>frame.includes('/')).length;
+  const opens=frames.filter(frame=>frame && !frame.startsWith('X') && !frame.includes('/')).length;
+  const totalFrames=frames.length||1;
+  const strikePct=Math.round(strikes/totalFrames*100);
+  const sparePct=Math.round(spares/totalFrames*100);
+  const openPct=Math.round(opens/totalFrames*100);
+  const scoreEl=document.getElementById('coachScore');
+  if(scoreEl) scoreEl.textContent=average===null?'—':Math.max(0,Math.min(100,Math.round(average/goal*100)));
+  const summary=document.getElementById('coachSummary');
+  if(summary) summary.textContent=average===null?'Add completed games to generate coaching guidance from your scores':`Your ${average} average is ${Math.abs(goal-average)} pins ${average>=goal?'above':'below'} your ${goal} goal. Focus on the lowest calculated part of your game below.`;
+  const focus=document.getElementById('coachFocusTime'); if(focus) focus.textContent=games.length?`${Math.max(10,Math.min(30,10+games.length*2))} min`:'—';
+  const drills=[
+    ['Strike rate',`${strikePct}%`,strikePct<30?'Priority':'Based on history'],
+    ['Spare rate',`${sparePct}%`,sparePct<20?'Priority':'Based on history'],
+    ['Open frames',`${openPct}%`,openPct>45?'Priority':'Trend']
+  ];
+  [['coachDrillOneLabel','coachDrillOneValue','coachDrillOneTag'],['coachDrillTwoLabel','coachDrillTwoValue','coachDrillTwoTag'],['coachDrillThreeLabel','coachDrillThreeValue','coachDrillThreeTag']].forEach((ids,index)=>{const d=drills[index]; ids.forEach((id,part)=>{const el=document.getElementById(id); if(el) el.textContent=d[part]});});
+  const worst=sparePct<strikePct&&sparePct<=openPct?['Spare rate',sparePct]:openPct>strikePct&&openPct>sparePct?['Open frames',openPct]:['Strike rate',strikePct];
+  const whyTitle=document.getElementById('coachWhyTitle'); if(whyTitle) whyTitle.textContent=average===null?'Waiting for game data':`${worst[0]}: ${worst[1]}% of tracked frames`;
+  const whyText=document.getElementById('coachWhyText'); if(whyText) whyText.textContent=average===null?'Finish a game to see calculated coaching opportunities':`This focus is calculated from ${games.length} recorded game${games.length===1?'':'s'} and updates whenever you save another score.`;
+  const handAverages={Right:[],Left:[]}; games.forEach(game=>{if(handAverages[game.hand]) handAverages[game.hand].push(Number(game.score));});
+  ['Right','Left'].forEach(hand=>{const values=handAverages[hand]; const el=document.getElementById(`coach${hand}Average`); if(el) el.textContent=values.length?`${Math.round(values.reduce((a,b)=>a+b,0)/values.length)} avg`:'No games';});
 }
 
 function startHomeAverageHold(event){
@@ -1920,7 +1948,7 @@ function saveGame(){
 
 function renderRecent(){
   const box=document.getElementById('recentGames');
-  box.innerHTML=state.recent.slice(0,3).map((s,i)=>`<div class="listItem row"><span>Game ${3-i} · Recent</span><b>${s}</b></div>`).join('');
+  box.innerHTML=state.recent.slice(0,3).map((s,i)=>`<div class="listItem row"><span>Game ${i+1}</span><b>${s}</b></div>`).join('');
 }
 
 let trendView='scores';
