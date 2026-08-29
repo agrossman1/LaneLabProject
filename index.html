@@ -293,9 +293,6 @@ select,input{
 }
 #profileGoal{font-size:26px;font-weight:900;letter-spacing:-.04em;line-height:1.1}
 .goalAverageField input{margin-top:2px;min-height:44px;padding:7px 10px;border:1px solid var(--line);border-radius:10px}
-.staticAuditTarget{outline:2px dashed #f59e0b!important;outline-offset:3px;position:relative}
-.staticAuditTarget::after{content:'STATIC';position:absolute;top:-9px;right:6px;background:#f59e0b;color:#1f1300;font-size:9px;font-weight:800;letter-spacing:.08em;padding:2px 5px;border-radius:4px;z-index:5}
-body.staticAuditMode .staticAuditTarget{background:color-mix(in srgb,#f59e0b 8%,transparent)}
 .avatarSheet{padding-bottom:22px}
 .historyFilters{
   display:grid;
@@ -699,17 +696,7 @@ body.light-mode .ballMatchPreview img{
         <div class="stat"><small>Strike rate</small><b id="strikeRate">—</b><span class="muted small">historical</span></div>
         <div class="stat"><small>Spare rate</small><b id="spareRate">—</b><span class="muted small">historical</span></div>
         <div class="stat"><small>High game</small><b id="highGame">—</b><span class="muted small">historical</span></div>
-        <div class="stat"><small>Open frames</small><b id="openFrames">—</b><span class="muted small">historical</span></div>
-      </div>
-
-      <div class="card">
-        <div class="row"><h2>Biggest opportunity</h2><span class="pill">Coach</span></div>
-        <div class="insight">
-          <strong>Single-pin spare conversion</strong>
-          <div class="muted small">Detailed spare-conversion coaching will appear as frame data is collected.</div>
-          <div class="bar"><span style="width:0%"></span></div>
-        </div>
-        <button class="cta" onclick="go('coach')">See today’s practice →</button>
+        <div class="stat"><small>Open frames</small><b id="openFrames">—</b><span class="muted small" id="openFramesMeta">history total</span></div>
       </div>
 
       <div class="card">
@@ -878,14 +865,13 @@ body.light-mode .ballMatchPreview img{
       </div>
 
       <div class="grid">
-        <div class="stat"><small>Pocket hits</small><b>—</b><span class="muted small">frame detail unavailable</span></div>
-        <div class="stat"><small>Single pins</small><b>—</b><span class="muted small">frame detail unavailable</span></div>
+        <div class="stat"><small>Single-pin leaves</small><b id="singlePinCount">—</b><span class="muted small" id="singlePinMeta">calculated from frame history</span></div>
       </div>
 
       <div class="card">
         <h2>Common leaves</h2>
         <div class="list">
-          <div class="listItem"><div class="row"><span>Frame-level leave data</span><b>—</b></div><div class="muted small">Not available in the historical notation.</div></div>
+          <div class="listItem" id="commonLeavesStats"><div class="row"><span>Calculating…</span><b>—</b></div></div>
         </div>
       </div>
 
@@ -933,7 +919,7 @@ body.light-mode .ballMatchPreview img{
 
       <div class="card coach">
         <div class="muted small">Improvement score</div>
-        <div class="coachScore" id="coachScore">—</div>
+        <div class="coachScore" id="coachScore" role="button" tabindex="0" onclick="showImprovementExplanation()" onkeydown="if(event.key==='Enter'||event.key===' ')showImprovementExplanation()" title="Tap to learn how this score is calculated">—</div>
         <p id="coachSummary">Add completed games to generate coaching guidance from your scores.</p>
       </div>
 
@@ -1051,10 +1037,6 @@ body.light-mode .ballMatchPreview img{
         <div class="toggleRow">
           <div><b>Track exact pin leaves</b><div class="muted small">Show pin diagrams after first-ball results</div></div>
           <button class="switch on" id="pinTrackingToggle" onclick="togglePinTracking(this)" aria-label="Toggle exact pin leave tracking"></button>
-        </div>
-        <div class="toggleRow">
-          <div><b>Highlight static content</b><div class="muted small">Mark demo text, seed data, and fixed placeholders for review</div></div>
-          <button class="switch" id="staticAuditToggle" onclick="toggleStaticAudit(this)" aria-label="Toggle static content highlights"></button>
         </div>
         <div class="toggleRow">
           <div>
@@ -1422,7 +1404,12 @@ function renderCoach(){
   const strikePct=averageMetric('strikeRate');
   const sparePct=averageMetric('spareRate');
   const scoreEl=document.getElementById('coachScore');
-  if(scoreEl) scoreEl.textContent=average===null?'—':Math.max(0,Math.min(100,Math.round(average/goal*100)));
+  const midpoint=Math.max(1,Math.floor(scores.length/2));
+  const earlier=scores.slice(0,midpoint);
+  const recent=scores.slice(-midpoint);
+  const trend=earlier.length&&recent.length ? (recent.reduce((a,b)=>a+b,0)/recent.length)-(earlier.reduce((a,b)=>a+b,0)/earlier.length) : 0;
+  const improvementScore=average===null?null:Math.max(0,Math.min(100,Math.round(50+trend*2)));
+  if(scoreEl) scoreEl.textContent=improvementScore===null?'—':improvementScore;
   const summary=document.getElementById('coachSummary');
   if(summary) summary.textContent=average===null?'Add completed games to generate coaching guidance from your scores':`Your ${average} average is ${Math.abs(goal-average)} pins ${average>=goal?'above':'below'} your ${goal} goal. Focus on the lowest calculated part of your game below.`;
   const focus=document.getElementById('coachFocusTime'); if(focus) focus.textContent=games.length?`${Math.max(10,Math.min(30,10+games.length*2))} min`:'—';
@@ -1437,6 +1424,17 @@ function renderCoach(){
   const whyText=document.getElementById('coachWhyText'); if(whyText) whyText.textContent=average===null?'Finish a game to see calculated coaching opportunities':`This focus is calculated from ${games.length} recorded game${games.length===1?'':'s'} and updates whenever you save another score.`;
   const handAverages={Right:[],Left:[]}; games.forEach(game=>{if(handAverages[game.hand]) handAverages[game.hand].push(Number(game.score));});
   ['Right','Left'].forEach(hand=>{const values=handAverages[hand]; const el=document.getElementById(`coach${hand}Average`); if(el) el.textContent=values.length?`${Math.round(values.reduce((a,b)=>a+b,0)/values.length)} avg`:'No games';});
+}
+
+function showImprovementExplanation(){
+  const games=state.games.filter(game=>Number.isFinite(Number(game.score)));
+  if(!games.length){toast('Record games to calculate improvement');return;}
+  const midpoint=Math.max(1,Math.floor(games.length/2));
+  const avg=list=>Math.round(list.reduce((a,b)=>a+b,0)/list.length);
+  const earlier=games.slice(0,midpoint).map(game=>Number(game.score));
+  const recent=games.slice(-midpoint).map(game=>Number(game.score));
+  const delta=avg(recent)-avg(earlier);
+  toast(`Improvement score uses 50 baseline + 2 points per pin of trend (${delta>=0?'+':''}${delta} pins).`);
 }
 
 function startHomeAverageHold(event){
@@ -1542,18 +1540,40 @@ function renderProfile(){
   syncAverageDisplays();
 }
 
+function frameAnalysis(games){
+  const frames=games.flatMap(game=>Array.isArray(game.frames)?game.frames.slice(0,10):[]).map(frame=>String(frame).trim()).filter(Boolean);
+  const open=frames.filter(frame=>!frame.startsWith('X')&&!frame.includes('/')).length;
+  const single=frames.filter(frame=>/^9(?:[/\-]|$)/.test(frame)).length;
+  const leaves={};
+  games.forEach(game=>(Array.isArray(game.pinData)?game.pinData:[]).forEach(frame=>{
+    const pins=Array.isArray(frame?.pinsLeftAfterFirst)?frame.pinsLeftAfterFirst.slice().sort((a,b)=>a-b):[];
+    if(pins.length){const key=pins.join('-');leaves[key]=(leaves[key]||0)+1;}
+  }));
+  return {frames:frames.length,open,single,leaves};
+}
+function renderHistoryMetrics(){
+  const analysis=frameAnalysis(state.games);
+  const openFrames=document.getElementById('openFrames');
+  const openMeta=document.getElementById('openFramesMeta');
+  if(openFrames) openFrames.textContent=analysis.frames?analysis.open:'—';
+  if(openMeta) openMeta.textContent=analysis.frames?`${analysis.frames} frames tracked`:'no frame data';
+  const single=document.getElementById('singlePinCount');
+  const singleMeta=document.getElementById('singlePinMeta');
+  if(single) single.textContent=analysis.frames?analysis.single:'—';
+  if(singleMeta) singleMeta.textContent=analysis.frames?`${Math.round(analysis.single/analysis.frames*100)}% of frames`:'no frame data';
+  const leaves=document.getElementById('commonLeavesStats');
+  if(leaves){
+    const ranked=Object.entries(analysis.leaves).sort((a,b)=>b[1]-a[1]).slice(0,3);
+    leaves.innerHTML=ranked.length?ranked.map(([pins,count])=>`<div class="row"><span>${pins.split('-').length} pin${pins.split('-').length===1?'':'s'} left <small class="muted">(${pins})</small></span><b>${count}</b></div>`).join(''):'<div class="row"><span>Exact leaves</span><b>—</b></div><div class="muted small">Pin-level leave tracking will appear for games recorded with exact pin tracking.</div>';
+  }
+  return analysis;
+}
 function syncGameSummaries(){
   const scores=state.games.map(game=>game.score);
   const high=scores.length ? Math.max(...scores) : null;
   const highGame=document.getElementById('highGame');
   if(highGame) highGame.textContent=high ?? '—';
-  const openFrames=document.getElementById('openFrames');
-  if(openFrames){
-    const values=state.games.map(game=>Array.isArray(game.frames)
-      ? game.frames.filter(frame=>!String(frame).includes('/')&&!String(frame).trim().startsWith('X')).length
-      : null).filter(value=>value!==null);
-    openFrames.textContent=values.length ? (values.reduce((sum,value)=>sum+value,0)/values.length).toFixed(1) : '—';
-  }
+  renderHistoryMetrics();
 }
 
 function formatGameDate(value){
@@ -1790,32 +1810,6 @@ function togglePinTracking(el){
   try{getGameStorage()?.setItem('lanelab-pin-tracking',pinTrackingEnabled?'on':'off')}catch(e){}
   toast(pinTrackingEnabled ? 'Exact pin tracking enabled' : 'Quick numeric scoring enabled');
 }
-function applyStaticAudit(){
-  const targets=[
-    document.querySelector('#home .insight'),
-    document.querySelector('#scanResults .card'),
-    document.querySelector('#scanResults #detectedPlayers'),
-    ...Array.from(document.querySelectorAll('#arsenal [data-ball-id="ascent"],#arsenal [data-ball-id="hy-road"]')),
-    ...Array.from(document.querySelectorAll('.catalogHint')),
-    ...Array.from(document.querySelectorAll('[onclick*="coming soon"],[onclick*="not active in this demo"],[onclick*="Sample AI"]'))
-  ].filter(Boolean);
-  targets.forEach(el=>el.classList.toggle('staticAuditTarget',document.body.classList.contains('staticAuditMode')));
-}
-function initStaticAudit(){
-  let enabled=false;
-  try{enabled=getGameStorage()?.getItem('lanelab-static-audit')==='on'}catch(e){}
-  document.body.classList.toggle('staticAuditMode',enabled);
-  const toggle=document.getElementById('staticAuditToggle');
-  if(toggle) toggle.classList.toggle('on',enabled);
-  applyStaticAudit();
-}
-function toggleStaticAudit(el){
-  const enabled=el.classList.toggle('on');
-  document.body.classList.toggle('staticAuditMode',enabled);
-  try{getGameStorage()?.setItem('lanelab-static-audit',enabled?'on':'off')}catch(e){}
-  applyStaticAudit();
-  toast(enabled ? 'Static content highlighted' : 'Static highlights hidden');
-}
 function profileSaved(){
   profile=LaneLabProfile.save(getGameStorage(),{
     name:document.getElementById('profileName').value,
@@ -1833,7 +1827,6 @@ function go(id){
   document.querySelectorAll('.nav button').forEach(b=>b.classList.toggle('active',b.dataset.target===id));
   if(id==='arsenal') renderArsenal();
   if(id==='personalStats') renderPersonalStats();
-  if(id==='profile') applyStaticAudit();
   window.scrollTo({top:0,behavior:'smooth'});
 }
 
@@ -2380,7 +2373,6 @@ function renderArsenal(){
     <div class="muted small" style="margin-top:6px">${stats.games} game${stats.games===1?'':'s'} · High ${stats.high}${stats.strikeRate===null?'':` · ${stats.strikeRate}% strikes`}</div>
   </div>`).join('') : '<div class="listItem center"><b>No ball stats yet</b><div class="muted small" style="margin-top:4px">Choose a ball while scoring, then save the game.</div></div>';
   syncBallSelect();
-  applyStaticAudit();
 }
 
 function openBallDetails(id){
@@ -2502,7 +2494,7 @@ loadSavedTheme();
 preloadBallCatalogImages();
 const gameDateInput=document.getElementById('gameDate');
 if(gameDateInput) gameDateInput.value=localDateInputValue();
-renderAll();renderChart();renderRecent();renderGameBreakdown();renderProfile();initStaticAudit();
+renderAll();renderChart();renderRecent();renderGameBreakdown();renderProfile();
 syncAverageDisplays();syncGameSummaries();renderPersonalStats();renderArsenal();
 </script>
 </body>
