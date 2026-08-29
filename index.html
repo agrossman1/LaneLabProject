@@ -303,6 +303,9 @@ select,input{
 }
 .historyMetric b{font-size:16px}
 .historyMetric small{color:var(--muted);font-size:10px}
+.historyActions{display:flex;gap:8px;margin-top:10px}
+.historyActions button{flex:1;padding:8px 10px;border-radius:10px;border:1px solid var(--line);background:var(--panel2);color:var(--text);font-weight:800;font-size:12px}
+.historyActions .danger{color:var(--bad)}
 .ballListButton{
   width:100%;
   color:var(--text);
@@ -1339,7 +1342,7 @@ function renderPersonalHistory(){
   box.innerHTML=games.length ? games.map(game=>{
     const details=[game.hand,game.ball].filter(Boolean).join(' · ') || 'Details unavailable';
     const metric=(value,label)=>`<span class="historyMetric"><b>${value}</b><small>${label}</small></span>`;
-    return `<div class="listItem historyGame">
+    return `<div class="listItem historyGame" data-game-id="${escapeHtml(game.id)}" onpointerdown="startHistoryHold(event,'${escapeHtml(game.id)}')" onpointerup="cancelHistoryHold()" onpointerleave="cancelHistoryHold()" onpointercancel="cancelHistoryHold()" oncontextmenu="event.preventDefault()">
       <div class="row"><div><b>${formatGameDate(game.date)}</b><div class="muted small">${escapeHtml(details)}</div></div><b class="scoreBig">${game.score}</b></div>
       <div class="historyBreakdown">
         ${metric(game.strikeRate===null?'—':`${game.strikeRate}%`,'Strike rate')}
@@ -1347,8 +1350,49 @@ function renderPersonalHistory(){
         ${metric(game.strikes===null?'—':game.strikes,'Strikes')}
       </div>
       ${game.strikeRate===null && game.spareRate===null && game.strikes===null ? '<div class="muted small" style="margin-top:8px">Breakdown unavailable for this older score-only game.</div>' : ''}
+      <div class="historyActions" hidden>
+        <button type="button" onclick="editHistoryGame(event,'${escapeHtml(game.id)}')">Edit score</button>
+        <button type="button" class="danger" onclick="deleteHistoryGame(event,'${escapeHtml(game.id)}')">Delete game</button>
+      </div>
     </div>`;
   }).join('') : '<div class="listItem center"><b>No games in this date range</b><div class="muted small" style="margin-top:4px">Try another filter or save a new game.</div></div>';
+}
+
+let historyHoldTimer=null;
+function startHistoryHold(event,id){
+  cancelHistoryHold();
+  historyHoldTimer=setTimeout(()=>{
+    const card=document.querySelector(`[data-game-id="${CSS.escape(id)}"]`);
+    const actions=card?.querySelector('.historyActions');
+    if(actions){actions.hidden=false; card.classList.add('historyMenuOpen');}
+    if(navigator.vibrate) navigator.vibrate(25);
+  },550);
+}
+function cancelHistoryHold(){
+  if(historyHoldTimer){clearTimeout(historyHoldTimer);historyHoldTimer=null;}
+}
+function editHistoryGame(event,id){
+  event.stopPropagation();
+  const game=state.games.find(item=>item.id===id);
+  if(!game) return;
+  const value=window.prompt('Update this game score (0–300):',String(game.score));
+  if(value===null) return;
+  const score=Number(value);
+  if(!Number.isInteger(score)||score<0||score>300){toast('Enter a whole number from 0 to 300');return;}
+  game.score=score;
+  state.games=LaneLabStats.saveGameRecords(getGameStorage(),state.games);
+  state.recent=LaneLabStats.saveScores(getGameStorage(),state.games.slice(-LaneLabStats.MAX_RECENT_GAMES).map(item=>item.score).reverse());
+  syncAverageDisplays();syncGameSummaries();renderChart();renderRecent();renderGameBreakdown();renderPersonalStats();renderArsenal();
+  toast('Game updated');
+}
+function deleteHistoryGame(event,id){
+  event.stopPropagation();
+  const game=state.games.find(item=>item.id===id);
+  if(!game || !window.confirm(`Delete the ${game.score} game from your history?`)) return;
+  state.games=LaneLabStats.saveGameRecords(getGameStorage(),state.games.filter(item=>item.id!==id));
+  state.recent=LaneLabStats.saveScores(getGameStorage(),state.games.slice(-LaneLabStats.MAX_RECENT_GAMES).map(item=>item.score).reverse());
+  syncAverageDisplays();syncGameSummaries();renderChart();renderRecent();renderGameBreakdown();renderPersonalStats();renderArsenal();
+  toast('Game deleted');
 }
 
 function renderMedals(){
