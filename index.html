@@ -425,6 +425,9 @@ select,input{
   justify-content:flex-end;
   flex:0 0 46px;
 }
+.chartCol.sessionBar{cursor:pointer;border-radius:8px;padding:4px 2px 0;transition:background .15s ease,transform .15s ease}
+.chartCol.sessionBar:hover,.chartCol.sessionBar:focus-visible{background:var(--panel);transform:translateY(-2px);outline:none}
+.sessionMetricHeading{grid-column:1/-1;display:flex;align-items:center;justify-content:space-between;margin-bottom:2px;color:var(--muted);font-size:11px}
 
 
 .chartToggle{
@@ -845,7 +848,7 @@ body.light-mode .ballMatchPreview img{
 
         <div class="chartToggle">
           <button id="scoreViewBtn" class="active" onclick="setTrendView('scores')">Game Scores</button>
-          <button id="averageViewBtn" onclick="setTrendView('average')">Average Trend</button>
+          <button id="averageViewBtn" onclick="setTrendView('average')">Average Session</button>
         </div>
 
         <div class="avgChartWrap">
@@ -1765,9 +1768,15 @@ function renderPersonalStats(){
   renderPersonalHistory();
   renderMedals();
 }
-function renderSessionMetrics(){
+let selectedSessionDate=null;
+function renderSessionMetrics(date=selectedSessionDate){
   const box=document.getElementById('sessionMetrics'); if(!box) return;
-  const comparison=LaneLabStats.compareSessions(state.games), current=comparison.current, previous=comparison.previous;
+  const sessions=LaneLabStats.groupSessions(state.games);
+  if(!sessions.length){ box.innerHTML='<div class="muted small">Record games to see session comparisons.</div>'; return; }
+  let index=date ? sessions.findIndex(session=>session.date===date) : sessions.length-1;
+  if(index<0) index=sessions.length-1;
+  const current=LaneLabStats.summarizeGames(sessions[index].games);
+  const previous=index>0 ? LaneLabStats.summarizeGames(sessions[index-1].games) : null;
   const metric=(label,value,key,unit,lowerBetter=false)=>{
     let trend='— No previous session', cls='muted';
     if(previous && current[key]!==null && previous[key]!==null){
@@ -1777,7 +1786,12 @@ function renderSessionMetrics(){
     }
     return `<div class="stat"><small>${label}</small><b>${value===null?'—':(key==='average'?Math.round(value):key==='openPerGame'?value.toFixed(1):`${Math.round(value)}%`)}</b><span class="${cls} small">${trend}</span></div>`;
   };
-  box.innerHTML=metric('Average score',current.average,'average','pins')+metric('Strike rate',current.strikeRate,'strikeRate','pp')+metric('Spare rate',current.spareRate,'spareRate','pp')+metric('Open frames / game',current.openPerGame,'openPerGame','/game',true);
+  box.innerHTML=`<div class="sessionMetricHeading"><span>${date?'Selected session':'Latest session'} · ${formatChartDate(sessions[index].date)}</span><button class="textButton small" type="button" onclick="selectedSessionDate=null;renderSessionMetrics()">Latest</button></div>`+metric('Average score',current.average,'average','pins')+metric('Strike rate',current.strikeRate,'strikeRate','pp')+metric('Spare rate',current.spareRate,'spareRate','pp')+metric('Open frames / game',current.openPerGame,'openPerGame','/game',true);
+}
+function showSessionMetrics(date){
+  selectedSessionDate=date;
+  renderSessionMetrics(date);
+  document.getElementById('sessionMetrics')?.scrollIntoView({behavior:'smooth',block:'nearest'});
 }
 
 function openPersonalStats(){
@@ -2251,7 +2265,10 @@ function setTrendView(view){
 
 function renderChart(){
   const isScores=trendView==='scores';
-  const chartGames=isScores ? state.games : dailyAverageRecords(state.games);
+  const chartGames=isScores ? state.games : LaneLabStats.groupSessions(state.games).map(session=>{
+    const scores=session.games.map(game=>Number(game.score)).filter(Number.isFinite);
+    return {date:session.date,score:scores.length?scores.reduce((sum,value)=>sum+value,0)/scores.length,games:session.games};
+  }).filter(session=>session.score!==null);
   const scores=chartGames.map(game=>game.score);
   const vals=scores;
   const rawMin=vals.length ? Math.min(...vals) : 0;
@@ -2259,11 +2276,11 @@ function renderChart(){
   const min=Math.floor((rawMin-10)/10)*10;
   const max=Math.ceil((rawMax+10)/10)*10 || 10;
 
-  document.getElementById('trendTitle').textContent=isScores ? 'Game scores' : 'Average trend';
-  document.getElementById('trendBadge').textContent=isScores ? 'Raw scores' : 'Rolling avg';
+  document.getElementById('trendTitle').textContent=isScores ? 'Game scores' : 'Average session';
+  document.getElementById('trendBadge').textContent=isScores ? 'Raw scores' : 'Session averages';
   document.getElementById('trendDescription').textContent=isScores
     ? 'Each bar is the score from that individual game.'
-    : 'Each bar is the average of games entered on that date.';
+    : 'Each bar is the average of all games recorded in that session. Tap a bar to compare sessions.';
 
   const axis=document.getElementById('trendYAxis');
   const step=(max-min)/4;
@@ -2274,7 +2291,8 @@ function renderChart(){
   box.innerHTML=vals.length ? vals.map((v,i)=>{
     const h=Math.max(8, ((v-min)/(max-min))*112);
     const label=isScores ? i+1 : formatChartDate(chartGames[i]?.date);
-    return `<div class="chartCol">
+    const sessionAttrs=isScores ? '' : ` role="button" tabindex="0" aria-label="Session ${formatChartDate(chartGames[i]?.date)} average ${Math.round(v)}" onclick="showSessionMetrics('${chartGames[i]?.date||''}')" onkeydown="if(event.key==='Enter'||event.key===' ')showSessionMetrics('${chartGames[i]?.date||''}')"`;
+    return `<div class="chartCol${isScores?'':' sessionBar'}"${sessionAttrs}>
       <div class="chartValue">${v}</div>
       <div class="chartBar" style="height:${h}px"></div>
       <div>${label}</div>
