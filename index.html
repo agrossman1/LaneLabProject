@@ -1094,9 +1094,11 @@ body.light-mode .ballMatchPreview img{
   <div class="sheet avatarSheet" role="dialog" aria-modal="true" aria-labelledby="avatarModalTitle">
     <div class="row"><h2 id="avatarModalTitle" style="margin:0">Profile photo</h2><button class="key" style="padding:8px 12px" onclick="closeAvatarPicker()" aria-label="Close profile photo picker">✕</button></div>
     <p class="small" style="margin:8px 0 0">Choose an avatar or upload a photo from your device.</p>
-    <input id="profilePhotoInput" type="file" accept="image/*" capture="user" hidden onchange="handleProfilePhotoUpload(event)">
+    <input id="profilePhotoCamera" type="file" accept="image/*" capture="user" hidden onchange="handleProfilePhotoUpload(event)">
+    <input id="profilePhotoInput" type="file" accept="image/*" hidden onchange="handleProfilePhotoUpload(event)">
     <div class="avatarActions">
-      <button class="cta secondary" type="button" onclick="document.getElementById('profilePhotoInput').click()">Upload from device</button>
+      <button class="cta secondary" type="button" onclick="document.getElementById('profilePhotoCamera').click()">Take a photo</button>
+      <button class="profileBack" type="button" onclick="document.getElementById('profilePhotoInput').click()">Choose from camera roll</button>
       <button class="profileBack" type="button" onclick="clearProfilePhoto()">Use initials</button>
     </div>
     <div class="avatarPicker" id="avatarPicker" aria-label="Choose an avatar"></div>
