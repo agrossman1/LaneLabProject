@@ -215,8 +215,14 @@ select,input{
   font-size:25px;font-weight:900;
   background:linear-gradient(145deg,#26395f,#16223d);
   border:1px solid #3a4f78;
-  flex:none;
+  flex:none;overflow:hidden;cursor:pointer;padding:0;color:inherit;
 }
+.profileAvatar img,.avatarImage{width:100%;height:100%;object-fit:cover;display:block;border-radius:inherit}
+.avatarPicker{display:grid;grid-template-columns:repeat(5,1fr);gap:9px;margin-top:12px}
+.avatarOption{aspect-ratio:1;border-radius:50%;overflow:hidden;padding:0;border:2px solid transparent;background:var(--panel2);cursor:pointer}
+.avatarOption.selected{border-color:var(--accent);box-shadow:0 0 0 2px rgba(81,176,255,.2)}
+.avatarOption img{width:100%;height:100%;display:block;object-fit:cover}
+.avatarActions{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}
 .menuList{display:flex;flex-direction:column;gap:8px}
 .menuBtn{
   width:100%;
@@ -258,7 +264,7 @@ select,input{
 }
 .profileNameField{display:block;margin:0 0 12px}
 .calculatedAverage{
-  margin-top:6px;
+  margin-top:2px;
   min-height:44px;
   display:flex;
   align-items:center;
@@ -267,6 +273,7 @@ select,input{
   font-weight:900;
   letter-spacing:-.04em;
 }
+#profileGoal{font-size:26px;font-weight:900;letter-spacing:-.04em;line-height:1.1}
 .historyFilters{
   display:grid;
   grid-template-columns:repeat(3,1fr);
@@ -942,7 +949,7 @@ body.light-mode .ballMatchPreview img{
       </div>
 
       <div class="card profileHero">
-        <div class="profileAvatar" id="profileAvatar">AG</div>
+        <button class="profileAvatar" id="profileAvatar" type="button" onclick="openAvatarPicker()" aria-label="Change profile photo">AG</button>
         <div>
           <h2 id="profileHeroName" style="margin:0 0 3px">Anthony</h2>
           <div class="muted small" id="profileHeroDetails">Ambidextrous · Two-handed</div>
@@ -979,6 +986,17 @@ body.light-mode .ballMatchPreview img{
             <input id="profileGoal" type="number" value="180" min="0" max="300" onchange="profileSaved()">
           </label>
         </div>
+      </div>
+
+      <div class="card" id="profilePhotoCard">
+        <h2>Profile photo</h2>
+        <div class="muted small">Choose an avatar or upload a photo from your device.</div>
+        <input id="profilePhotoInput" type="file" accept="image/*" capture="user" hidden onchange="handleProfilePhotoUpload(event)">
+        <div class="avatarActions">
+          <button class="cta secondary" type="button" onclick="document.getElementById('profilePhotoInput').click()">Upload from device</button>
+          <button class="profileBack" type="button" onclick="clearProfilePhoto()">Use initials</button>
+        </div>
+        <div class="avatarPicker" id="avatarPicker" aria-label="Choose an avatar"></div>
       </div>
 
       <div class="card">
@@ -1374,16 +1392,63 @@ function recordGameScore(score,details={}){
   return true;
 }
 
+const PROFILE_AVATARS=[
+  ['01_bowling_ball_photo.png','Bowling ball'],['02_neon_bowling_pins.png','Neon pins'],
+  ['03_retro_bowling_pin.png','Retro pin'],['04_neon_bowling_lane.png','Bowling lane'],
+  ['05_cool_bowling_ball.png','Cool ball'],['06_mountain_adventure.png','Mountain'],
+  ['07_dog_sunglasses.png','Bowling buddy'],['08_ocean_wave.png','Ocean wave'],
+  ['09_starry_mountains.png','Starry mountain'],['10_adventure_mug.png','Adventure mug']
+].map(([file,label])=>({src:`./assets/avatars/${file}`,label}));
+
+function profileAvatarMarkup(photo, initials, name){
+  return photo ? `<img class="avatarImage" src="${escapeHtml(photo)}" alt="${escapeHtml(name)} profile photo">` : escapeHtml(initials);
+}
+function renderAvatarPicker(){
+  const picker=document.getElementById('avatarPicker');
+  if(!picker) return;
+  picker.innerHTML=PROFILE_AVATARS.map((avatar,index)=>`<button type="button" class="avatarOption${profile.photo===avatar.src?' selected':''}" onclick="selectProfileAvatar(${index})" aria-label="Use ${escapeHtml(avatar.label)} avatar"><img src="${avatar.src}" alt="${escapeHtml(avatar.label)}"></button>`).join('');
+}
+function selectProfileAvatar(index){
+  const avatar=PROFILE_AVATARS[index];
+  if(!avatar) return;
+  profile=LaneLabProfile.save(getGameStorage(),{...profile,photo:avatar.src});
+  renderProfile();
+  toast('Profile photo updated');
+}
+function clearProfilePhoto(){
+  profile=LaneLabProfile.save(getGameStorage(),{...profile,photo:''});
+  renderProfile();
+  toast('Using initials');
+}
+function handleProfilePhotoUpload(event){
+  const file=event.target.files?.[0];
+  if(!file || !file.type.startsWith('image/')) return;
+  const reader=new FileReader();
+  reader.onload=()=>{
+    profile=LaneLabProfile.save(getGameStorage(),{...profile,photo:String(reader.result||'')});
+    renderProfile();
+    toast('Profile photo uploaded');
+  };
+  reader.readAsDataURL(file);
+  event.target.value='';
+}
+function openAvatarPicker(){
+  const card=document.getElementById('profilePhotoCard');
+  if(card) card.scrollIntoView({behavior:'smooth',block:'center'});
+}
+
 function renderProfile(){
   const initials=LaneLabProfile.initials(profile.name);
-  document.getElementById('headerAvatar').textContent=initials;
-  document.getElementById('profileAvatar').textContent=initials;
+  document.getElementById('headerAvatar').innerHTML=profileAvatarMarkup(profile.photo,initials,profile.name);
+  document.getElementById('profileAvatar').innerHTML=profileAvatarMarkup(profile.photo,initials,profile.name);
+  document.getElementById('profileAvatar').classList.toggle('hasPhoto',Boolean(profile.photo));
   document.getElementById('profileHeroName').textContent=profile.name;
   document.getElementById('profileHeroDetails').textContent=`${profile.hand} · ${profile.style}`;
   document.getElementById('profileName').value=profile.name;
   document.getElementById('profileHand').value=profile.hand;
   document.getElementById('profileStyle').value=profile.style;
   document.getElementById('profileGoal').value=profile.goalAverage;
+  renderAvatarPicker();
   const gameHand=document.getElementById('hand');
   if(gameHand && profile.hand!=='Ambidextrous') gameHand.value=profile.hand;
   syncAverageDisplays();
@@ -1602,7 +1667,8 @@ function profileSaved(){
     name:document.getElementById('profileName').value,
     hand:document.getElementById('profileHand').value,
     style:document.getElementById('profileStyle').value,
-    goalAverage:document.getElementById('profileGoal').value
+    goalAverage:document.getElementById('profileGoal').value,
+    photo:profile.photo
   });
   renderProfile();
   toast('Profile updated');
