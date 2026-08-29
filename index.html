@@ -226,6 +226,7 @@ select,input{
 .avatarPicker{display:grid;grid-template-columns:repeat(5,1fr);gap:9px;margin-top:12px}
 .avatarOption{aspect-ratio:1;border-radius:50%;overflow:hidden;padding:0;border:2px solid transparent;background:var(--panel2);cursor:pointer}
 .avatarOption.selected{border-color:var(--accent);box-shadow:0 0 0 2px rgba(81,176,255,.2)}
+.initialsOption{display:grid;place-items:center;color:var(--text);font-size:18px;font-weight:900}
 .avatarOption img{width:100%;height:100%;display:block;object-fit:cover}
 .avatarActions{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}
 .menuList{display:flex;flex-direction:column;gap:8px}
@@ -1095,24 +1096,11 @@ body.light-mode .ballMatchPreview img{
   <div class="sheet avatarSheet" role="dialog" aria-modal="true" aria-labelledby="avatarModalTitle">
     <div class="row"><h2 id="avatarModalTitle" style="margin:0">Profile photo</h2><button class="key" style="padding:8px 12px" onclick="closeAvatarPicker()" aria-label="Close profile photo picker">✕</button></div>
     <p class="small" style="margin:8px 0 0">Choose an avatar or upload a photo from your device.</p>
-    <input id="profilePhotoCamera" type="file" accept="image/*" capture="user" hidden onchange="handleProfilePhotoUpload(event)">
     <input id="profilePhotoInput" type="file" accept="image/*" hidden onchange="handleProfilePhotoUpload(event)">
     <div class="avatarActions">
-      <button class="cta secondary" type="button" onclick="openPhotoSourcePicker()">Upload from device</button>
-      <button class="profileBack" type="button" onclick="clearProfilePhoto()">Use initials</button>
+      <button class="cta secondary" type="button" onclick="document.getElementById('profilePhotoInput').click()">Upload from device</button>
     </div>
     <div class="avatarPicker" id="avatarPicker" aria-label="Choose an avatar"></div>
-  </div>
-</div>
-
-<div class="modal" id="photoSourceModal" onclick="if(event.target===this) closePhotoSourcePicker()">
-  <div class="sheet avatarSheet" role="dialog" aria-modal="true" aria-labelledby="photoSourceTitle">
-    <div class="row"><h2 id="photoSourceTitle" style="margin:0">Upload from device</h2><button class="key" style="padding:8px 12px" onclick="closePhotoSourcePicker()" aria-label="Close upload source picker">✕</button></div>
-    <p class="small" style="margin:8px 0 0">Choose where you want to get your profile photo.</p>
-    <div class="avatarActions">
-      <button class="cta secondary" type="button" onclick="chooseProfilePhotoSource('camera')">Take a photo</button>
-      <button class="profileBack" type="button" onclick="chooseProfilePhotoSource('roll')">Choose from camera roll</button>
-    </div>
   </div>
 </div>
 
@@ -1383,14 +1371,12 @@ function renderCoach(){
   const scores=games.map(game=>Number(game.score));
   const average=scores.length ? Math.round(scores.reduce((sum,score)=>sum+score,0)/scores.length) : null;
   const goal=Number(profile?.goalAverage)||180;
-  const frames=games.flatMap(game=>Array.isArray(game.frames)?game.frames:[]).map(frame=>String(frame).trim());
-  const strikes=frames.filter(frame=>frame.startsWith('X')).length;
-  const spares=frames.filter(frame=>frame.includes('/')).length;
+  const frames=games.flatMap(game=>Array.isArray(game.frames)?game.frames.slice(0,10):[]).map(frame=>String(frame).trim());
   const opens=frames.filter(frame=>frame && !frame.startsWith('X') && !frame.includes('/')).length;
-  const totalFrames=frames.length||1;
-  const strikePct=Math.round(strikes/totalFrames*100);
-  const sparePct=Math.round(spares/totalFrames*100);
-  const openPct=Math.round(opens/totalFrames*100);
+  const openPct=frames.length?Math.round(opens/frames.length*100):0;
+  const averageMetric=(key)=>{const values=games.map(game=>Number(game[key])).filter(Number.isFinite);return values.length?Math.round(values.reduce((sum,value)=>sum+value,0)/values.length):0};
+  const strikePct=averageMetric('strikeRate');
+  const sparePct=averageMetric('spareRate');
   const scoreEl=document.getElementById('coachScore');
   if(scoreEl) scoreEl.textContent=average===null?'—':Math.max(0,Math.min(100,Math.round(average/goal*100)));
   const summary=document.getElementById('coachSummary');
@@ -1455,7 +1441,8 @@ function profileAvatarMarkup(photo, initials, name){
 function renderAvatarPicker(){
   const picker=document.getElementById('avatarPicker');
   if(!picker) return;
-  picker.innerHTML=PROFILE_AVATARS.map((avatar,index)=>`<button type="button" class="avatarOption${profile.photo===avatar.src?' selected':''}" onclick="selectProfileAvatar(${index})" aria-label="Use ${escapeHtml(avatar.label)} avatar"><img src="${avatar.src}" alt="${escapeHtml(avatar.label)}"></button>`).join('');
+  const initials=LaneLabProfile.initials(profile.name);
+  picker.innerHTML=`<button type="button" class="avatarOption initialsOption${profile.photo?'':' selected'}" onclick="clearProfilePhoto()" aria-label="Use initials avatar">${escapeHtml(initials)}</button>`+PROFILE_AVATARS.map((avatar,index)=>`<button type="button" class="avatarOption${profile.photo===avatar.src?' selected':''}" onclick="selectProfileAvatar(${index})" aria-label="Use ${escapeHtml(avatar.label)} avatar"><img src="${avatar.src}" alt="${escapeHtml(avatar.label)}"></button>`).join('');
 }
 function selectProfileAvatar(index){
   const avatar=PROFILE_AVATARS[index];
@@ -1489,13 +1476,6 @@ function openAvatarPicker(){
   document.getElementById('avatarModal')?.classList.add('show');
 }
 function closeAvatarPicker(){document.getElementById('avatarModal')?.classList.remove('show')}
-function openPhotoSourcePicker(){document.getElementById('photoSourceModal')?.classList.add('show')}
-function closePhotoSourcePicker(){document.getElementById('photoSourceModal')?.classList.remove('show')}
-function chooseProfilePhotoSource(source){
-  closePhotoSourcePicker();
-  const input=document.getElementById(source==='camera'?'profilePhotoCamera':'profilePhotoInput');
-  if(input) input.click();
-}
 
 function renderProfile(){
   const initials=LaneLabProfile.initials(profile.name);
