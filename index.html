@@ -2003,6 +2003,20 @@ function recordRoll(pins){
 
 function undoRoll(){
   if(state.pinTracking){ state.pinTracking=null; renderAll(); return; }
+  const previousFrameIndex=Math.min(9,state.currentFrame);
+  const completedIndex=(state.frames[previousFrameIndex]?.rolls.length ? previousFrameIndex : Math.max(0,previousFrameIndex-1));
+  const trackedFrame=state.frames[completedIndex];
+  if(trackedFrame && trackedFrame.rolls.length>=2 && Array.isArray(trackedFrame.pinsLeftAfterFirst)){
+    trackedFrame.rolls.pop();
+    const standing=trackedFrame.pinsLeftAfterFirst.slice();
+    trackedFrame.pinsKnockedDownSecond=[];
+    trackedFrame.pinsLeftAfterSecond=standing.slice();
+    state.currentFrame=completedIndex;
+    state.completed=false;
+    state.pinTracking={frameIndex:completedIndex,firstBall:trackedFrame.rolls[0],phase:'throw',leave:standing.slice(),standing,knocked:[]};
+    renderAll();
+    return;
+  }
   if(state.completed) state.completed=false;
   let i=state.currentFrame;
   if(state.frames[i] && state.frames[i].rolls.length){
