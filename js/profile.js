@@ -4,7 +4,8 @@
     name: 'Anthony',
     hand: 'Ambidextrous',
     style: 'Two-handed',
-    goalAverage: 180
+    goalAverage: 180,
+    photo: ''
   });
   const HANDS = new Set(['Ambidextrous', 'Right', 'Left']);
   const STYLES = new Set(['Two-handed', 'One-handed', 'Spinner']);
@@ -21,7 +22,8 @@
       style: STYLES.has(profile.style) ? profile.style : DEFAULT_PROFILE.style,
       goalAverage: Number.isInteger(goal) && goal >= 0 && goal <= 300
         ? goal
-        : DEFAULT_PROFILE.goalAverage
+        : DEFAULT_PROFILE.goalAverage,
+      photo: typeof profile.photo === 'string' ? profile.photo : DEFAULT_PROFILE.photo
     };
   }
 
