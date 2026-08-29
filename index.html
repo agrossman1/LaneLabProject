@@ -692,6 +692,7 @@ body.light-mode .ballMatchPreview img{
           </div>
           <div class="pill" id="homeAvgWindow">Last 10</div>
         </div>
+        <div class="row" style="justify-content:flex-end;margin-top:10px"><div class="chartToggle" style="margin:0"><button id="homeMineBtn" class="active" onclick="setHomeDataMode('me')">My data</button><button id="homeIanBtn" onclick="setHomeDataMode('ian')">Ian’s data</button></div></div>
         <div class="delta" id="trendDelta">Historical average</div>
         <div class="muted small" style="margin-top:4px">Hold “Last 10” to toggle all games</div>
       </div>
@@ -1179,6 +1180,7 @@ body.light-mode .ballMatchPreview img{
 </div>
 
 <script src="./js/stats.js?v=20260829"></script>
+<script src="./ianHistory.js"></script>
 <script src="./js/profile.js"></script>
 <script src="./js/arsenal.js"></script>
 <script src="./js/history.js"></script>
@@ -1353,6 +1355,12 @@ const state = {
 };
 state.recent=LaneLabStats.saveScores(getGameStorage(),state.recent);
 state.games=LaneLabStats.saveGameRecords(getGameStorage(),state.games);
+let homeDataMode='me';
+const ianGames=Array.isArray(window.LaneLabData?.ianHistory?.sessions)
+  ? window.LaneLabData.ianHistory.sessions.flatMap(session=>session.games.map(game=>({id:`ian-${session.date}-${game.game}`,date:`${session.date}T12:00:00Z`,score:game.score,frames:game.frames,source:'ian',hand:null})))
+  : [];
+function getHomeGames(){return homeDataMode==='ian'?ianGames:state.games;}
+function setHomeDataMode(mode){homeDataMode=mode==='ian'?'ian':'me';document.getElementById('homeMineBtn')?.classList.toggle('active',homeDataMode==='me');document.getElementById('homeIanBtn')?.classList.toggle('active',homeDataMode==='ian');syncAverageDisplays();syncGameSummaries();renderRecent();}
 
 let profile=LaneLabProfile.load(getGameStorage());
 let historyRange='all';
@@ -1368,8 +1376,9 @@ try{
 }catch(e){}
 
 function syncAverageDisplays(){
-  const lastTenAverage=LaneLabStats.calculateAverage(state.recent);
-  const allScores=state.games.map(game=>Number(game.score)).filter(Number.isFinite);
+  const homeGames=getHomeGames();
+  const lastTenAverage=LaneLabStats.calculateAverage(homeGames.slice(-10).map(game=>game.score).reverse());
+  const allScores=homeGames.map(game=>Number(game.score)).filter(Number.isFinite);
   const allAverage=LaneLabStats.calculateAverage(allScores);
   const average=homeAverageMode==='all' ? allAverage : lastTenAverage;
   const displayValue=average ?? '—';
@@ -1539,8 +1548,8 @@ function frameAnalysis(games){
   }));
   return {frames:frames.length,open,single,leaves};
 }
-function renderHistoryMetrics(){
-  const analysis=LaneLabStats.summarizeGames(state.games);
+function renderHistoryMetrics(games=state.games){
+  const analysis=LaneLabStats.summarizeGames(games);
   const openFrames=document.getElementById('openFrames');
   const openMeta=document.getElementById('openFramesMeta');
   if(openFrames) openFrames.textContent=analysis.openPerGame===null?'—':analysis.openPerGame.toFixed(1);
@@ -1557,11 +1566,12 @@ function renderHistoryMetrics(){
   return analysis;
 }
 function syncGameSummaries(){
-  const scores=state.games.map(game=>Number(game.score)).filter(Number.isFinite);
+  const homeGames=getHomeGames();
+  const scores=homeGames.map(game=>Number(game.score)).filter(Number.isFinite);
   const high=scores.length ? Math.max(...scores) : null;
   const highGame=document.getElementById('highGame');
   if(highGame) highGame.textContent=high ?? '—';
-  renderHistoryMetrics();
+  renderHistoryMetrics(homeGames);
 }
 
 function formatGameDate(value){
@@ -2179,8 +2189,9 @@ function saveGame(){
 
 function renderRecent(){
   const box=document.getElementById('recentGames');
-  const firstGameNumber=Math.max(1,state.games.length);
-  box.innerHTML=state.recent.slice(0,3).map((s,i)=>`<div class="listItem row"><span>Game ${firstGameNumber-i}</span><b>${s}</b></div>`).join('');
+  const games=getHomeGames();
+  const recent=games.slice(-3).reverse();
+  box.innerHTML=recent.map((game,i)=>`<div class="listItem row"><span>Game ${games.length-i}</span><b>${game.score}</b></div>`).join('');
 }
 
 let trendView='scores';
