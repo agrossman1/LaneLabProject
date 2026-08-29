@@ -836,7 +836,7 @@ body.light-mode .ballMatchPreview img{
         <div>
           <h2 style="margin:0 0 3px">Anthony</h2>
           <div class="muted small">Ambidextrous · Two-handed</div>
-          <div class="pill" style="display:inline-block;margin-top:8px">164 avg</div>
+          <div class="pill" id="profileAverageBadge" style="display:inline-block;margin-top:8px">164 avg</div>
         </div>
       </div>
 
@@ -860,7 +860,7 @@ body.light-mode .ballMatchPreview img{
         </div>
         <div class="formRow">
           <label>Current average
-            <input id="profileAverage" type="number" value="164" min="0" max="300" onchange="profileSaved()">
+            <input id="profileAverage" type="number" value="164" min="0" max="300" readonly aria-readonly="true" title="Calculated from your last 10 games">
           </label>
           <label>Goal average
             <input id="profileGoal" type="number" value="180" min="0" max="300" onchange="profileSaved()">
@@ -965,6 +965,7 @@ body.light-mode .ballMatchPreview img{
   </div>
 </div>
 
+<script src="./js/stats.js"></script>
 <script>
 
 const demoScanPlayers = [
@@ -1075,24 +1076,48 @@ function saveImportedGames(){
   if(!scannedPlayers.length) return;
   const primary=scannedPlayers[0];
 
-  state.recent.unshift(primary.final);
-  state.recent=state.recent.slice(0,10);
-
-  const avg=Math.round(state.recent.reduce((a,b)=>a+b,0)/state.recent.length);
-  document.getElementById('homeAvg').textContent=avg;
+  recordGameScore(primary.final);
   document.getElementById('highGame').textContent=Math.max(203,...state.recent);
-  renderRecent();
 
   go('home');
   toast(`${scannedPlayers.length} game${scannedPlayers.length>1?'s':''} imported`);
+}
+
+const DEFAULT_RECENT_SCORES=[171,158,166,162,175,149,170,160,155,164];
+
+function getGameStorage(){
+  try{return window.localStorage}catch(error){return null}
 }
 
 const state = {
   frames: Array.from({length:10},()=>({rolls:[]})),
   currentFrame:0,
   completed:false,
-  recent:[171,158,166,162,175,149,170,160,155,164]
+  recent:LaneLabStats.loadScores(getGameStorage(),DEFAULT_RECENT_SCORES)
 };
+
+function syncAverageDisplays(){
+  const average=LaneLabStats.calculateAverage(state.recent);
+  const displayValue=average ?? '—';
+  const homeAverage=document.getElementById('homeAvg');
+  const profileAverage=document.getElementById('profileAverage');
+  const profileAverageBadge=document.getElementById('profileAverageBadge');
+
+  if(homeAverage) homeAverage.textContent=displayValue;
+  if(profileAverage) profileAverage.value=average ?? '';
+  if(profileAverageBadge) profileAverageBadge.textContent=average===null ? 'No games yet' : `${average} avg`;
+}
+
+function recordGameScore(score){
+  const normalizedScore=LaneLabStats.normalizeScores([score])[0];
+  if(normalizedScore===undefined) return false;
+
+  state.recent=[normalizedScore,...state.recent].slice(0,LaneLabStats.MAX_RECENT_GAMES);
+  state.recent=LaneLabStats.saveScores(getGameStorage(),state.recent);
+  syncAverageDisplays();
+  renderRecent();
+  return true;
+}
 
 
 
@@ -1126,6 +1151,7 @@ function loadSavedTheme(){
 }
 
 function openProfile(){
+  syncAverageDisplays();
   go('profile');
 }
 function toggleSwitch(el){
@@ -1331,15 +1357,11 @@ function calculateGameStats(){
 
 function saveGame(){
   const score=finalScore();
-  state.recent.unshift(score);
-  state.recent=state.recent.slice(0,10);
-  const avg=Math.round(state.recent.reduce((a,b)=>a+b,0)/state.recent.length);
+  recordGameScore(score);
   const stats=calculateGameStats();
-  document.getElementById('homeAvg').textContent=avg;
   document.getElementById('highGame').textContent=Math.max(203,...state.recent);
   document.getElementById('strikeRate').textContent=stats.strikeRate+'%';
   if(stats.spareRate) document.getElementById('spareRate').textContent=stats.spareRate+'%';
-  renderRecent();
   resetGame();
   go('home');
   toast(`Game saved: ${score}`);
@@ -1557,6 +1579,7 @@ function renderAll(){renderScoreboard();renderKeypad()}
 loadSavedTheme();
 preloadBallCatalogImages();
 renderAll();renderChart();renderRecent();
+syncAverageDisplays();
 </script>
 </body>
 </html>
