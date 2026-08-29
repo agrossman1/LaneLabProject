@@ -1778,6 +1778,7 @@ function syncScoreTrackingFields(){
   document.getElementById('ballField')?.classList.toggle('hidden',!ballTrackingEnabled);
 }
 function togglePinTracking(el){
+  el.classList.toggle('on');
   pinTrackingEnabled=el.classList.contains('on');
   try{getGameStorage()?.setItem('lanelab-pin-tracking',pinTrackingEnabled?'on':'off')}catch(e){}
   toast(pinTrackingEnabled ? 'Exact pin tracking enabled' : 'Quick numeric scoring enabled');
