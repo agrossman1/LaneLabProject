@@ -699,7 +699,7 @@ body.light-mode .ballMatchPreview img{
 
       <div class="grid">
         <div class="stat"><small>Strike rate</small><b id="strikeRate">—</b><span class="muted small">historical</span></div>
-        <div class="stat"><small>Spare rate</small><b id="spareRate">—</b><span class="muted small">historical</span></div>
+        <div class="stat"><small>Spare Conversion Rate</small><b id="spareRate">—</b><span class="muted small">historical</span></div>
         <div class="stat"><small>High game</small><b id="highGame">—</b><span class="muted small">historical</span></div>
         <div class="stat"><small>Open frames</small><b id="openFrames">—</b><span class="muted small" id="openFramesMeta">historical average</span></div>
       </div>
@@ -1417,7 +1417,7 @@ function generateCoachRecommendation(current,previous){
   if(current.openPerGame!==null && current.openPerGame>=3) return {title:'Close more open frames',label:'Open frames',value:current.openPerGame.toFixed(1)+'/game',trend:previous?.openPerGame!==null&&previous?.openPerGame!==undefined?current.openPerGame-previous.openPerGame:null,explanation:`You averaged ${current.openPerGame.toFixed(1)} open frames per game in your latest session. Closing just one more frame is a clear way to raise your average.`,drillTitle:'Open-frame reduction',drillValue:'Play 1 practice game focused on spares',drillGoal:`Goal: ${Math.max(0,Math.ceil(current.openPerGame-1)).toFixed(0)} or fewer open frames`,opportunity:'Potential improvement: ~5–10 pins/game',lower:true};
   if(single!==null && single<80) return {title:'Improve single-pin spares',label:'Single-pin spare conversion',value:Math.round(single)+'%',trend:previous?.singlePct!==null&&previous?.singlePct!==undefined?single-previous.singlePct:null,explanation:`You converted ${current.singleMakes} of ${current.singleAttempts} tracked single-pin spare attempts. This is your clearest recoverable opportunity.`,drillTitle:'Single-pin spare drill',drillValue:'20 attempts',drillGoal:'Goal: 16 / 20',opportunity:'Potential improvement: ~5–10 pins/game'};
   if(pinLeaves.length){const leave=pinLeaves[0]; return {title:'Convert your most common leave',label:'Top tracked leave',value:leave.pins.join('-'),trend:null,explanation:`The ${leave.pins.join('-')} leave appeared ${leave.attempts} times in your tracked history. Build a repeatable spare routine for it.`,drillTitle:'Leave conversion drill',drillValue:`Shoot ${Math.max(10,leave.attempts*2)} attempts`,drillGoal:`Goal: ${Math.ceil(Math.max(10,leave.attempts*2)*.7)} makes`,opportunity:'Potential improvement: a few pins/game'};}
-  return {title:'Create more strike opportunities',label:'Spare rate',value:current.spareRate===null?'—':Math.round(current.spareRate)+'%',trend:previous?.spareRate!==null&&previous?.spareRate!==undefined?current.spareRate-previous.spareRate:null,explanation:'Your tracked spare rate is the best available guide when pin-level leaves are not recorded. More conversions create more chances for higher scores.',drillTitle:'Spare conversion drill',drillValue:'Play 1 practice game focused on first-ball accuracy',drillGoal:'Goal: convert at least 7 spares',opportunity:'Potential improvement: ~5 pins/game'};
+  return {title:'Create more strike opportunities',label:'Spare Conversion Rate',value:current.spareRate===null?'—':Math.round(current.spareRate)+'%',trend:previous?.spareRate!==null&&previous?.spareRate!==undefined?current.spareRate-previous.spareRate:null,explanation:'Your tracked spare conversion rate measures how often you convert an available spare opportunity. More conversions create more chances for higher scores.',drillTitle:'Spare conversion drill',drillValue:'Play 1 practice game focused on first-ball accuracy',drillGoal:'Goal: convert at least 7 spares',opportunity:'Potential improvement: ~5 pins/game'};
 }
 function renderCoach(){
   const sessions=LaneLabStats.groupSessions(getActiveGames()), current=LaneLabStats.summarizeGames(sessions.at(-1)?.games||[]), previous=sessions.length>1?LaneLabStats.summarizeGames(sessions.at(-2).games):null;
@@ -1659,7 +1659,7 @@ function openGameDetail(event,id){
   const metrics=[
     ['Score',game.score],
     ['Strike rate',game.strikeRate===null?'—':`${game.strikeRate}%`],
-    ['Spare rate',game.spareRate===null?'—':`${game.spareRate}%`],
+    ['Spare Conversion Rate',game.spareRate===null?'—':`${game.spareRate}%`],
     ['Strikes',game.strikes===null?'—':game.strikes]
   ];
   document.getElementById('gameDetailTitle').textContent=`Game ${state.games.indexOf(game)+1}`;
@@ -1778,7 +1778,7 @@ function renderSessionMetrics(date=selectedSessionDate){
     }
     return `<div class="stat"><small>${label}</small><b>${value===null?'—':(key==='average'?Math.round(value):key==='openPerGame'?value.toFixed(1):`${Math.round(value)}%`)}</b><span class="${cls} small">${trend}</span></div>`;
   };
-  box.innerHTML=`<div class="sessionMetricHeading"><span>${date?'Selected session':'Latest session'} · ${formatChartDate(sessions[index].date)}</span><button class="textButton small" type="button" onclick="selectedSessionDate=null;renderSessionMetrics()">Latest</button></div>`+metric('Average score',current.average,'average','pins')+metric('Strike rate',current.strikeRate,'strikeRate','pp')+metric('Spare rate',current.spareRate,'spareRate','pp')+metric('Open frames / game',current.openPerGame,'openPerGame','/game',true);
+  box.innerHTML=`<div class="sessionMetricHeading"><span>${date?'Selected session':'Latest session'} · ${formatChartDate(sessions[index].date)}</span><button class="textButton small" type="button" onclick="selectedSessionDate=null;renderSessionMetrics()">Latest</button></div>`+metric('Average score',current.average,'average','pins')+metric('Strike rate',current.strikeRate,'strikeRate','pp')+metric('Spare Conversion Rate',current.spareRate,'spareRate','pp')+metric('Open frames / game',current.openPerGame,'openPerGame','/game',true);
 }
 function showSessionMetrics(date){
   selectedSessionDate=date;
