@@ -1394,9 +1394,10 @@ function syncAverageDisplays(){
   if(homeAverageWindow) homeAverageWindow.textContent=homeAverageMode==='all' ? 'All games' : 'Last 10';
   if(profileAverage) profileAverage.textContent=lastTenAverage ?? '—';
   if(profileAverageBadge) profileAverageBadge.textContent=lastTenAverage===null ? 'No games yet' : `${lastTenAverage} avg`;
+  const homeSummary=LaneLabStats.summarizeGames(homeGames);
   const metricAverage=(key)=>{
-    const values=state.games.map(game=>Number(game[key])).filter(value=>Number.isFinite(value));
-    return values.length ? `${Math.round(values.reduce((sum,value)=>sum+value,0)/values.length)}%` : '—';
+    const value=homeSummary[key];
+    return value===null||value===undefined ? '—' : `${Math.round(value)}%`;
   };
   const strikeRate=document.getElementById('strikeRate');
   const spareRate=document.getElementById('spareRate');
