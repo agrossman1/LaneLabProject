@@ -57,6 +57,17 @@
     const frames = Array.isArray(record.frames)
       ? record.frames.filter(frame => typeof frame === 'string').map(frame => frame.slice(0, 20))
       : null;
+    const pinData = Array.isArray(record.pinData)
+      ? record.pinData.slice(0, 10).map(frame => {
+          if (!frame || typeof frame !== 'object') return null;
+          const list = value => Array.isArray(value) ? value.map(Number).filter(pin => Number.isInteger(pin) && pin >= 1 && pin <= 10) : null;
+          return {
+            pinsLeftAfterFirst: list(frame.pinsLeftAfterFirst),
+            pinsKnockedDownSecond: list(frame.pinsKnockedDownSecond),
+            pinsLeftAfterSecond: list(frame.pinsLeftAfterSecond)
+          };
+        })
+      : null;
     const percentage = value => {
       const number = Number(value);
       return Number.isFinite(number) && number >= 0 && number <= 100
@@ -72,6 +83,7 @@
       ball: text(record.ball),
       source: text(record.source) || 'manual',
       frames,
+      pinData,
       strikes: Number.isInteger(Number(record.strikes)) && Number(record.strikes) >= 0
         ? Math.min(12, Number(record.strikes))
         : null,
