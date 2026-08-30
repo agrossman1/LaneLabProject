@@ -65,18 +65,22 @@
       const gameFrames = Array.isArray(game.frames) ? game.frames.filter(Boolean) : [];
       return sum + (gameFrames.length ? gameFrames.filter(frame => String(frame).trim().startsWith('X')).length : (Number.isFinite(Number(game.strikes)) ? Number(game.strikes) : 0));
     }, 0);
-    const sparesFromRecords = list.reduce((sum, game) => {
+    const spares = list.reduce((sum, game) => {
       const gameFrames = Array.isArray(game.frames) ? game.frames.filter(Boolean) : [];
-      return sum + (gameFrames.length ? gameFrames.filter(frame => String(frame).includes('/')).length : (Number.isFinite(Number(game.spares)) ? Number(game.spares) : 0));
+      if (gameFrames.length) return sum + gameFrames.filter(frame => String(frame).includes('/')).length;
+      const gamePinFrames = Array.isArray(game.pinData) ? game.pinData : [];
+      const pinMakes = gamePinFrames.filter(frame => Array.isArray(frame?.pinsLeftAfterFirst) && frame.pinsLeftAfterFirst.length > 0 && Array.isArray(frame?.pinsLeftAfterSecond) && frame.pinsLeftAfterSecond.length === 0).length;
+      return sum + (gamePinFrames.length ? pinMakes : (Number.isFinite(Number(game.spares)) ? Number(game.spares) : 0));
     }, 0);
-    const spares = frames.length ? sparesFromRecords : pinFrameMetrics.spares;
     // A spare rate is conversion rate: count only frames where a spare was possible.
     // Strike frames do not create a spare opportunity and must not dilute the result.
-    const spareChancesFromRecords = list.reduce((sum, game) => {
+    const spareChances = list.reduce((sum, game) => {
       const gameFrames = Array.isArray(game.frames) ? game.frames.filter(Boolean) : [];
-      return sum + (gameFrames.length ? gameFrames.filter(frameHasSpareOpportunity).length : (Number.isFinite(Number(game.spareOpportunities)) ? Number(game.spareOpportunities) : 0));
+      if (gameFrames.length) return sum + gameFrames.filter(frameHasSpareOpportunity).length;
+      const gamePinFrames = Array.isArray(game.pinData) ? game.pinData : [];
+      const pinChances = gamePinFrames.filter(frame => Array.isArray(frame?.pinsLeftAfterFirst) && frame.pinsLeftAfterFirst.length > 0).length;
+      return sum + (gamePinFrames.length ? pinChances : (Number.isFinite(Number(game.spareOpportunities)) ? Number(game.spareOpportunities) : 0));
     }, 0);
-    const spareChances = frames.length ? spareChancesFromRecords : pinFrameMetrics.spareOpportunities;
     const pinLeaves = [];
     list.forEach(game => (Array.isArray(game.pinData) ? game.pinData : []).forEach(frame => {
       const pins = Array.isArray(frame?.pinsLeftAfterFirst) ? frame.pinsLeftAfterFirst.map(Number).filter(pin => pin >= 1 && pin <= 10).sort((a, b) => a - b) : null;
@@ -92,7 +96,15 @@
     const singles = pinLeaves.filter(item => item.pins.length === 1);
     return {
       games: list.length, average: scores.length ? scores.reduce((a, b) => a + b, 0) / scores.length : null,
-      openFrames: frames.length ? frames.filter(frameIsOpen).length : pinFrameMetrics.openFrames, openPerGame: list.length ? (frames.length ? frames.filter(frameIsOpen).length : pinFrameMetrics.openFrames) / list.length : null,
+      openFrames: list.reduce((sum, game) => {
+        const gameFrames = Array.isArray(game.frames) ? game.frames.filter(Boolean) : [];
+        if (gameFrames.length) return sum + gameFrames.filter(frameIsOpen).length;
+        return sum + (Array.isArray(game.pinData) ? game.pinData.filter(frame => Array.isArray(frame?.pinsLeftAfterFirst) && Array.isArray(frame?.pinsLeftAfterSecond) && frame.pinsLeftAfterSecond.length > 0).length : 0);
+      }, 0), openPerGame: list.length ? list.reduce((sum, game) => {
+        const gameFrames = Array.isArray(game.frames) ? game.frames.filter(Boolean) : [];
+        if (gameFrames.length) return sum + gameFrames.filter(frameIsOpen).length;
+        return sum + (Array.isArray(game.pinData) ? game.pinData.filter(frame => Array.isArray(frame?.pinsLeftAfterFirst) && Array.isArray(frame?.pinsLeftAfterSecond) && frame.pinsLeftAfterSecond.length > 0).length : 0);
+      }, 0) / list.length : null,
       strikeRate: frameCount ? strikes / frameCount * 100 : null, spareRate: spareChances ? spares / spareChances * 100 : null,
       singleAttempts: singles.length, singleMakes: singles.filter(item => item.converted).length,
       singlePct: singles.length ? singles.filter(item => item.converted).length / singles.length * 100 : null,
