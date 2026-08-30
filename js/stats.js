@@ -51,11 +51,20 @@
     const frames = list.flatMap(game => Array.isArray(game.frames) ? game.frames.slice(0, 10) : []);
     const frameCount = list.reduce((sum, game) => sum + (Array.isArray(game.frames) && game.frames.length ? game.frames.length : 10), 0);
     const scores = list.map(game => Number(game.score));
-    const strikes = list.reduce((sum, game) => sum + (Number.isFinite(Number(game.strikes)) ? Number(game.strikes) : (game.frames || []).filter(frame => String(frame).trim().startsWith('X')).length), 0);
-    const spares = list.reduce((sum, game) => sum + (Number.isFinite(Number(game.spares)) ? Number(game.spares) : (game.frames || []).filter(frame => String(frame).includes('/')).length), 0);
+    const strikes = list.reduce((sum, game) => {
+      const gameFrames = Array.isArray(game.frames) ? game.frames.filter(Boolean) : [];
+      return sum + (gameFrames.length ? gameFrames.filter(frame => String(frame).trim().startsWith('X')).length : (Number.isFinite(Number(game.strikes)) ? Number(game.strikes) : 0));
+    }, 0);
+    const spares = list.reduce((sum, game) => {
+      const gameFrames = Array.isArray(game.frames) ? game.frames.filter(Boolean) : [];
+      return sum + (gameFrames.length ? gameFrames.filter(frame => String(frame).includes('/')).length : (Number.isFinite(Number(game.spares)) ? Number(game.spares) : 0));
+    }, 0);
     // A spare rate is conversion rate: count only frames where a spare was possible.
     // Strike frames do not create a spare opportunity and must not dilute the result.
-    const spareChances = list.reduce((sum, game) => sum + (Number.isFinite(Number(game.spareOpportunities)) ? Number(game.spareOpportunities) : (game.frames || []).filter(frameHasSpareOpportunity).length), 0);
+    const spareChances = list.reduce((sum, game) => {
+      const gameFrames = Array.isArray(game.frames) ? game.frames.filter(Boolean) : [];
+      return sum + (gameFrames.length ? gameFrames.filter(frameHasSpareOpportunity).length : (Number.isFinite(Number(game.spareOpportunities)) ? Number(game.spareOpportunities) : 0));
+    }, 0);
     const pinLeaves = [];
     list.forEach(game => (Array.isArray(game.pinData) ? game.pinData : []).forEach(frame => {
       const pins = Array.isArray(frame?.pinsLeftAfterFirst) ? frame.pinsLeftAfterFirst.map(Number).filter(pin => pin >= 1 && pin <= 10).sort((a, b) => a - b) : null;
