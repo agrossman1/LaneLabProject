@@ -2247,6 +2247,7 @@ function renderPinTracker(){
   const selectedCount=selected.length;
   const target=leavePhase ? t.firstBall===0 ? 10 : 10-t.firstBall : t.standing.length;
   const prompt=leavePhase ? 'Which pins are still standing?' : 'Which pins did you knock down?';
+  const hint='Tap a pin or drag across pins to select them.';
   const detail=leavePhase ? `${target} pins left · ${selectedCount} selected` : `${selectedCount} pin${selectedCount===1?'':'s'} knocked down`;
   const buttons=[7,8,9,10,4,5,6,2,3,1].map(pin=>{
     const active=selectable.includes(pin);
@@ -2255,7 +2256,7 @@ function renderPinTracker(){
     const unavailable=leavePhase && active && !on && selectedCount>=target;
     return `<button class="pinButton ${on?'selected':''} ${!active?'down':''} ${unavailable?'unavailable':''}" ${canSelect?`onclick="toggleTrackedPin(${pin})"`: 'disabled'} aria-label="Pin ${pin}">${active?pin:''}</button>`;
   }).join('');
-  box.innerHTML=`<div class="muted small">${prompt}</div><b class="pinTrackerDetail">${detail}${!leavePhase && selectedCount===t.standing.length?' ✓':''}</b><div class="pinRack">${buttons}</div><div class="pinTrackerActions"><button class="cta secondary" onclick="skipPinTracking()">Skip pin tracking</button>${leavePhase?`<button class="cta secondary" onclick="selectAllStanding()">All pins still up</button><button class="cta" ${selectedCount===target?'':'disabled'} onclick="saveTrackedLeave()">Save Leave</button>`:`<button class="cta secondary" onclick="selectAllStanding();saveTrackedThrow()">Knock Down All / Spare</button><button class="cta secondary" onclick="clearBallTwo()">Clear Ball 2</button><button class="cta" onclick="saveTrackedThrow()">Save Throw</button>`}</div>`;
+  box.innerHTML=`<div class="muted small">${prompt}</div><b class="pinTrackerDetail">${detail}${!leavePhase && selectedCount===t.standing.length?' ✓':''}</b><div class="muted small" style="margin-top:4px">${hint}</div><div class="pinRack">${buttons}</div><div class="pinTrackerActions"><button class="cta secondary" onclick="skipPinTracking()">Skip pin tracking</button>${leavePhase?`<button class="cta secondary" onclick="selectAllStanding()">All pins still up</button><button class="cta" ${selectedCount===target?'':'disabled'} onclick="saveTrackedLeave()">Save Leave</button>`:`<button class="cta secondary" onclick="selectAllStanding();saveTrackedThrow()">Knock Down All / Spare</button><button class="cta secondary" onclick="clearBallTwo()">Clear Ball 2</button><button class="cta" onclick="saveTrackedThrow()">Save Throw</button>`}</div>`;
   box.querySelectorAll('.pinButton').forEach(button=>{
     const pin=Number(button.getAttribute('aria-label')?.replace('Pin ',''));
     button.setAttribute('onpointerdown',`pinDragStart(event,${pin})`);
