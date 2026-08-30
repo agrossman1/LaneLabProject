@@ -337,7 +337,7 @@ select,input{
 .onboardingStep{display:none}.onboardingStep.active{display:block}
 .onboardingConcepts{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:18px 0}.onboardingConcepts .card{padding:12px}
 .onboardingSecondary,.onboardingBack{min-height:44px;padding:10px 16px;border-radius:12px;border:1px solid var(--line);background:var(--panel2);color:var(--text);font-weight:800}
-.onboardingSkip{display:block;margin:0 auto 10px;min-height:38px;padding:8px 16px;border-radius:999px;border:1px solid var(--line);background:transparent;color:var(--muted);font-weight:700}
+.onboardingBallActions{display:grid;grid-template-columns:1fr 1fr 1.35fr;gap:8px}.onboardingBallActions .cta{min-width:0;padding-left:10px;padding-right:10px}
 .onboardingWelcome{text-align:center}.onboardingWelcome .onboardingLogo{width:min(72%,230px);height:auto;display:block;margin:0 auto 10px}.onboardingWelcome .onboardingArtwork{width:min(70%,260px);aspect-ratio:1;object-fit:cover;border-radius:22px;display:block;margin:4px auto 18px;box-shadow:0 14px 34px rgba(0,0,0,.35)}
 .onboardingLogoCombo{width:min(82%,280px);height:66px;margin:0 auto 10px;display:flex;align-items:center;justify-content:center;gap:10px}.onboardingLogoCombo .logoMark{width:58px;height:58px;object-fit:contain}.onboardingLogoCombo .logoWord{width:205px;max-height:58px;object-fit:contain}
 .onboardingMergedLogo{width:min(88%,330px);max-height:110px;object-fit:contain;display:block;margin:0 auto 16px}
@@ -1135,8 +1135,7 @@ body.light-mode .ballMatchPreview img{
       <h2>What are you throwing?</h2><p>Adding your bowling ball lets LaneLab track performance by equipment.</p>
       <label>Ball name <span class="muted small">(optional)</span><input id="onboardingBallName" placeholder="Ball name"></label>
       <label>Weight <span class="muted small">(optional)</span><input id="onboardingBallWeight" type="number" min="6" max="16" placeholder="lb"></label>
-      <button class="onboardingSkip" onclick="onboardingFinish()">Skip for now</button>
-      <div class="row"><button class="onboardingBack" onclick="onboardingBack()">Back</button><button class="cta" onclick="onboardingFinish()">Add Ball</button></div>
+      <div class="onboardingBallActions"><button class="onboardingBack" onclick="onboardingBack()">Back</button><button class="onboardingSecondary" onclick="onboardingFinish()">Skip for now</button><button class="cta" onclick="onboardingFinish()">Add Ball</button></div>
     </div>
     <div class="onboardingStep" data-step="4">
       <h2>You’re ready.</h2><p>Record a few games and LaneLab will start finding patterns in your bowling.</p>
