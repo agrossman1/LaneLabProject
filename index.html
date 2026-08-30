@@ -1041,7 +1041,7 @@ body.light-mode .ballMatchPreview img{
             <span class="chev">›</span>
           </button>
           <button class="menuBtn" onclick="resetAllGameData()">
-            <span class="left"><span class="menuIcon">⌫</span><span><b>Reset game data</b><div class="muted small">Remove all saved games and scores</div></span></span>
+            <span class="left"><span class="menuIcon">⌫</span><span><b>Reset entire app</b><div class="muted small">Clear all LaneLab data and start over</div></span></span>
             <span class="chev">›</span>
           </button>
         </div>
@@ -2023,11 +2023,10 @@ function exportGameDataCsv(){
   toast(`${state.games.length} game${state.games.length===1?'':'s'} exported as CSV`);
 }
 function resetAllGameData(){
-  if(!confirm('Reset all saved game data? This cannot be undone.')) return;
-  state.games=[]; state.recent=[]; state.frames=Array.from({length:10},()=>({rolls:[]})); state.currentFrame=0; state.completed=false; state.pinTracking=null;
-  LaneLabStats.saveGameRecords(getGameStorage(),[]); LaneLabStats.saveScores(getGameStorage(),[]);
-  renderAll();
-  toast('All game data reset');
+  if(!confirm('Reset the entire LaneLab app? This clears all games, profile settings, equipment, preferences, and onboarding data. This cannot be undone.')) return;
+  try{getGameStorage()?.clear()}catch(e){}
+  try{window.sessionStorage?.clear()}catch(e){}
+  window.location.reload();
 }
 
 function go(id){
