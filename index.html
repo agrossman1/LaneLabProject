@@ -2233,8 +2233,6 @@ function rollDisplay(frameIndex, rollIndex){
   const r=state.frames[frameIndex].rolls;
   const val=r[rollIndex];
   if(val===undefined) return '';
-  if(val===0) return '-';
-  if(val===10) return 'X';
   if(rollIndex>0){
     if(frameIndex<9 && r[0]!==10 && r[0]+val===10) return '/';
     if(frameIndex===9){
@@ -2242,6 +2240,8 @@ function rollDisplay(frameIndex, rollIndex){
       if(rollIndex===2 && r[1]!==10 && r[1]+val===10 && r[0]===10) return '/';
     }
   }
+  if(val===0) return '-';
+  if(val===10) return 'X';
   return String(val);
 }
 
