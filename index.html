@@ -1231,7 +1231,7 @@ body.light-mode .ballMatchPreview img{
   </div>
 </div>
 
-<script src="./js/stats.js?v=20260831"></script>
+<script src="./js/stats.js?v=20260901"></script>
 <script src="./js/profile.js"></script>
 <script src="./js/arsenal.js"></script>
 <script>
@@ -1850,6 +1850,7 @@ function renderPersonalHistory(){
 
 function normalizeBowlingNotation(value){
   const text=String(value??'');
+  if(text.trim()==='10') return 'X';
   return text.replace(/0/g,'-');
 }
 function gameFrameNotation(game){
