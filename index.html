@@ -1406,21 +1406,32 @@ function parseCsvLine(line){
 function importCsvText(text){
   const rows=String(text||'').split(/\r?\n/).map(row=>row.trim()).filter(Boolean);
   if(!rows.length) return [];
-  const first=parseCsvLine(rows[0]).map(cell=>cell.toLowerCase());
-  const hasHeader=first.some(cell=>['score','date','frames','hand','ball','game'].includes(cell));
+  const first=parseCsvLine(rows[0]).map(cell=>cell.toLowerCase().replace(/[\s_-]+/g,''));
+  const hasHeader=first.some(cell=>['score','date','gamedate','sessiondate','frames','hand','ball','equipment','game','strikes','spares','openframes','spareopportunities','sparechances'].includes(cell)||/^frame?\d+$/.test(cell)||/^f\d+$/.test(cell));
   const headers=hasHeader?first:['score'];
-  const indexOf=(...names)=>names.map(name=>headers.indexOf(name)).find(index=>index>=0);
+  const indexOf=(...names)=>names.map(name=>headers.indexOf(name.replace(/[\s_-]+/g,''))).find(index=>index>=0);
   const scoreIndex=indexOf('score') ?? 0;
-  const dateIndex=indexOf('date');
+  const dateIndex=indexOf('date','gamedate','sessiondate');
   const framesIndex=indexOf('frames','frame');
   const handIndex=indexOf('hand');
   const ballIndex=indexOf('ball','equipment');
+  const strikesIndex=indexOf('strikes','strike');
+  const sparesIndex=indexOf('spares','spare');
+  const spareChancesIndex=indexOf('spareopportunities','sparechances');
+  const openFramesIndex=indexOf('openframes','opens');
+  const frameColumns=headers.map((header,index)=>({header,index,number:Number((header.match(/^(?:frame|f)?(\d{1,2})$/)||[])[1])})).filter(item=>item.number>=1&&item.number<=10).sort((a,b)=>a.number-b.number);
   return rows.slice(hasHeader?1:0).map(row=>{
     const cells=parseCsvLine(row);
     const score=Number(String(cells[scoreIndex]??'').replace(/[^0-9.-]/g,''));
     if(!Number.isInteger(score)||score<0||score>300) return null;
     const rawDate=dateIndex===undefined?'':cells[dateIndex];
-    return {score,date:rawDate&&!Number.isNaN(new Date(rawDate).getTime())?rawDate:undefined,frames:framesIndex===undefined?undefined:String(cells[framesIndex]||'').split(/[|;]/).map(frame=>frame.trim()).filter(Boolean),hand:handIndex===undefined?undefined:cells[handIndex],ball:ballIndex===undefined?undefined:cells[ballIndex],source:'csv import'};
+    const frames=framesIndex===undefined
+      ? (frameColumns.length?frameColumns.map(column=>String(cells[column.index]||'').trim()).filter(Boolean):undefined)
+      : String(cells[framesIndex]||'').split(/[|;]/).map(frame=>frame.trim()).filter(Boolean);
+    const numberAt=index=>index===undefined?undefined:Number(String(cells[index]??'').replace(/[^0-9.-]/g,''));
+    const spares=numberAt(sparesIndex), spareChances=numberAt(spareChancesIndex);
+    const spareRate=spares!==undefined&&spareChances>0 ? Math.round(spares/spareChances*100) : undefined;
+    return {score,date:rawDate&&!Number.isNaN(new Date(rawDate).getTime())?rawDate:undefined,frames,hand:handIndex===undefined?undefined:cells[handIndex],ball:ballIndex===undefined?undefined:cells[ballIndex],strikes:numberAt(strikesIndex),spareRate,source:'csv import'};
   }).filter(Boolean);
 }
 function importCsvRecords(text){
