@@ -2081,11 +2081,14 @@ function exportGameDataCsv(){
   const headers=['date','score',...Array.from({length:10},(_,index)=>`frame_${index+1}`),'strike_frames','spare_frames','open_frames','hand','ball'];
   const quote=value=>`"${String(value??'').replace(/"/g,'""')}"`;
   const rows=state.games.map(game=>{
-    const frames=Array.isArray(game.frames)?game.frames.slice(0,10):[];
+    // Normalize object-based manual frames and imported records before writing
+    // CSV so frame-by-frame details match the JSON export and app calculations.
+    const normalized=LaneLabStats.normalizeGameRecord(game) || game;
+    const frames=Array.isArray(normalized.frames)?normalized.frames.slice(0,10):[];
     const strikes=Number.isInteger(Number(game.strikes))?Number(game.strikes):frames.filter(frame=>String(frame).trim().startsWith('X')).length;
     const spares=frames.filter(frame=>String(frame).includes('/')).length;
     const open=frames.filter(frame=>LaneLabStats.frameIsOpen(frame)).length;
-    return [game.date?String(game.date).slice(0,10):'',game.score,...Array.from({length:10},(_,index)=>frames[index]||''),strikes,spares,open,game.hand||'',game.ball||''].map(quote).join(',');
+    return [normalized.date?String(normalized.date).slice(0,10):'',normalized.score,...Array.from({length:10},(_,index)=>frames[index]||''),strikes,spares,open,normalized.hand||'',normalized.ball||''].map(quote).join(',');
   });
   const blob=new Blob([[headers.map(quote).join(','),...rows].join('\r\n')],{type:'text/csv;charset=utf-8'});
   const url=URL.createObjectURL(blob), link=document.createElement('a');
