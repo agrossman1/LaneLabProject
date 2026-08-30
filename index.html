@@ -1483,6 +1483,9 @@ function onboardingFinish(startScore=false){
   const style=document.getElementById('onboardingStyle')?.value || profile.style;
   profile=LaneLabProfile.save(getGameStorage(),{...profile,name,hand,style});
   try{getGameStorage()?.setItem('laneLabOnboardingComplete','true')}catch(e){}
+  // Adding or skipping the ball completes setup, then shows the final
+  // welcome screen. Only the final "Start Bowling" action closes onboarding.
+  if(!startScore){showOnboardingStep(4); return}
   document.getElementById('onboardingModal')?.classList.remove('show');
   renderProfile(); syncAverageDisplays();
   if(startScore) go('score'); else go('home');
