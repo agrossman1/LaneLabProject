@@ -1032,6 +1032,14 @@ body.light-mode .ballMatchPreview img{
             <span class="left"><span class="menuIcon">☁</span><span><b>Cloud sync</b><div class="muted small">Backup games across devices</div></span></span>
             <span class="chev">›</span>
           </button>
+          <button class="menuBtn" onclick="exportAllGameData()">
+            <span class="left"><span class="menuIcon">⇩</span><span><b>Export game data</b><div class="muted small">Download your games and frame details</div></span></span>
+            <span class="chev">›</span>
+          </button>
+          <button class="menuBtn" onclick="resetAllGameData()">
+            <span class="left"><span class="menuIcon">⌫</span><span><b>Reset game data</b><div class="muted small">Remove all saved games and scores</div></span></span>
+            <span class="chev">›</span>
+          </button>
         </div>
       </div>
 
@@ -1982,6 +1990,21 @@ function profileSaved(){
   });
   renderProfile();
   toast('Profile updated');
+}
+function exportAllGameData(){
+  const payload={schemaVersion:1,exportedAt:new Date().toISOString(),profile, games:state.games, recentScores:state.recent};
+  const blob=new Blob([JSON.stringify(payload,null,2)],{type:'application/json'});
+  const url=URL.createObjectURL(blob), link=document.createElement('a');
+  link.href=url; link.download=`lanelab-game-data-${new Date().toISOString().slice(0,10)}.json`;
+  document.body.appendChild(link); link.click(); link.remove(); URL.revokeObjectURL(url);
+  toast(`${state.games.length} game${state.games.length===1?'':'s'} exported`);
+}
+function resetAllGameData(){
+  if(!confirm('Reset all saved game data? This cannot be undone.')) return;
+  state.games=[]; state.recent=[]; state.frames=Array.from({length:10},()=>({rolls:[]})); state.currentFrame=0; state.completed=false; state.pinTracking=null;
+  LaneLabStats.saveGameRecords(getGameStorage(),[]); LaneLabStats.saveScores(getGameStorage(),[]);
+  renderAll();
+  toast('All game data reset');
 }
 
 function go(id){
