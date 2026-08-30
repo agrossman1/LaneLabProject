@@ -2295,7 +2295,15 @@ function editGameFrame(frameIndex){
   if(state.pinTracking) return;
   const frame=state.frames[frameIndex], first=Number(frame.rolls[0]);
   if(!Number.isFinite(first)) return;
-  if(first===10){ frame.rolls=[10]; frame.pinsLeftAfterFirst=[]; frame.pinsKnockedDownSecond=[]; frame.pinsLeftAfterSecond=[]; renderAll(); return; }
+  if(first===10){
+    // Strikes have no leave to edit; clear only this frame so it can be re-entered.
+    state.frames[frameIndex]={rolls:[]};
+    state.currentFrame=frameIndex;
+    state.completed=false;
+    renderAll();
+    toast(`Frame ${frameIndex+1} cleared — re-enter the rolls`);
+    return;
+  }
   const existing=Array.isArray(frame.pinsLeftAfterFirst)?frame.pinsLeftAfterFirst.slice():[];
   state.pinTracking={frameIndex,firstBall:first,phase:'leave',leave:existing,standing:[],knocked:[],editing:true};
   renderAll();
