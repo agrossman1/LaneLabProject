@@ -1438,6 +1438,16 @@ function setDailyGreeting(){
   if(heading) heading.textContent=greeting;
 }
 setDailyGreeting();
+function startGreetingPreview(){
+  if(!new URLSearchParams(window.location.search).has('previewGreetings')) return;
+  let index=0;
+  const heading=document.getElementById('homeGreeting');
+  const name=profile?.name?.trim() || 'there';
+  const show=()=>{if(heading) heading.textContent=homeGreetings[index++%homeGreetings.length].replace('{name}',name)};
+  show();
+  window.setInterval(show,1800);
+}
+startGreetingPreview();
 let onboardingStep=1;
 function showOnboardingStep(step){
   onboardingStep=step;
