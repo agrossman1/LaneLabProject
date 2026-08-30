@@ -337,6 +337,8 @@ select,input{
 .onboardingStep{display:none}.onboardingStep.active{display:block}
 .onboardingConcepts{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:18px 0}.onboardingConcepts .card{padding:12px}
 .onboardingSecondary,.onboardingBack{min-height:44px;padding:10px 16px;border-radius:12px;border:1px solid var(--line);background:var(--panel2);color:var(--text);font-weight:800}
+.onboardingWelcome{text-align:center}.onboardingWelcome .onboardingLogo{width:min(72%,230px);height:auto;display:block;margin:0 auto 10px}.onboardingWelcome .onboardingArtwork{width:min(70%,260px);aspect-ratio:1;object-fit:cover;border-radius:22px;display:block;margin:4px auto 18px;box-shadow:0 14px 34px rgba(0,0,0,.35)}
+.onboardingLogoSlot{width:min(72%,230px);height:58px;margin:0 auto 10px;border:1px dashed var(--muted);border-radius:12px;display:grid;place-items:center;color:var(--muted);font-size:12px;font-weight:700;letter-spacing:.08em}.onboardingLogoSlot img{max-width:100%;max-height:100%;object-fit:contain;display:block}
 .historyScroll{max-height:360px;overflow-y:auto;padding-right:4px;overscroll-behavior:contain}
 .historyGame{display:block}
 .historyBreakdown{
@@ -1114,8 +1116,10 @@ body.light-mode .ballMatchPreview img{
 
 <div class="modal onboardingModal" id="onboardingModal">
   <div class="sheet onboardingCard" role="dialog" aria-modal="true" aria-labelledby="onboardingTitle">
-    <div class="onboardingStep active" data-step="1">
-      <div class="eyebrow">LaneLab</div><h1 id="onboardingTitle">Your game, decoded.</h1>
+    <div class="onboardingStep active onboardingWelcome" data-step="1">
+      <div class="onboardingLogoSlot"><span>LOGO PLACEHOLDER</span><img src="./assets/onboarding-logo.png" alt="LaneLab" onload="this.previousElementSibling.style.display='none'" onerror="this.style.display='none'"></div>
+      <img class="onboardingArtwork" src="./onboarding-bowl-pin.png" alt="Bowling ball and pin artwork">
+      <h1 id="onboardingTitle">Your game, decoded.</h1>
       <p>Track your bowling.<br>Find what costs you pins.<br>Know what to practice next.</p>
       <button class="cta" onclick="onboardingNext()">Get Started</button>
     </div>
