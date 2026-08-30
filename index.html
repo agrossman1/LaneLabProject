@@ -1231,7 +1231,7 @@ body.light-mode .ballMatchPreview img{
   </div>
 </div>
 
-<script src="./js/stats.js?v=20260903"></script>
+<script src="./js/stats.js?v=20260904"></script>
 <script src="./js/profile.js"></script>
 <script src="./js/arsenal.js"></script>
 <script>
@@ -2293,16 +2293,11 @@ function parseFrameNotation(value, frameIndex){
 
 function editGameFrame(frameIndex){
   if(state.pinTracking) return;
-  const current=state.frames[frameIndex].rolls.map((_,ri)=>rollDisplay(frameIndex,ri)).join(' ');
-  const value=window.prompt(`Edit Frame ${frameIndex+1} (X, 9/, 8-, or 10th-frame bonus notation):`,current);
-  if(value===null) return;
-  const rolls=parseFrameNotation(value,frameIndex);
-  if(!rolls){toast('Use valid notation such as X, 9/, 8-, or X X 6');return;}
-  state.frames[frameIndex]={rolls};
-  state.completed=false;
-  state.currentFrame=9;
-  for(let i=0;i<10;i++) if(!isFrameComplete(i)){state.currentFrame=i;break;}
-  state.completed=state.frames.every((_,i)=>isFrameComplete(i));
+  const frame=state.frames[frameIndex], first=Number(frame.rolls[0]);
+  if(!Number.isFinite(first)) return;
+  if(first===10){ frame.rolls=[10]; frame.pinsLeftAfterFirst=[]; frame.pinsKnockedDownSecond=[]; frame.pinsLeftAfterSecond=[]; renderAll(); return; }
+  const existing=Array.isArray(frame.pinsLeftAfterFirst)?frame.pinsLeftAfterFirst.slice():[];
+  state.pinTracking={frameIndex,firstBall:first,phase:'leave',leave:existing,standing:[],knocked:[],editing:true};
   renderAll();
 }
 
@@ -2466,7 +2461,8 @@ function saveTrackedLeave(){
   const t=state.pinTracking;
   if(!t || t.phase!=='leave') return;
   const frame=state.frames[t.frameIndex];
-  frame.rolls.push(t.firstBall); frame.pinsLeftAfterFirst=t.leave.slice();
+  if(t.editing) frame.rolls=[t.firstBall]; else frame.rolls.push(t.firstBall);
+  frame.pinsLeftAfterFirst=t.leave.slice();
   t.standing=t.leave.slice(); t.knocked=[]; t.phase='throw';
   renderAll();
 }
@@ -2474,8 +2470,16 @@ function saveTrackedThrow(){
   const t=state.pinTracking;
   if(!t || t.phase!=='throw') return;
   const frame=state.frames[t.frameIndex];
-  frame.rolls.push(t.knocked.length); frame.pinsKnockedDownSecond=t.knocked.slice(); frame.pinsLeftAfterSecond=t.standing.filter(pin=>!t.knocked.includes(pin));
+  if(t.editing) frame.rolls=[t.firstBall,t.knocked.length]; else frame.rolls.push(t.knocked.length);
+  frame.pinsKnockedDownSecond=t.knocked.slice(); frame.pinsLeftAfterSecond=t.standing.filter(pin=>!t.knocked.includes(pin));
   state.pinTracking=null;
+  if(t.editing){
+    state.completed=state.frames.every((_,i)=>isFrameComplete(i));
+    state.currentFrame=state.frames.findIndex((_,i)=>!isFrameComplete(i));
+    if(state.currentFrame<0) state.currentFrame=9;
+    renderAll();
+    return;
+  }
   if(isFrameComplete(t.frameIndex)){ if(t.frameIndex===9) state.completed=true; else state.currentFrame++; }
   renderAll();
 }
