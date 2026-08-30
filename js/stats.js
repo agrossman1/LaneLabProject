@@ -51,11 +51,15 @@
     const frames = list.flatMap(game => Array.isArray(game.frames) ? game.frames.slice(0, 10) : []);
     const frameCount = list.reduce((sum, game) => sum + (Array.isArray(game.frames) && game.frames.length ? game.frames.length : 10), 0);
     const scores = list.map(game => Number(game.score));
-    const strikes = list.reduce((sum, game) => sum + (Number.isFinite(Number(game.strikes)) ? Number(game.strikes) : (game.frames || []).filter(frame => String(frame).trim().startsWith('X')).length), 0);
-    const spares = list.reduce((sum, game) => sum + (Number.isFinite(Number(game.spares)) ? Number(game.spares) : (game.frames || []).filter(frame => String(frame).includes('/')).length), 0);
+    const restrictInference = list.some(game => game.source === 'csv import' && game.metricsProvided);
+    const hasStrikeCounts = list.some(game => game.metricsProvided?.strikes === true || Number.isFinite(Number(game.strikes))) || !restrictInference;
+    const hasSpareCounts = list.some(game => game.metricsProvided?.spares === true || Number.isFinite(Number(game.spares))) || !restrictInference;
+    const strikes = hasStrikeCounts ? list.reduce((sum, game) => sum + (Number.isFinite(Number(game.strikes)) ? Number(game.strikes) : (restrictInference ? 0 : (game.frames || []).filter(frame => String(frame).trim().startsWith('X')).length)), 0) : null;
+    const spares = hasSpareCounts ? list.reduce((sum, game) => sum + (Number.isFinite(Number(game.spares)) ? Number(game.spares) : (restrictInference ? 0 : (game.frames || []).filter(frame => String(frame).includes('/')).length)), 0) : null;
     // A spare rate is conversion rate: count only frames where a spare was possible.
     // Strike frames do not create a spare opportunity and must not dilute the result.
-    const spareChances = list.reduce((sum, game) => sum + (Number.isFinite(Number(game.spareOpportunities)) ? Number(game.spareOpportunities) : (game.frames || []).filter(frameHasSpareOpportunity).length), 0);
+    const hasSpareOpportunityCounts = list.some(game => game.metricsProvided?.spareOpportunities === true || Number.isFinite(Number(game.spareOpportunities))) || !restrictInference;
+    const spareChances = hasSpareOpportunityCounts ? list.reduce((sum, game) => sum + (Number.isFinite(Number(game.spareOpportunities)) ? Number(game.spareOpportunities) : (restrictInference ? 0 : (game.frames || []).filter(frameHasSpareOpportunity).length)), 0) : null;
     const pinLeaves = [];
     list.forEach(game => (Array.isArray(game.pinData) ? game.pinData : []).forEach(frame => {
       const pins = Array.isArray(frame?.pinsLeftAfterFirst) ? frame.pinsLeftAfterFirst.map(Number).filter(pin => pin >= 1 && pin <= 10).sort((a, b) => a - b) : null;
@@ -72,7 +76,7 @@
     return {
       games: list.length, average: scores.length ? scores.reduce((a, b) => a + b, 0) / scores.length : null,
       openFrames: frames.filter(frameIsOpen).length, openPerGame: list.length ? frames.filter(frameIsOpen).length / list.length : null,
-      strikeRate: frameCount ? strikes / frameCount * 100 : null, spareRate: spareChances ? spares / spareChances * 100 : null,
+      strikeRate: strikes===null ? null : (frameCount ? strikes / frameCount * 100 : null), spareRate: spares===null || spareChances===null ? null : (spareChances ? spares / spareChances * 100 : null),
       singleAttempts: singles.length, singleMakes: singles.filter(item => item.converted).length,
       singlePct: singles.length ? singles.filter(item => item.converted).length / singles.length * 100 : null,
       leaves: [...leaveMap.values()].sort((a, b) => b.attempts - a.attempts || b.last - a.last)
@@ -156,6 +160,9 @@
         : null,
       spareOpportunities: Number.isInteger(Number(record.spareOpportunities)) && Number(record.spareOpportunities) >= 0
         ? Math.min(10, Number(record.spareOpportunities))
+        : null,
+      metricsProvided: record.metricsProvided && typeof record.metricsProvided === 'object'
+        ? {strikes:record.metricsProvided.strikes===true,spares:record.metricsProvided.spares===true,spareOpportunities:record.metricsProvided.spareOpportunities===true}
         : null,
       strikeRate: percentage(record.strikeRate),
       spareRate: percentage(record.spareRate)
