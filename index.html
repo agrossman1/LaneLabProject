@@ -791,6 +791,8 @@ body.light-mode .ballMatchPreview img{
           </div>
         </div>
         <button class="cta" onclick="document.getElementById('scorePhotoInput').click()">Choose / Take Photo</button>
+        <input id="csvHistoryInput" type="file" accept=".csv,text/csv" hidden onchange="handleCsvHistoryImport(event)">
+        <button class="cta secondary" onclick="document.getElementById('csvHistoryInput').click()">Import Game History CSV</button>
         <button class="cta secondary" onclick="simulateScan()">Use Sample AI Demo</button>
       </div>
 
@@ -1389,15 +1391,59 @@ function showOnboardingStep(step){
   document.getElementById('onboardingModal')?.classList.add('show');
 }
 function onboardingNext(){showOnboardingStep(2)}
+function parseCsvLine(line){
+  const cells=[]; let cell='', quoted=false;
+  for(let i=0;i<line.length;i++){
+    const char=line[i];
+    if(char==='"' && line[i+1]==='"'){cell+='"';i++;continue}
+    if(char==='"'){quoted=!quoted;continue}
+    if(char===','&&!quoted){cells.push(cell.trim());cell='';continue}
+    cell+=char;
+  }
+  cells.push(cell.trim());
+  return cells;
+}
+function importCsvText(text){
+  const rows=String(text||'').split(/\r?\n/).map(row=>row.trim()).filter(Boolean);
+  if(!rows.length) return [];
+  const first=parseCsvLine(rows[0]).map(cell=>cell.toLowerCase());
+  const hasHeader=first.some(cell=>['score','date','frames','hand','ball','game'].includes(cell));
+  const headers=hasHeader?first:['score'];
+  const indexOf=(...names)=>names.map(name=>headers.indexOf(name)).find(index=>index>=0);
+  const scoreIndex=indexOf('score') ?? 0;
+  const dateIndex=indexOf('date');
+  const framesIndex=indexOf('frames','frame');
+  const handIndex=indexOf('hand');
+  const ballIndex=indexOf('ball','equipment');
+  return rows.slice(hasHeader?1:0).map(row=>{
+    const cells=parseCsvLine(row);
+    const score=Number(String(cells[scoreIndex]??'').replace(/[^0-9.-]/g,''));
+    if(!Number.isInteger(score)||score<0||score>300) return null;
+    const rawDate=dateIndex===undefined?'':cells[dateIndex];
+    return {score,date:rawDate&&!Number.isNaN(new Date(rawDate).getTime())?rawDate:undefined,frames:framesIndex===undefined?undefined:String(cells[framesIndex]||'').split(/[|;]/).map(frame=>frame.trim()).filter(Boolean),hand:handIndex===undefined?undefined:cells[handIndex],ball:ballIndex===undefined?undefined:cells[ballIndex],source:'csv import'};
+  }).filter(Boolean);
+}
+function importCsvRecords(text){
+  const records=importCsvText(text);
+  records.forEach(record=>recordGameScore(record.score,record));
+  return records.length;
+}
+function handleCsvHistoryImport(event){
+  const file=event.target.files?.[0]; if(!file) return;
+  const reader=new FileReader();
+  reader.onload=()=>{
+    const count=importCsvRecords(reader.result);
+    toast(count?`${count} game${count===1?'':'s'} imported`:'No valid scores found in that CSV');
+  };
+  reader.readAsText(file); event.target.value='';
+}
 function handleOnboardingCsv(event){
   const file=event.target.files?.[0]; if(!file) return;
   const reader=new FileReader();
   reader.onload=()=>{
-    const rows=String(reader.result||'').split(/\r?\n/).map(row=>row.trim()).filter(Boolean);
-    const scores=rows.map(row=>{const cells=row.split(',').map(cell=>cell.trim().replace(/^"|"$/g,'')); const index=cells.findIndex(cell=>/^score$/i.test(cell)); return Number(cells[index>=0?index:0]);}).filter(score=>Number.isInteger(score)&&score>=0&&score<=300);
-    if(!scores.length){toast('No valid scores found in that CSV');return}
-    scores.forEach(score=>recordGameScore(score,{source:'csv import'}));
-    toast(`${scores.length} game${scores.length===1?'':'s'} imported`);
+    const count=importCsvRecords(reader.result);
+    if(!count){toast('No valid scores found in that CSV');return}
+    toast(`${count} game${count===1?'':'s'} imported`);
     onboardingSkipToReady();
   };
   reader.readAsText(file); event.target.value='';
