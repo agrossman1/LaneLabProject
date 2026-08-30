@@ -1848,6 +1848,39 @@ function renderPersonalHistory(){
   }).join('') : '<div class="listItem center"><b>No games in this date range</b><div class="muted small" style="margin-top:4px">Try another filter or save a new game.</div></div>';
 }
 
+function gameFrameNotation(game){
+  const objectToken=(frame,index)=>{
+    if(typeof frame==='string') return frame;
+    const rolls=Array.isArray(frame?.rolls)?frame.rolls.map(Number).filter(Number.isFinite):[];
+    if(!rolls.length) return null;
+    if(rolls[0]===10) return index===9 ? rolls.map((value,i)=>i===0||value===10?'X':value).join('') : 'X';
+    const first=Math.max(0,Math.min(10,rolls[0]));
+    const second=rolls.length>1?Math.max(0,Math.min(10-first,rolls[1])):null;
+    return `${first}${second===null?'':(first+second===10?'/':second)}`;
+  };
+  if(Array.isArray(game?.frames) && game.frames.some(Boolean)) return game.frames.slice(0,10).map(objectToken);
+  const pinFrames=Array.isArray(game?.pinData)?game.pinData.slice(0,10):[];
+  const frames=Array.from({length:10},(_,index)=>{
+    const frame=pinFrames[index];
+    const first=Array.isArray(frame?.pinsLeftAfterFirst)?frame.pinsLeftAfterFirst:null;
+    const second=Array.isArray(frame?.pinsLeftAfterSecond)?frame.pinsLeftAfterSecond:null;
+    if(!first) return null;
+    if(first.length===0) return 'X';
+    const firstDown=Math.max(0,10-first.length);
+    if(second===null) return `${firstDown}-`;
+    if(second.length===0) return `${firstDown}/`;
+    return `${firstDown}${Math.max(0,first.length-second.length)}`;
+  });
+  let remaining=Math.max(0,(Number(game?.strikes)||0)-frames.filter(frame=>frame==='X').length);
+  for(let index=9;index>=0&&remaining>0;index--){
+    if(frames[index]===null){frames[index]='X';remaining--;}
+  }
+  // If the recorded total still exceeds the visible pin states, preserve the
+  // authoritative total by treating the 10th frame as an inferred strike.
+  if(remaining>0 && frames[9]!=='X'){frames[9]='X';}
+  return frames;
+}
+
 let historyHoldTimer=null;
 function closeHistoryMenus(){
   cancelHistoryHold();
@@ -1877,29 +1910,21 @@ function openGameDetail(event,id){
   const game=state.games.find(item=>item.id===id);
   if(!game) return;
   const gameSummary=LaneLabStats.summarizeGames([game]);
-  const frames=Array.isArray(game.frames)?game.frames.filter(Boolean):[];
+  const frames=gameFrameNotation(game).filter(Boolean);
   const strikes=frames.length ? frames.filter(frame=>String(frame).trim().startsWith('X')).length : (Number.isFinite(Number(game.strikes))?Number(game.strikes):null);
   const metrics=[
     ['Score',game.score],
-    ['Strike rate',gameSummary.strikeRate===null?'—':`${Math.round(gameSummary.strikeRate)}%`],
-    ['Spare Conversion Rate',gameSummary.spareRate===null?'—':`${Math.round(gameSummary.spareRate)}%`],
+    ['Strike rate',(gameSummary.strikeRate===0 || (Number.isFinite(Number(game.strikes)) && Number(game.strikes)===0))?'N/A':(gameSummary.strikeRate===null?'—':`${Math.round(gameSummary.strikeRate)}%`)],
+    ['Spare Conversion Rate',(!Number(game.spareOpportunities) && !gameSummary.spareRate)?'N/A':(gameSummary.spareRate===null?'—':`${Math.round(gameSummary.spareRate)}%`)],
     ['Strikes',strikes===null?'—':strikes]
   ];
   document.getElementById('gameDetailTitle').textContent=`Game ${state.games.indexOf(game)+1}`;
   document.getElementById('gameDetailMeta').innerHTML=[formatGameDate(game.date),game.hand,game.ball].filter(Boolean).map(item=>`<span>${escapeHtml(String(item))}</span>`).join('');
   document.getElementById('gameDetailStats').innerHTML=metrics.map(([label,value])=>`<span class="historyMetric"><b>${value}</b><small>${label}</small></span>`).join('');
-  const frameMarkup=Array.isArray(game.frames)&&game.frames.length
-    ? game.frames.map((frame,index)=>`<div class="gameDetailFrame"><small>Frame ${index+1}</small><b>${escapeHtml(frame)}</b></div>`).join('')
-    : (Array.isArray(game.pinData)&&game.pinData.some(Boolean)
-      ? game.pinData.map((frame,index)=>{
-          const first=Array.isArray(frame?.pinsLeftAfterFirst)?frame.pinsLeftAfterFirst:[];
-          const second=Array.isArray(frame?.pinsLeftAfterSecond)?frame.pinsLeftAfterSecond:null;
-          if(!first.length && !second) return `<div class="gameDetailFrame"><small>Frame ${index+1}</small><b>—</b></div>`;
-          const left=first.length ? `${first.length} left` : '—';
-          const result=second===null ? '' : (second.length ? ` · ${second.length} left` : ' · Made');
-          return `<div class="gameDetailFrame"><small>Frame ${index+1}</small><b>${escapeHtml(left+result)}</b></div>`;
-        }).join('')
-      : '<div class="muted small">Frame notation is unavailable for this game.</div>');
+  const notation=gameFrameNotation(game);
+  const frameMarkup=notation.some(Boolean)
+    ? notation.map((frame,index)=>`<div class="gameDetailFrame"><small>Frame ${index+1}</small><b>${escapeHtml(frame||'—')}</b></div>`).join('')
+    : '<div class="muted small">Frame notation is unavailable for this game.</div>';
   document.getElementById('gameDetailFrames').innerHTML=frameMarkup;
   document.getElementById('gameDetailModal').classList.add('show');
 }
@@ -2110,7 +2135,7 @@ function exportGameDataCsv(){
     // Normalize object-based manual frames and imported records before writing
     // CSV so frame-by-frame details match the JSON export and app calculations.
     const normalized=LaneLabStats.normalizeGameRecord(game) || game;
-    const frames=Array.isArray(normalized.frames)?normalized.frames.slice(0,10):[];
+    const frames=gameFrameNotation(normalized).slice(0,10);
     const strikes=Number.isInteger(Number(game.strikes))?Number(game.strikes):frames.filter(frame=>String(frame).trim().startsWith('X')).length;
     const spares=frames.filter(frame=>String(frame).includes('/')).length;
     const open=frames.filter(frame=>LaneLabStats.frameIsOpen(frame)).length;
