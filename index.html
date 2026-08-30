@@ -1231,7 +1231,7 @@ body.light-mode .ballMatchPreview img{
   </div>
 </div>
 
-<script src="./js/stats.js?v=20260902"></script>
+<script src="./js/stats.js?v=20260903"></script>
 <script src="./js/profile.js"></script>
 <script src="./js/arsenal.js"></script>
 <script>
@@ -2252,12 +2252,58 @@ function renderScoreboard(){
   state.frames.forEach((f,i)=>{
     const div=document.createElement('div');
     div.className='frame'+(i===state.currentFrame && !state.completed?' current':'');
+    div.title='Tap to edit this frame';
+    div.onclick=()=>editGameFrame(i);
     const rolls=f.rolls.map((_,ri)=>`<span>${rollDisplay(i,ri)}</span>`).join('');
     div.innerHTML=`<div class="fnum">F${i+1}</div><div class="rolls">${rolls}</div><div class="fscore">${cum[i]??'—'}</div>`;
     board.appendChild(div);
   });
   const lastKnown=[...cum].reverse().find(v=>v!==null) ?? 0;
   document.getElementById('runningTotal').textContent=lastKnown;
+}
+
+function parseFrameNotation(value, frameIndex){
+  const token=String(value??'').toUpperCase().replace(/\s+/g,'');
+  if(!token) return null;
+  if(frameIndex<9){
+    if(token==='X') return [10];
+    if(token.length!==2) return null;
+    const first=token[0]==='-'?0:Number(token[0]);
+    if(!Number.isInteger(first)||first<0||first>9) return null;
+    const second=token[1]==='/'?10-first:token[1]==='-'?0:Number(token[1]);
+    if(!Number.isInteger(second)||second<0||first+second>10) return null;
+    return [first,second];
+  }
+  if(token.length>3) return null;
+  const rolls=[];
+  for(let i=0;i<token.length;i++){
+    const mark=token[i];
+    if(mark==='X') rolls.push(10);
+    else if(mark==='-') rolls.push(0);
+    else if(mark==='/'){
+      if(!rolls.length||rolls[rolls.length-1]===10) return null;
+      rolls.push(10-rolls[rolls.length-1]);
+    }else if(/[0-9]/.test(mark)) rolls.push(Number(mark));
+    else return null;
+    if(rolls.length>1 && rolls[0]!==10 && rolls[0]+rolls[1]>10) return null;
+    if(rolls.length>2 && rolls[0]===10 && rolls[1]!==10 && rolls[1]+rolls[2]>10) return null;
+  }
+  return rolls.length>=2?rolls:null;
+}
+
+function editGameFrame(frameIndex){
+  if(state.pinTracking) return;
+  const current=state.frames[frameIndex].rolls.map((_,ri)=>rollDisplay(frameIndex,ri)).join(' ');
+  const value=window.prompt(`Edit Frame ${frameIndex+1} (X, 9/, 8-, or 10th-frame bonus notation):`,current);
+  if(value===null) return;
+  const rolls=parseFrameNotation(value,frameIndex);
+  if(!rolls){toast('Use valid notation such as X, 9/, 8-, or X X 6');return;}
+  state.frames[frameIndex]={rolls};
+  state.completed=false;
+  state.currentFrame=9;
+  for(let i=0;i<10;i++) if(!isFrameComplete(i)){state.currentFrame=i;break;}
+  state.completed=state.frames.every((_,i)=>isFrameComplete(i));
+  renderAll();
 }
 
 function renderKeypad(){
