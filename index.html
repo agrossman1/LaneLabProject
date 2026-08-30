@@ -1415,7 +1415,7 @@ function importCsvText(text){
   const rows=String(text||'').split(/\r?\n/).map(row=>row.trim()).filter(Boolean);
   if(!rows.length) return [];
   const first=parseCsvLine(rows[0]).map(cell=>cell.toLowerCase().replace(/[\s_-]+/g,''));
-  const hasHeader=first.some(cell=>['score','gamescore','finalscore','totalscore','points','date','gamedate','sessiondate','frames','hand','ball','equipment','game','strikes','spares','openframes','spareopportunities','sparechances'].includes(cell)||/^frame?\d+$/.test(cell)||/^f\d+$/.test(cell));
+  const hasHeader=first.some(cell=>['score','gamescore','finalscore','totalscore','points','date','gamedate','sessiondate','frames','hand','ball','equipment','game','strikes','strikeframes','spares','spareframes','openframes','spareopportunities','sparechances'].includes(cell)||/^frame?\d+$/.test(cell)||/^f\d+$/.test(cell));
   const headers=hasHeader?first:[];
   const indexOf=(...names)=>names.map(name=>headers.indexOf(name.replace(/[\s_-]+/g,''))).find(index=>index>=0);
   const scoreIndex=indexOf('score','gamescore','finalscore','totalscore','points');
@@ -1423,8 +1423,8 @@ function importCsvText(text){
   const framesIndex=indexOf('frames','frame');
   const handIndex=indexOf('hand');
   const ballIndex=indexOf('ball','equipment');
-  const strikesIndex=indexOf('strikes','strike');
-  const sparesIndex=indexOf('spares','spare');
+  const strikesIndex=indexOf('strikes','strike','strikeframes');
+  const sparesIndex=indexOf('spares','spare','spareframes');
   const spareChancesIndex=indexOf('spareopportunities','sparechances');
   const openFramesIndex=indexOf('openframes','opens');
   const frameColumns=headers.map((header,index)=>({header,index,number:Number((header.match(/^(?:frame|f)?(\d{1,2})$/)||[])[1])})).filter(item=>item.number>=1&&item.number<=10).sort((a,b)=>a.number-b.number);
