@@ -1488,7 +1488,9 @@ function onboardingFinish(startScore=false){
   if(!startScore){showOnboardingStep(4); return}
   document.getElementById('onboardingModal')?.classList.remove('show');
   renderProfile(); syncAverageDisplays();
-  if(startScore) go('score'); else go('home');
+  // New users land on the dashboard first after setup; they can start a
+  // scorecard from the navigation when ready.
+  go('home');
 }
 function replayOnboarding(){
   document.getElementById('onboardingName').value=profile.name==='Anthony'?'':profile.name;
