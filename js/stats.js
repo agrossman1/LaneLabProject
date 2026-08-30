@@ -49,22 +49,34 @@
   function summarizeGames(games) {
     const list = (Array.isArray(games) ? games : []).filter(game => Number.isFinite(Number(game?.score)));
     const frames = list.flatMap(game => Array.isArray(game.frames) ? game.frames.slice(0, 10) : []);
+    const pinFrames = list.flatMap(game => Array.isArray(game.pinData) ? game.pinData.slice(0, 10) : []);
+    const pinFrameMetrics = pinFrames.reduce((metrics, frame) => {
+      const first = Array.isArray(frame?.pinsLeftAfterFirst) ? frame.pinsLeftAfterFirst : null;
+      const second = Array.isArray(frame?.pinsLeftAfterSecond) ? frame.pinsLeftAfterSecond : null;
+      if (!first || first.length === 0 || first.length === 10 && second === null) return metrics;
+      metrics.spareOpportunities += 1;
+      if (second && second.length === 0) metrics.spares += 1;
+      if (second && second.length > 0) metrics.openFrames += 1;
+      return metrics;
+    }, {spareOpportunities: 0, spares: 0, openFrames: 0});
     const frameCount = list.reduce((sum, game) => sum + (Array.isArray(game.frames) && game.frames.length ? game.frames.length : 10), 0);
     const scores = list.map(game => Number(game.score));
     const strikes = list.reduce((sum, game) => {
       const gameFrames = Array.isArray(game.frames) ? game.frames.filter(Boolean) : [];
       return sum + (gameFrames.length ? gameFrames.filter(frame => String(frame).trim().startsWith('X')).length : (Number.isFinite(Number(game.strikes)) ? Number(game.strikes) : 0));
     }, 0);
-    const spares = list.reduce((sum, game) => {
+    const sparesFromRecords = list.reduce((sum, game) => {
       const gameFrames = Array.isArray(game.frames) ? game.frames.filter(Boolean) : [];
       return sum + (gameFrames.length ? gameFrames.filter(frame => String(frame).includes('/')).length : (Number.isFinite(Number(game.spares)) ? Number(game.spares) : 0));
     }, 0);
+    const spares = frames.length ? sparesFromRecords : pinFrameMetrics.spares;
     // A spare rate is conversion rate: count only frames where a spare was possible.
     // Strike frames do not create a spare opportunity and must not dilute the result.
-    const spareChances = list.reduce((sum, game) => {
+    const spareChancesFromRecords = list.reduce((sum, game) => {
       const gameFrames = Array.isArray(game.frames) ? game.frames.filter(Boolean) : [];
       return sum + (gameFrames.length ? gameFrames.filter(frameHasSpareOpportunity).length : (Number.isFinite(Number(game.spareOpportunities)) ? Number(game.spareOpportunities) : 0));
     }, 0);
+    const spareChances = frames.length ? spareChancesFromRecords : pinFrameMetrics.spareOpportunities;
     const pinLeaves = [];
     list.forEach(game => (Array.isArray(game.pinData) ? game.pinData : []).forEach(frame => {
       const pins = Array.isArray(frame?.pinsLeftAfterFirst) ? frame.pinsLeftAfterFirst.map(Number).filter(pin => pin >= 1 && pin <= 10).sort((a, b) => a - b) : null;
@@ -80,7 +92,7 @@
     const singles = pinLeaves.filter(item => item.pins.length === 1);
     return {
       games: list.length, average: scores.length ? scores.reduce((a, b) => a + b, 0) / scores.length : null,
-      openFrames: frames.filter(frameIsOpen).length, openPerGame: list.length ? frames.filter(frameIsOpen).length / list.length : null,
+      openFrames: frames.length ? frames.filter(frameIsOpen).length : pinFrameMetrics.openFrames, openPerGame: list.length ? (frames.length ? frames.filter(frameIsOpen).length : pinFrameMetrics.openFrames) / list.length : null,
       strikeRate: frameCount ? strikes / frameCount * 100 : null, spareRate: spareChances ? spares / spareChances * 100 : null,
       singleAttempts: singles.length, singleMakes: singles.filter(item => item.converted).length,
       singlePct: singles.length ? singles.filter(item => item.converted).length / singles.length * 100 : null,
