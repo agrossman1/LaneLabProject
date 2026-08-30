@@ -337,7 +337,8 @@ select,input{
 .onboardingStep{display:none}.onboardingStep.active{display:block}
 .onboardingConcepts{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:18px 0}.onboardingConcepts .card{padding:12px}
 .onboardingSecondary,.onboardingBack{min-height:44px;padding:10px 16px;border-radius:12px;border:1px solid var(--line);background:var(--panel2);color:var(--text);font-weight:800}
-.onboardingBallActions{display:grid;grid-template-columns:1fr 1fr 1.35fr;gap:8px}.onboardingBallActions .cta{min-width:0;padding-left:10px;padding-right:10px}
+.onboardingBallActions{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}.onboardingBallActions>button,.onboardingStep .row>button{min-width:0;width:100%}.onboardingBallActions .cta{padding-left:10px;padding-right:10px}
+.onboardingImport{display:block;margin:8px auto 0;min-height:36px;padding:7px 12px;border:0;background:transparent;color:var(--muted);font-size:12px;font-weight:700}
 .onboardingWelcome{text-align:center}.onboardingWelcome .onboardingLogo{width:min(72%,230px);height:auto;display:block;margin:0 auto 10px}.onboardingWelcome .onboardingArtwork{width:min(70%,260px);aspect-ratio:1;object-fit:cover;border-radius:22px;display:block;margin:4px auto 18px;box-shadow:0 14px 34px rgba(0,0,0,.35)}
 .onboardingLogoCombo{width:min(82%,280px);height:66px;margin:0 auto 10px;display:flex;align-items:center;justify-content:center;gap:10px}.onboardingLogoCombo .logoMark{width:58px;height:58px;object-fit:contain}.onboardingLogoCombo .logoWord{width:205px;max-height:58px;object-fit:contain}
 .onboardingMergedLogo{width:min(88%,330px);max-height:110px;object-fit:contain;display:block;margin:0 auto 16px}
@@ -1123,6 +1124,7 @@ body.light-mode .ballMatchPreview img{
       <h1 id="onboardingTitle">Your game, decoded.</h1>
       <p>Track your bowling.<br>Find what costs you pins.<br>Know what to practice next.</p>
       <button class="cta" onclick="onboardingNext()">Get Started</button>
+      <button class="onboardingImport" onclick="toast('CSV import will be available from your game history')">Already have game data? (Import CSV file here)</button>
     </div>
     <div class="onboardingStep" data-step="2">
       <h2>Tell us about you</h2><p class="muted small">Only the basics LaneLab uses.</p>
