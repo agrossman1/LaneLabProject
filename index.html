@@ -702,16 +702,15 @@ body.light-mode .ballMatchPreview img{
           </div>
           <div class="pill" id="homeAvgWindow">Last 10</div>
         </div>
-        <div class="row" style="justify-content:flex-end;margin-top:10px"><div class="chartToggle" style="margin:0"><button id="homeMineBtn" class="active" onclick="setHomeDataMode('me')">My data</button><button id="homeIanBtn" onclick="setHomeDataMode('ian')">Ian’s data</button></div></div>
-        <div class="delta" id="trendDelta">Historical average</div>
+        <div class="delta" id="trendDelta">Record games to see your averages</div>
         <div class="muted small" style="margin-top:4px">Hold “Last 10” to toggle all games</div>
       </div>
 
       <div class="grid">
-        <div class="stat"><small>Strike rate</small><b id="strikeRate">—</b><span class="muted small">historical</span></div>
-        <div class="stat"><small>Spare Conversion Rate</small><b id="spareRate">—</b><span class="muted small">historical</span></div>
-        <div class="stat"><small>High game</small><b id="highGame">—</b><span class="muted small">historical</span></div>
-        <div class="stat"><small>Open frames</small><b id="openFrames">—</b><span class="muted small" id="openFramesMeta">historical average</span></div>
+        <div class="stat"><small>Strike rate</small><b id="strikeRate">—</b><span class="muted small">your games</span></div>
+        <div class="stat"><small>Spare Conversion Rate</small><b id="spareRate">—</b><span class="muted small">your games</span></div>
+        <div class="stat"><small>High game</small><b id="highGame">—</b><span class="muted small">your games</span></div>
+        <div class="stat"><small>Open frames</small><b id="openFrames">—</b><span class="muted small" id="openFramesMeta">your games</span></div>
       </div>
 
       <div class="card">
@@ -898,7 +897,7 @@ body.light-mode .ballMatchPreview img{
       <div class="card">
         <h2>Game-by-game</h2>
         <div class="list" id="gameBreakdown"></div>
-        <p class="small" id="gameBreakdownMessage">Historical scores are shown from Anthony’s recorded games.</p>
+        <p class="small" id="gameBreakdownMessage">Your recorded games will appear here.</p>
       </div>
     </section>
 
@@ -1222,10 +1221,8 @@ body.light-mode .ballMatchPreview img{
 </div>
 
 <script src="./js/stats.js?v=20260829"></script>
-<script src="./ianHistory.js"></script>
 <script src="./js/profile.js"></script>
 <script src="./js/arsenal.js"></script>
-<script src="./js/history.js"></script>
 <script>
 
 const demoScanPlayers = [
@@ -1360,34 +1357,8 @@ function gameDateValue(){
   return input?.value ? `${input.value}T12:00:00` : undefined;
 }
 
-function loadAnthonyHistory(){
-  const history=window.LaneLabData?.anthonyHistory;
-  if(!history || history.player!=='Anthony' || !Array.isArray(history.sessions)) return [];
-  return history.sessions.flatMap(session=>Array.isArray(session.games) ? session.games.map(game=>{
-    const frames=Array.isArray(game.frames) ? game.frames.slice() : [];
-    const strikes=frames.reduce((count,frame)=>count+(String(frame).trim().startsWith('X')?1:0),0);
-    const spareFrames=frames.filter(frame=>String(frame).replace(/\s+/g,'').includes('/')).length;
-    const spareChances=frames.filter(frame=>{
-      const token=String(frame||'').replace(/\s+/g,'').trim();
-      if(!token) return false;
-      if(!token.startsWith('X')) return token.length>=2;
-      return token.length>=3 && token[1]!=='X';
-    }).length;
-    return LaneLabStats.normalizeGameRecord({
-      id:`history-${session.session}-${game.game}`,
-      date:`${session.date}T12:00:00.000Z`,
-      score:game.score,
-      hand:'Ambidextrous',
-      source:'historical',
-      frames,
-      strikes,
-      strikeRate:Math.round(strikes/10*100),
-      spareRate:spareChances ? Math.round(spareFrames/spareChances*100) : 0
-    });
-  }) : []).filter(Boolean);
-}
-
-const historicalGames=loadAnthonyHistory();
+// Demo histories are kept out of the product experience; each user starts with their own games.
+const historicalGames=[];
 const savedGames=LaneLabStats.loadGameRecords(getGameStorage(),[]).filter(game=>!['previous','historical'].includes(game.source));
 let hasExistingProfile=false;
 try{hasExistingProfile=Boolean(getGameStorage()?.getItem(LaneLabProfile.STORAGE_KEY))}catch(e){}
@@ -1405,12 +1376,10 @@ const state = {
 state.recent=LaneLabStats.saveScores(getGameStorage(),state.recent);
 state.games=LaneLabStats.saveGameRecords(getGameStorage(),state.games);
 let homeDataMode='me';
-const ianGames=Array.isArray(window.LaneLabData?.ianHistory?.sessions)
-  ? window.LaneLabData.ianHistory.sessions.flatMap(session=>session.games.map(game=>({id:`ian-${session.date}-${game.game}`,date:`${session.date}T12:00:00Z`,score:game.score,frames:game.frames,source:'ian',hand:null})))
-  : [];
-function getActiveGames(){return homeDataMode==='ian'?ianGames:state.games;}
+const ianGames=[];
+function getActiveGames(){return state.games;}
 function getHomeGames(){return getActiveGames();}
-function setHomeDataMode(mode){homeDataMode=mode==='ian'?'ian':'me';document.getElementById('homeMineBtn')?.classList.toggle('active',homeDataMode==='me');document.getElementById('homeIanBtn')?.classList.toggle('active',homeDataMode==='ian');syncAverageDisplays();syncGameSummaries();renderRecent();renderChart();renderSessionMetrics();renderPersonalStats();}
+function setHomeDataMode(){homeDataMode='me';syncAverageDisplays();syncGameSummaries();renderRecent();renderChart();renderSessionMetrics();renderPersonalStats();}
 
 let profile=LaneLabProfile.load(getGameStorage());
 let onboardingStep=1;
@@ -1655,7 +1624,7 @@ function renderHistoryMetrics(games=state.games){
   const openFrames=document.getElementById('openFrames');
   const openMeta=document.getElementById('openFramesMeta');
   if(openFrames) openFrames.textContent=analysis.openPerGame===null?'—':analysis.openPerGame.toFixed(1);
-  if(openMeta) openMeta.textContent='historical average';
+  if(openMeta) openMeta.textContent='your games';
   const single=document.getElementById('singlePinCount');
   const singleMeta=document.getElementById('singlePinMeta');
   if(single) single.textContent=analysis.singlePct===null?'—':`${Math.round(analysis.singlePct)}%`;
@@ -2409,7 +2378,7 @@ function renderGameBreakdown(){
   if(!box) return;
   const activeGames=getActiveGames();
   const source=document.getElementById('gameBreakdownMessage');
-  if(source) source.textContent=`Historical scores are shown from ${homeDataMode==='ian'?'Ian’s':'Anthony’s'} recorded games.`;
+  if(source) source.textContent='Your recorded games will appear here.';
   const games=activeGames.slice(-3).reverse();
   box.innerHTML=games.length ? games.map((game,index)=>`<div class="listItem row"><span>Game ${activeGames.length-index}</span><b>${game.score}</b></div>`).join('') : '<div class="listItem center"><b>No games recorded yet.</b></div>';
 }
