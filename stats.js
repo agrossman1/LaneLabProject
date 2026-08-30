@@ -155,7 +155,7 @@
       if (typeof frame === 'string') {
         // Keep bowling notation consistent everywhere: a zero-pin roll is
         // displayed as a dash, while the two-digit value 10 remains intact.
-        return frame.slice(0, 20).replace(/(^|[^1])0/g, '$1-');
+        return frame.slice(0, 20).replace(/0/g, '-');
       }
       if (!frame || !Array.isArray(frame.rolls)) return null;
       const rolls = frame.rolls.map(Number).filter(value => Number.isFinite(value));
