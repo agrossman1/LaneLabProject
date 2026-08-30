@@ -1802,7 +1802,7 @@ function renderPersonalHistory(){
   if(!box || !count) return;
   count.textContent=`${games.length} shown`;
   box.innerHTML=games.length ? games.map(game=>{
-    const details=[game.hand,game.ball].filter(Boolean).join(' · ') || 'Details unavailable';
+    const details=[game.hand,game.ball].filter(Boolean).join(' · ') || (game.source==='csv import' ? 'Imported from CSV' : 'Details unavailable');
     const frames=Array.isArray(game.frames)?game.frames.filter(Boolean):[];
     const gameSummary=LaneLabStats.summarizeGames([game]);
     const strikes=frames.length ? frames.filter(frame=>String(frame).trim().startsWith('X')).length : (Number.isFinite(Number(game.strikes))?Number(game.strikes):null);
@@ -1810,7 +1810,7 @@ function renderPersonalHistory(){
     const metric=(value,label)=>`<span class="historyMetric"><b>${value}</b><small>${label}</small></span>`;
     return `<div class="listItem historyGame" data-game-id="${escapeHtml(game.id)}" onclick="openGameDetail(event,'${escapeHtml(game.id)}')">
       <div class="row"><div><b>${formatGameDate(game.date)}</b><div class="muted small">${escapeHtml(details)}</div><div class="muted small" style="margin-top:5px">Tap for breakdown · hold score for options</div></div><b class="scoreBig" onpointerdown="startHistoryHold(event,'${escapeHtml(game.id)}')" onpointerup="cancelHistoryHold()" onpointerleave="cancelHistoryHold()" onpointercancel="cancelHistoryHold()" onclick="event.stopPropagation()">${game.score}</b></div>
-      <div class="historyBreakdown">${metric(strikes===null?'—':strikes,'Strikes')}${metric(spares===null?'—':spares,'Spares')}${metric(gameSummary.openFrames,'Open frames')}</div>
+      <div class="historyBreakdown">${metric(strikes===null?'—':strikes,'Strikes')}${metric(spares===null?'—':spares,'Spares')}${metric(gameSummary.strikeRate===null?'—':`${Math.round(gameSummary.strikeRate)}%`,'Strike rate')}${metric(gameSummary.spareRate===null?'—':`${Math.round(gameSummary.spareRate)}%`,'Spare conversion')}${metric(gameSummary.openFrames,'Open frames')}</div>
       <div class="historyActions" hidden>
         <button type="button" onclick="editHistoryGame(event,'${escapeHtml(game.id)}')">Edit score</button>
         <button type="button" class="danger" onclick="deleteHistoryGame(event,'${escapeHtml(game.id)}')">Delete game</button>
@@ -1847,11 +1847,14 @@ function openGameDetail(event,id){
   if(event) event.stopPropagation();
   const game=state.games.find(item=>item.id===id);
   if(!game) return;
+  const gameSummary=LaneLabStats.summarizeGames([game]);
+  const frames=Array.isArray(game.frames)?game.frames.filter(Boolean):[];
+  const strikes=frames.length ? frames.filter(frame=>String(frame).trim().startsWith('X')).length : (Number.isFinite(Number(game.strikes))?Number(game.strikes):null);
   const metrics=[
     ['Score',game.score],
-    ['Strike rate',game.strikeRate===null?'—':`${game.strikeRate}%`],
-    ['Spare Conversion Rate',game.spareRate===null?'—':`${game.spareRate}%`],
-    ['Strikes',game.strikes===null?'—':game.strikes]
+    ['Strike rate',gameSummary.strikeRate===null?'—':`${Math.round(gameSummary.strikeRate)}%`],
+    ['Spare Conversion Rate',gameSummary.spareRate===null?'—':`${Math.round(gameSummary.spareRate)}%`],
+    ['Strikes',strikes===null?'—':strikes]
   ];
   document.getElementById('gameDetailTitle').textContent=`Game ${state.games.indexOf(game)+1}`;
   document.getElementById('gameDetailMeta').innerHTML=[formatGameDate(game.date),game.hand,game.ball].filter(Boolean).map(item=>`<span>${escapeHtml(String(item))}</span>`).join('');
@@ -2089,7 +2092,7 @@ function go(id){
   document.querySelectorAll('.nav button').forEach(b=>b.classList.toggle('active',b.dataset.target===id));
   if(id==='arsenal') renderArsenal();
   if(id==='personalStats') renderPersonalStats();
-  if(id==='stats') renderSessionMetrics();
+  if(id==='stats'){ renderChart(); renderSessionMetrics(); }
   window.scrollTo({top:0,behavior:'smooth'});
 }
 
