@@ -127,8 +127,26 @@
     const text = value => typeof value === 'string' && value.trim()
       ? value.trim().slice(0, 80)
       : null;
+    const frameToken = (frame, frameIndex) => {
+      if (typeof frame === 'string') return frame.slice(0, 20);
+      if (!frame || !Array.isArray(frame.rolls)) return null;
+      const rolls = frame.rolls.map(Number).filter(value => Number.isFinite(value));
+      if (!rolls.length) return null;
+      const mark = value => value === 0 ? '-' : String(value);
+      if (rolls[0] === 10) {
+        if (frameIndex !== 9) return 'X';
+        return rolls.map((value, rollIndex) => {
+          if (value === 10) return 'X';
+          if (rollIndex > 0 && rolls[rollIndex - 1] !== 10 && rolls[rollIndex - 1] + value === 10) return '/';
+          return mark(value);
+        }).join('');
+      }
+      const first = Math.min(10, Math.max(0, rolls[0]));
+      const second = rolls.length > 1 ? Math.min(10 - first, Math.max(0, rolls[1])) : null;
+      return mark(first) + (second === null ? '' : (first + second === 10 ? '/' : mark(second)));
+    };
     const frames = Array.isArray(record.frames)
-      ? record.frames.filter(frame => typeof frame === 'string').map(frame => frame.slice(0, 20))
+      ? record.frames.slice(0, 10).map(frameToken).filter(Boolean)
       : null;
     const pinData = Array.isArray(record.pinData)
       ? record.pinData.slice(0, 10).map(frame => {
