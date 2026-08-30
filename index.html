@@ -1500,7 +1500,13 @@ function importCsvRecords(text){
 function importJsonRecords(text){
   let payload;
   try{payload=JSON.parse(text)}catch(error){return 0}
-  const records=Array.isArray(payload)?payload:(Array.isArray(payload?.games)?payload.games:[]);
+  // Accept both raw game arrays and the app's exported JSON shape, where
+  // games are stored under `state.games`.
+  const records=Array.isArray(payload)
+    ? payload
+    : (Array.isArray(payload?.games)
+      ? payload.games
+      : (Array.isArray(payload?.state?.games) ? payload.state.games : []));
   const valid=records.filter(record=>record&&Number.isFinite(Number(record.score)));
   valid.forEach(record=>recordGameScore(Number(record.score),{...record,source:record.source||'json import'}));
   return valid.length;
