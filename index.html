@@ -1231,7 +1231,7 @@ body.light-mode .ballMatchPreview img{
   </div>
 </div>
 
-<script src="./js/stats.js?v=20260901"></script>
+<script src="./js/stats.js?v=20260902"></script>
 <script src="./js/profile.js"></script>
 <script src="./js/arsenal.js"></script>
 <script>
@@ -2545,11 +2545,19 @@ function saveGame(){
     date:gameDateValue(),
     source:'manual',
     frames:state.frames.map(frame=>({rolls:frame.rolls.slice(),...(Array.isArray(frame.pinsLeftAfterFirst)?{pinsLeftAfterFirst:frame.pinsLeftAfterFirst.slice()}:{}),...(Array.isArray(frame.pinsKnockedDownSecond)?{pinsKnockedDownSecond:frame.pinsKnockedDownSecond.slice()}:{}),...(Array.isArray(frame.pinsLeftAfterSecond)?{pinsLeftAfterSecond:frame.pinsLeftAfterSecond.slice()}: {})})),
-    pinData:state.frames.map(frame=>({
-      pinsLeftAfterFirst:Array.isArray(frame.pinsLeftAfterFirst)?frame.pinsLeftAfterFirst.slice():null,
-      pinsKnockedDownSecond:Array.isArray(frame.pinsKnockedDownSecond)?frame.pinsKnockedDownSecond.slice():null,
-      pinsLeftAfterSecond:Array.isArray(frame.pinsLeftAfterSecond)?frame.pinsLeftAfterSecond.slice():null
-    })),
+    pinData:state.frames.map(frame=>{
+      // A strike is an explicit all-pins-cleared result; no second ball was needed.
+      if(frame.rolls[0]===10) return {
+        pinsLeftAfterFirst:[],
+        pinsKnockedDownSecond:[],
+        pinsLeftAfterSecond:[]
+      };
+      return {
+        pinsLeftAfterFirst:Array.isArray(frame.pinsLeftAfterFirst)?frame.pinsLeftAfterFirst.slice():null,
+        pinsKnockedDownSecond:Array.isArray(frame.pinsKnockedDownSecond)?frame.pinsKnockedDownSecond.slice():null,
+        pinsLeftAfterSecond:Array.isArray(frame.pinsLeftAfterSecond)?frame.pinsLeftAfterSecond.slice():null
+      };
+    }),
     ...stats
   });
   document.getElementById('strikeRate').textContent=stats.strikeRate+'%';
