@@ -137,7 +137,7 @@ p{color:var(--muted);line-height:1.5}
 .pinTracker{display:none;margin:12px 0;padding:16px;border:1px solid var(--line);border-radius:18px;background:var(--panel2);text-align:center}
 .pinTracker.active{display:block}
 .pinRack{display:grid;grid-template-columns:repeat(7,42px);grid-template-rows:repeat(4,42px);justify-content:center;gap:2px 2px;margin:16px auto}
-.pinButton{width:42px;height:42px;border-radius:50%;border:1px solid var(--line);background:#f5f7ff;color:#16213a;font-weight:900;font-size:20px;box-shadow:0 3px 8px rgba(0,0,0,.2);padding:0}
+.pinButton{width:42px;height:42px;border-radius:50%;border:1px solid var(--line);background:#f5f7ff;color:#16213a;font-weight:900;font-size:20px;box-shadow:0 3px 8px rgba(0,0,0,.2);padding:0;touch-action:none}
 .pinButton:nth-child(1){grid-column:1;grid-row:1}.pinButton:nth-child(2){grid-column:3;grid-row:1}.pinButton:nth-child(3){grid-column:5;grid-row:1}.pinButton:nth-child(4){grid-column:7;grid-row:1}
 .pinButton:nth-child(5){grid-column:2;grid-row:2}.pinButton:nth-child(6){grid-column:4;grid-row:2}.pinButton:nth-child(7){grid-column:6;grid-row:2}
 .pinButton:nth-child(8){grid-column:3;grid-row:3}.pinButton:nth-child(9){grid-column:5;grid-row:3}.pinButton:nth-child(10){grid-column:4;grid-row:4}
@@ -2255,7 +2255,66 @@ function renderPinTracker(){
     const unavailable=leavePhase && active && !on && selectedCount>=target;
     return `<button class="pinButton ${on?'selected':''} ${!active?'down':''} ${unavailable?'unavailable':''}" ${canSelect?`onclick="toggleTrackedPin(${pin})"`: 'disabled'} aria-label="Pin ${pin}">${active?pin:''}</button>`;
   }).join('');
-  box.innerHTML=`<div class="muted small">${prompt}</div><b>${detail}${!leavePhase && selectedCount===t.standing.length?' ✓':''}</b><div class="pinRack">${buttons}</div><div class="pinTrackerActions"><button class="cta secondary" onclick="skipPinTracking()">Skip pin tracking</button>${leavePhase?`<button class="cta secondary" onclick="selectAllStanding()">All pins still up</button><button class="cta" ${selectedCount===target?'':'disabled'} onclick="saveTrackedLeave()">Save Leave</button>`:`<button class="cta secondary" onclick="selectAllStanding();saveTrackedThrow()">Knock Down All / Spare</button><button class="cta secondary" onclick="clearBallTwo()">Clear Ball 2</button><button class="cta" onclick="saveTrackedThrow()">Save Throw</button>`}</div>`;
+  box.innerHTML=`<div class="muted small">${prompt}</div><b class="pinTrackerDetail">${detail}${!leavePhase && selectedCount===t.standing.length?' ✓':''}</b><div class="pinRack">${buttons}</div><div class="pinTrackerActions"><button class="cta secondary" onclick="skipPinTracking()">Skip pin tracking</button>${leavePhase?`<button class="cta secondary" onclick="selectAllStanding()">All pins still up</button><button class="cta" ${selectedCount===target?'':'disabled'} onclick="saveTrackedLeave()">Save Leave</button>`:`<button class="cta secondary" onclick="selectAllStanding();saveTrackedThrow()">Knock Down All / Spare</button><button class="cta secondary" onclick="clearBallTwo()">Clear Ball 2</button><button class="cta" onclick="saveTrackedThrow()">Save Throw</button>`}</div>`;
+  box.querySelectorAll('.pinButton').forEach(button=>{
+    const pin=Number(button.getAttribute('aria-label')?.replace('Pin ',''));
+    button.setAttribute('onpointerdown',`pinDragStart(event,${pin})`);
+    button.setAttribute('onpointermove','pinDragMove(event)');
+    button.setAttribute('onpointerup','pinDragEnd(event)');
+    button.setAttribute('onpointercancel','pinDragEnd(event)');
+    if(button.getAttribute('onclick')) button.setAttribute('onclick',`pinTap(event,${pin})`);
+  });
+}
+
+let pinDragState=null;
+let pinSuppressClickUntil=0;
+function pinTap(event,pin){
+  if(Date.now()<pinSuppressClickUntil){event.preventDefault();event.stopPropagation();return;}
+  toggleTrackedPin(pin);
+}
+function pinDragStart(event,pin){
+  if(event.pointerType==='mouse' && event.button!==0) return;
+  pinDragState={pointerId:event.pointerId,startX:event.clientX,startY:event.clientY,startPin:pin,moved:false,visited:new Set()};
+  try{event.currentTarget.setPointerCapture(event.pointerId)}catch(e){}
+}
+function pinDragMove(event){
+  const drag=pinDragState;
+  if(!drag || drag.pointerId!==event.pointerId) return;
+  if(Math.hypot(event.clientX-drag.startX,event.clientY-drag.startY)>5) drag.moved=true;
+  if(!drag.moved) return;
+  const hit=document.elementFromPoint(event.clientX,event.clientY)?.closest?.('.pinButton');
+  const pin=hit?Number(hit.getAttribute('aria-label')?.replace('Pin ','')):null;
+  [drag.startPin,pin].forEach(value=>{
+    if(!Number.isInteger(value)||drag.visited.has(value)) return;
+    drag.visited.add(value);
+    const t=state.pinTracking;
+    if(!t) return;
+    const list=t.phase==='leave'?t.leave:t.knocked;
+    const target=t.phase==='leave' ? (t.firstBall===0?10:10-t.firstBall) : t.standing.length;
+    if(list.includes(value) || !((t.phase==='leave'?Array.from({length:10},(_,i)=>i+1):t.standing).includes(value)) || list.length>=target) return;
+    list.push(value);
+  });
+  syncPinDragUI();
+  event.preventDefault();
+}
+function syncPinDragUI(){
+  const t=state.pinTracking, box=document.getElementById('pinTracker');
+  if(!t||!box) return;
+  const leave=t.phase==='leave', list=leave?t.leave:t.knocked;
+  const target=leave?(t.firstBall===0?10:10-t.firstBall):t.standing.length;
+  const detail=leave?`${target} pins left · ${list.length} selected`:`${list.length} pin${list.length===1?'':'s'} knocked down`;
+  const detailNode=box.querySelector('.pinTrackerDetail'); if(detailNode) detailNode.textContent=detail+(!leave&&list.length===t.standing.length?' ✓':'');
+  box.querySelectorAll('.pinButton').forEach(button=>{
+    const pin=Number(button.getAttribute('aria-label')?.replace('Pin ',''));
+    const active=(leave?Array.from({length:10},(_,i)=>i+1):t.standing).includes(pin), on=list.includes(pin), unavailable=leave&&active&&!on&&list.length>=target;
+    button.classList.toggle('selected',on); button.classList.toggle('unavailable',unavailable); button.disabled=!active||unavailable;
+  });
+}
+function pinDragEnd(event){
+  const drag=pinDragState;
+  if(!drag || drag.pointerId!==event.pointerId) return;
+  if(drag.moved){pinSuppressClickUntil=Date.now()+350;renderPinTracker();}
+  pinDragState=null;
 }
 
 function toggleTrackedPin(pin){
