@@ -487,7 +487,8 @@ select,input{
   text-align:center;
   font-weight:850;
 }
-.importBtn span{display:block;font-size:24px;margin-bottom:6px}
+.importBtn span{display:flex;align-items:center;justify-content:center;gap:8px;font-size:24px;margin-bottom:6px}
+.importBtn span img{width:34px;height:34px;object-fit:contain;border-radius:6px}
 .scanPreview{
   min-height:180px;
   border:1px dashed #405277;
@@ -741,7 +742,7 @@ body.light-mode .ballMatchPreview img{
 
       <div class="importOptions">
         <button class="importBtn" onclick="startPhotoImport()" aria-label="Import scoreboard data from a photo or CSV file">
-          <span>📷 <small style="font-size:14px;vertical-align:middle">CSV</small></span>
+          <span>📷 <img src="./assets/csv-bowling-icon-transparent.png" alt="CSV file"></span>
           Import Scoreboard Data
         </button>
       </div>
