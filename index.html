@@ -2448,6 +2448,8 @@ function skipPinTracking(){
 
 function recordRoll(pins){
   if(state.completed) return;
+  // Regulation scoring allows at most three rolls in the 10th frame.
+  if(state.currentFrame===9 && state.frames[9].rolls.length>=3) return;
   const max=currentMaxPins();
   if(pins<0 || pins>max) return;
   const frameIndex=state.currentFrame;
