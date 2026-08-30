@@ -1500,15 +1500,31 @@ function importCsvRecords(text){
 function importJsonRecords(text){
   let payload;
   try{payload=JSON.parse(text)}catch(error){return 0}
-  // Accept both raw game arrays and the app's exported JSON shape, where
-  // games are stored under `state.games`.
-  const records=Array.isArray(payload)
-    ? payload
-    : (Array.isArray(payload?.games)
-      ? payload.games
-      : (Array.isArray(payload?.state?.games) ? payload.state.games : []));
+  // Accept raw arrays, app exports, and wrapped records from older exports.
+  const records=[];
+  const collect=value=>{
+    if(Array.isArray(value)){ value.forEach(collect); return; }
+    if(!value || typeof value!=='object') return;
+    if(Number.isFinite(Number(value.score))) records.push(value);
+    ['games','records','state','data'].forEach(key=>{if(value[key] && value[key]!==value) collect(value[key])});
+  };
+  collect(payload);
   const valid=records.filter(record=>record&&Number.isFinite(Number(record.score)));
-  valid.forEach(record=>recordGameScore(Number(record.score),{...record,source:record.source||'json import'}));
+  const used=new Set();
+  valid.forEach(record=>{
+    const imported={...record,source:record.source||'json import'};
+    const recordDate=imported.date ? String(imported.date).slice(0,10) : '';
+    const match=state.games.find((existing,index)=>{
+      if(used.has(index) || Number(existing.score)!==Number(imported.score)) return false;
+      if(imported.id && existing.id===imported.id) return true;
+      const existingDate=existing.date ? String(existing.date).slice(0,10) : '';
+      return recordDate && existingDate===recordDate && (!existing.frames || !existing.frames.length);
+    });
+    if(match){ Object.assign(match,imported); used.add(state.games.indexOf(match)); }
+    else recordGameScore(Number(imported.score),imported);
+  });
+  state.games=LaneLabStats.saveGameRecords(getGameStorage(),state.games);
+  renderPersonalStats();
   return valid.length;
 }
 function importHistoryFile(file,text){
@@ -1872,9 +1888,19 @@ function openGameDetail(event,id){
   document.getElementById('gameDetailTitle').textContent=`Game ${state.games.indexOf(game)+1}`;
   document.getElementById('gameDetailMeta').innerHTML=[formatGameDate(game.date),game.hand,game.ball].filter(Boolean).map(item=>`<span>${escapeHtml(String(item))}</span>`).join('');
   document.getElementById('gameDetailStats').innerHTML=metrics.map(([label,value])=>`<span class="historyMetric"><b>${value}</b><small>${label}</small></span>`).join('');
-  document.getElementById('gameDetailFrames').innerHTML=Array.isArray(game.frames)&&game.frames.length
+  const frameMarkup=Array.isArray(game.frames)&&game.frames.length
     ? game.frames.map((frame,index)=>`<div class="gameDetailFrame"><small>Frame ${index+1}</small><b>${escapeHtml(frame)}</b></div>`).join('')
-    : '<div class="muted small">Frame notation is unavailable for this game.</div>';
+    : (Array.isArray(game.pinData)&&game.pinData.some(Boolean)
+      ? game.pinData.map((frame,index)=>{
+          const first=Array.isArray(frame?.pinsLeftAfterFirst)?frame.pinsLeftAfterFirst:[];
+          const second=Array.isArray(frame?.pinsLeftAfterSecond)?frame.pinsLeftAfterSecond:null;
+          if(!first.length && !second) return `<div class="gameDetailFrame"><small>Frame ${index+1}</small><b>—</b></div>`;
+          const left=first.length ? `${first.length} left` : '—';
+          const result=second===null ? '' : (second.length ? ` · ${second.length} left` : ' · Made');
+          return `<div class="gameDetailFrame"><small>Frame ${index+1}</small><b>${escapeHtml(left+result)}</b></div>`;
+        }).join('')
+      : '<div class="muted small">Frame notation is unavailable for this game.</div>');
+  document.getElementById('gameDetailFrames').innerHTML=frameMarkup;
   document.getElementById('gameDetailModal').classList.add('show');
 }
 function closeGameDetail(){document.getElementById('gameDetailModal').classList.remove('show')}
