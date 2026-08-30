@@ -1486,9 +1486,9 @@ function importCsvText(text){
       ? (frameColumns.length?frameColumns.map(column=>String(cells[column.index]||'').trim()).filter(Boolean):undefined)
       : String(cells[framesIndex]||'').split(/[|;]/).map(frame=>frame.trim()).filter(Boolean);
     const numberAt=index=>index===undefined?undefined:Number(String(cells[index]??'').replace(/[^0-9.-]/g,''));
-    const spares=numberAt(sparesIndex), spareChances=numberAt(spareChancesIndex);
+    const strikes=numberAt(strikesIndex), spares=numberAt(sparesIndex), spareChances=numberAt(spareChancesIndex);
     const spareRate=spares!==undefined&&spareChances>0 ? Math.round(spares/spareChances*100) : undefined;
-    return {score,date:rawDate&&!Number.isNaN(new Date(rawDate).getTime())?rawDate:undefined,frames,hand:handIndex===undefined?undefined:cells[handIndex],ball:ballIndex===undefined?undefined:cells[ballIndex],strikes:numberAt(strikesIndex),spareRate,source:'csv import'};
+    return {score,date:rawDate&&!Number.isNaN(new Date(rawDate).getTime())?rawDate:undefined,frames,hand:handIndex===undefined?undefined:cells[handIndex],ball:ballIndex===undefined?undefined:cells[ballIndex],strikes,spares,spareOpportunities:spareChances,spareRate,metricsProvided:{strikes:strikes!==undefined,spares:spares!==undefined,spareOpportunities:spareChances!==undefined},source:'csv import'};
   }).filter(Boolean);
 }
 function importCsvRecords(text){
