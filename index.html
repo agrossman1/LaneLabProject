@@ -1651,6 +1651,8 @@ function recordGameScore(score,details={}){
   syncAverageDisplays();
   syncGameSummaries();
   renderRecent();
+  renderChart();
+  renderSessionMetrics();
   renderGameBreakdown();
   renderPersonalStats();
   renderArsenal();
@@ -1801,9 +1803,14 @@ function renderPersonalHistory(){
   count.textContent=`${games.length} shown`;
   box.innerHTML=games.length ? games.map(game=>{
     const details=[game.hand,game.ball].filter(Boolean).join(' · ') || 'Details unavailable';
+    const frames=Array.isArray(game.frames)?game.frames.filter(Boolean):[];
+    const gameSummary=LaneLabStats.summarizeGames([game]);
+    const strikes=frames.length ? frames.filter(frame=>String(frame).trim().startsWith('X')).length : (Number.isFinite(Number(game.strikes))?Number(game.strikes):null);
+    const spares=frames.length ? frames.filter(frame=>String(frame).includes('/')).length : (Number.isFinite(Number(game.spares))?Number(game.spares):null);
     const metric=(value,label)=>`<span class="historyMetric"><b>${value}</b><small>${label}</small></span>`;
     return `<div class="listItem historyGame" data-game-id="${escapeHtml(game.id)}" onclick="openGameDetail(event,'${escapeHtml(game.id)}')">
       <div class="row"><div><b>${formatGameDate(game.date)}</b><div class="muted small">${escapeHtml(details)}</div><div class="muted small" style="margin-top:5px">Tap for breakdown · hold score for options</div></div><b class="scoreBig" onpointerdown="startHistoryHold(event,'${escapeHtml(game.id)}')" onpointerup="cancelHistoryHold()" onpointerleave="cancelHistoryHold()" onpointercancel="cancelHistoryHold()" onclick="event.stopPropagation()">${game.score}</b></div>
+      <div class="historyBreakdown">${metric(strikes===null?'—':strikes,'Strikes')}${metric(spares===null?'—':spares,'Spares')}${metric(gameSummary.openFrames,'Open frames')}</div>
       <div class="historyActions" hidden>
         <button type="button" onclick="editHistoryGame(event,'${escapeHtml(game.id)}')">Edit score</button>
         <button type="button" class="danger" onclick="deleteHistoryGame(event,'${escapeHtml(game.id)}')">Delete game</button>
