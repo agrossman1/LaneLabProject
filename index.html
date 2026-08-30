@@ -792,8 +792,8 @@ body.light-mode .ballMatchPreview img{
           </div>
         </div>
         <button class="cta" onclick="document.getElementById('scorePhotoInput').click()">Choose / Take Photo</button>
-        <input id="csvHistoryInput" type="file" accept=".csv,text/csv" hidden onchange="handleCsvHistoryImport(event)">
-        <button class="cta secondary" onclick="document.getElementById('csvHistoryInput').click()">Import Game History CSV</button>
+        <input id="csvHistoryInput" type="file" accept=".csv,.json,text/csv,application/json" hidden onchange="handleHistoryFileImport(event)">
+        <button class="cta secondary" onclick="document.getElementById('csvHistoryInput').click()">Import Game History CSV / JSON</button>
         <button class="cta secondary" onclick="simulateScan()">Use Sample AI Demo</button>
       </div>
 
@@ -1134,8 +1134,8 @@ body.light-mode .ballMatchPreview img{
       <h1 id="onboardingTitle">Your game, decoded.</h1>
       <p>Track your bowling.<br>Find what costs you pins.<br>Know what to practice next.</p>
       <button class="cta" onclick="onboardingNext()">Get Started</button>
-      <input id="onboardingCsvInput" type="file" accept=".csv,text/csv" hidden onchange="handleOnboardingCsv(event)">
-      <button class="onboardingImport" onclick="document.getElementById('onboardingCsvInput').click()">Already have game data? (Import CSV file here)</button>
+      <input id="onboardingCsvInput" type="file" accept=".csv,.json,text/csv,application/json" hidden onchange="handleOnboardingHistoryFile(event)">
+      <button class="onboardingImport" onclick="document.getElementById('onboardingCsvInput').click()">Already have game data? (Import CSV or JSON file here)</button>
     </div>
     <div class="onboardingStep" data-step="2">
       <h2>Tell us about you</h2><p class="muted small">Only the basics LaneLab uses.</p>
@@ -1497,21 +1497,33 @@ function importCsvRecords(text){
   records.forEach(record=>recordGameScore(record.score,record));
   return records.length;
 }
-function handleCsvHistoryImport(event){
+function importJsonRecords(text){
+  let payload;
+  try{payload=JSON.parse(text)}catch(error){return 0}
+  const records=Array.isArray(payload)?payload:(Array.isArray(payload?.games)?payload.games:[]);
+  const valid=records.filter(record=>record&&Number.isFinite(Number(record.score)));
+  valid.forEach(record=>recordGameScore(Number(record.score),{...record,source:record.source||'json import'}));
+  return valid.length;
+}
+function importHistoryFile(file,text){
+  const isJson=/\.json$/i.test(file?.name||'') || /^\s*[\[{]/.test(text);
+  return isJson?importJsonRecords(text):importCsvRecords(text);
+}
+function handleHistoryFileImport(event){
   const file=event.target.files?.[0]; if(!file) return;
   const reader=new FileReader();
   reader.onload=()=>{
-    const count=importCsvRecords(reader.result);
-    toast(count?`${count} game${count===1?'':'s'} imported`:'No valid scores found in that CSV');
+    const count=importHistoryFile(file,String(reader.result||''));
+    toast(count?`${count} game${count===1?'':'s'} imported`:'No valid game records found in that file');
   };
   reader.readAsText(file); event.target.value='';
 }
-function handleOnboardingCsv(event){
+function handleOnboardingHistoryFile(event){
   const file=event.target.files?.[0]; if(!file) return;
   const reader=new FileReader();
   reader.onload=()=>{
-    const count=importCsvRecords(reader.result);
-    if(!count){toast('No valid scores found in that CSV');return}
+    const count=importHistoryFile(file,String(reader.result||''));
+    if(!count){toast('No valid game records found in that file');return}
     toast(`${count} game${count===1?'':'s'} imported`);
     showOnboardingStep(2);
   };
