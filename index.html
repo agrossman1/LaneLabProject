@@ -1393,7 +1393,7 @@ function setHomeDataMode(){homeDataMode='me';syncAverageDisplays();syncGameSumma
 
 let profile=LaneLabProfile.load(getGameStorage());
 const homeGreetings=[
-  "Welcome back, {name}!",
+  "Welcome, {name}!",
   "Ready to knock some pins?!",
   "Let’s roll!",
   "New day! New high score!",
@@ -1417,14 +1417,22 @@ const homeGreetings=[
 function setDailyGreeting(){
   const storage=getGameStorage();
   const today=localDateInputValue();
+  let complete=false;
+  try{complete=storage?.getItem('laneLabOnboardingComplete')==='true'}catch(e){}
+  // Keep the default heading visible while the first-time setup is open.
+  if(!complete) return;
   let saved=null;
   try{saved=JSON.parse(storage?.getItem('laneLabGreetingState')||'null')}catch(e){}
   let index=Number.isInteger(saved?.index)?saved.index:0;
-  if(saved?.date && saved.date!==today) index=(index+1)%homeGreetings.length;
+  if(saved?.date && saved.date!==today){
+    index=(index+1)%homeGreetings.length;
+    // The personalized welcome is a one-time first-day greeting.
+    if(index===0) index=1;
+  }
   if(!saved?.date || saved.date!==today){
     try{storage?.setItem('laneLabGreetingState',JSON.stringify({date:today,index}))}catch(e){}
   }
-  const name=profile?.name && profile.name!=='Anthony' ? profile.name : 'there';
+  const name=profile?.name?.trim() || 'there';
   const greeting=homeGreetings[index%homeGreetings.length].replace('{name}',name);
   const heading=document.getElementById('homeGreeting');
   if(heading) heading.textContent=greeting;
@@ -1521,6 +1529,7 @@ function onboardingFinish(startScore=false){
   const style=document.getElementById('onboardingStyle')?.value || profile.style;
   profile=LaneLabProfile.save(getGameStorage(),{...profile,name,hand,style});
   try{getGameStorage()?.setItem('laneLabOnboardingComplete','true')}catch(e){}
+  setDailyGreeting();
   // Adding or skipping the ball completes setup, then shows the final
   // welcome screen. Only the final "Start Bowling" action closes onboarding.
   if(!startScore){showOnboardingStep(4); return}
