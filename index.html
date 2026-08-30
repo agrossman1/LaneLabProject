@@ -1415,10 +1415,10 @@ function importCsvText(text){
   const rows=String(text||'').split(/\r?\n/).map(row=>row.trim()).filter(Boolean);
   if(!rows.length) return [];
   const first=parseCsvLine(rows[0]).map(cell=>cell.toLowerCase().replace(/[\s_-]+/g,''));
-  const hasHeader=first.some(cell=>['score','date','gamedate','sessiondate','frames','hand','ball','equipment','game','strikes','spares','openframes','spareopportunities','sparechances'].includes(cell)||/^frame?\d+$/.test(cell)||/^f\d+$/.test(cell));
-  const headers=hasHeader?first:['score'];
+  const hasHeader=first.some(cell=>['score','gamescore','finalscore','totalscore','points','date','gamedate','sessiondate','frames','hand','ball','equipment','game','strikes','spares','openframes','spareopportunities','sparechances'].includes(cell)||/^frame?\d+$/.test(cell)||/^f\d+$/.test(cell));
+  const headers=hasHeader?first:[];
   const indexOf=(...names)=>names.map(name=>headers.indexOf(name.replace(/[\s_-]+/g,''))).find(index=>index>=0);
-  const scoreIndex=indexOf('score') ?? 0;
+  const scoreIndex=indexOf('score','gamescore','finalscore','totalscore','points');
   const dateIndex=indexOf('date','gamedate','sessiondate');
   const framesIndex=indexOf('frames','frame');
   const handIndex=indexOf('hand');
@@ -1430,7 +1430,10 @@ function importCsvText(text){
   const frameColumns=headers.map((header,index)=>({header,index,number:Number((header.match(/^(?:frame|f)?(\d{1,2})$/)||[])[1])})).filter(item=>item.number>=1&&item.number<=10).sort((a,b)=>a.number-b.number);
   return rows.slice(hasHeader?1:0).map(row=>{
     const cells=parseCsvLine(row);
-    const score=Number(String(cells[scoreIndex]??'').replace(/[^0-9.-]/g,''));
+    const numericScore=value=>{const number=Number(String(value??'').replace(/[^0-9.-]/g,''));return Number.isInteger(number)&&number>=0&&number<=300?number:null};
+    const fallbackScoreIndex=cells.map((value,index)=>({index,score:numericScore(value)})).filter(item=>item.score!==null).at(-1)?.index;
+    const resolvedScoreIndex=scoreIndex===undefined?fallbackScoreIndex:scoreIndex;
+    const score=numericScore(cells[resolvedScoreIndex]);
     if(!Number.isInteger(score)||score<0||score>300) return null;
     const rawDate=dateIndex===undefined?'':cells[dateIndex];
     const frames=framesIndex===undefined
