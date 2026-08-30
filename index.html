@@ -1439,7 +1439,8 @@ function setDailyGreeting(){
 }
 setDailyGreeting();
 function startGreetingPreview(){
-  if(!new URLSearchParams(window.location.search).has('previewGreetings')) return;
+  const previewRequested=/(?:previewGreetings|greetingPreview)=1/i.test(window.location.href);
+  if(!previewRequested) return;
   let index=0;
   const heading=document.getElementById('homeGreeting');
   const name=profile?.name?.trim() || 'there';
