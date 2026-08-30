@@ -1848,15 +1848,19 @@ function renderPersonalHistory(){
   }).join('') : '<div class="listItem center"><b>No games in this date range</b><div class="muted small" style="margin-top:4px">Try another filter or save a new game.</div></div>';
 }
 
+function normalizeBowlingNotation(value){
+  const text=String(value??'');
+  return text.replace(/(^|[^1])0/g,'$1-');
+}
 function gameFrameNotation(game){
   const objectToken=(frame,index)=>{
-    if(typeof frame==='string') return frame;
+    if(typeof frame==='string') return normalizeBowlingNotation(frame);
     const rolls=Array.isArray(frame?.rolls)?frame.rolls.map(Number).filter(Number.isFinite):[];
     if(!rolls.length) return null;
     if(rolls[0]===10) return index===9 ? rolls.map((value,i)=>i===0||value===10?'X':value).join('') : 'X';
     const first=Math.max(0,Math.min(10,rolls[0]));
     const second=rolls.length>1?Math.max(0,Math.min(10-first,rolls[1])):null;
-    return `${first}${second===null?'':(first+second===10?'/':second)}`;
+    return `${first===0?'-':first}${second===null?'':(first+second===10?'/':(second===0?'-':second))}`;
   };
   if(Array.isArray(game?.frames) && game.frames.some(Boolean)) return game.frames.slice(0,10).map(objectToken);
   const pinFrames=Array.isArray(game?.pinData)?game.pinData.slice(0,10):[];
@@ -1867,9 +1871,10 @@ function gameFrameNotation(game){
     if(!first) return null;
     if(first.length===0) return 'X';
     const firstDown=Math.max(0,10-first.length);
-    if(second===null) return `${firstDown}-`;
+    if(second===null) return `${firstDown===0?'-':firstDown}-`;
     if(second.length===0) return `${firstDown}/`;
-    return `${firstDown}${Math.max(0,first.length-second.length)}`;
+    const secondDown=Math.max(0,first.length-second.length);
+    return `${firstDown===0?'-':firstDown}${secondDown===0?'-':secondDown}`;
   });
   let remaining=Math.max(0,(Number(game?.strikes)||0)-frames.filter(frame=>frame==='X').length);
   for(let index=9;index>=0&&remaining>0;index--){
