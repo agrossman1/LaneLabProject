@@ -691,7 +691,7 @@ body.light-mode .ballMatchPreview img{
   <main>
     <section class="screen active" id="home">
       <div class="eyebrow">Bowling improvement tracker</div>
-      <h1>Your game, decoded.</h1>
+      <h1 id="homeGreeting">Your game, decoded.</h1>
       <p class="small">Your history updates when you finish a game.</p>
 
       <div class="card hero">
@@ -1392,6 +1392,44 @@ function getHomeGames(){return getActiveGames();}
 function setHomeDataMode(){homeDataMode='me';syncAverageDisplays();syncGameSummaries();renderRecent();renderChart();renderSessionMetrics();renderPersonalStats();}
 
 let profile=LaneLabProfile.load(getGameStorage());
+const homeGreetings=[
+  "Welcome back, {name}!",
+  "Ready to knock some pins?!",
+  "Let’s roll!",
+  "New day! New high score!",
+  "Ready to beat last time?!",
+  "Find your line!",
+  "Make every frame count!",
+  "One frame at a time!",
+  "Time to find the pocket!",
+  "Keep building your game!",
+  "Stay clean out there!",
+  "Make the next shot count!",
+  "The pins are waiting!",
+  "Find your rhythm!",
+  "Ready to level up?!",
+  "Close frames! Climb scores!",
+  "Trust your shot!",
+  "Let’s see what the lanes give you!",
+  "Today’s a good day to bowl!",
+  "Go chase that high game!"
+];
+function setDailyGreeting(){
+  const storage=getGameStorage();
+  const today=localDateInputValue();
+  let saved=null;
+  try{saved=JSON.parse(storage?.getItem('laneLabGreetingState')||'null')}catch(e){}
+  let index=Number.isInteger(saved?.index)?saved.index:0;
+  if(saved?.date && saved.date!==today) index=(index+1)%homeGreetings.length;
+  if(!saved?.date || saved.date!==today){
+    try{storage?.setItem('laneLabGreetingState',JSON.stringify({date:today,index}))}catch(e){}
+  }
+  const name=profile?.name && profile.name!=='Anthony' ? profile.name : 'there';
+  const greeting=homeGreetings[index%homeGreetings.length].replace('{name}',name);
+  const heading=document.getElementById('homeGreeting');
+  if(heading) heading.textContent=greeting;
+}
+setDailyGreeting();
 let onboardingStep=1;
 function showOnboardingStep(step){
   onboardingStep=step;
