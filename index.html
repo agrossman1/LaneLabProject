@@ -1152,7 +1152,7 @@ body.light-mode .ballMatchPreview img{
     <div class="onboardingStep" data-step="4">
       <h2>You’re ready.</h2><p>Record a few games and LaneLab will start finding patterns in your bowling.</p>
       <div class="onboardingConcepts"><div class="card"><b>Score</b><div class="muted small">Track every game</div></div><div class="card"><b>Stats</b><div class="muted small">See what costs pins</div></div><div class="card"><b>Coach</b><div class="muted small">Know what to practice</div></div></div>
-      <button class="cta" onclick="onboardingFinish(true)">Start Bowling</button><button class="textButton" onclick="onboardingFinish(false)">Explore LaneLab</button>
+      <button class="cta" onclick="onboardingFinish(true)">Start Bowling</button>
     </div>
   </div>
 </div>
@@ -1466,7 +1466,7 @@ function handleOnboardingCsv(event){
     const count=importCsvRecords(reader.result);
     if(!count){toast('No valid scores found in that CSV');return}
     toast(`${count} game${count===1?'':'s'} imported`);
-    onboardingSkipToReady();
+    showOnboardingStep(2);
   };
   reader.readAsText(file); event.target.value='';
 }
