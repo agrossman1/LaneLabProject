@@ -151,9 +151,8 @@ p{color:var(--muted);line-height:1.5}
 .choiceLabel{font-size:11px;color:var(--muted);font-weight:800;text-transform:uppercase;letter-spacing:.08em;min-width:34px}
 .roundChoice{width:48px;height:48px;border-radius:50%;border:1px solid var(--line);background:var(--panel2);color:var(--text);font-weight:900;display:grid;place-items:center;line-height:1;cursor:pointer;padding:0}
 .roundChoice.active{background:var(--accent);color:#fff;border-color:var(--accent)}
-.ballChoice{position:relative;font-size:18px}
-.ballChoice b{font-size:12px;position:absolute;bottom:8px;right:8px;background:var(--accent);color:#fff;border-radius:50%;width:17px;height:17px;display:grid;place-items:center}
-.roundChoice.active b{background:#fff;color:var(--accent)}
+.ballChoice{width:116px;border-radius:24px;font-size:18px;display:flex;gap:6px}
+.ballChoice b{font-size:11px;max-width:76px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .gameDateRow{display:flex;justify-content:flex-end;margin:4px 0 10px}
 .gameDateRow label{display:flex;align-items:center;gap:8px}
 .gameDateRow input{width:auto;margin:0;padding:7px 9px;font-size:12px}
@@ -758,7 +757,7 @@ body.light-mode .ballMatchPreview img{
 
       <div class="scoreChoices" aria-label="Game hand and ball">
         <div class="choiceGroup"><span class="choiceLabel">Hand</span><button type="button" class="roundChoice" id="handLeftChoice" onclick="setHandChoice('Left')">L</button><button type="button" class="roundChoice" id="handRightChoice" onclick="setHandChoice('Right')">R</button></div>
-        <div class="choiceGroup"><span class="choiceLabel">Ball</span><button type="button" class="roundChoice ballChoice" id="ballOneChoice" onclick="setBallPreset(0)" aria-label="Ball 1">🎳<b>1</b></button><button type="button" class="roundChoice ballChoice" id="ballTwoChoice" onclick="setBallPreset(1)" aria-label="Ball 2">🎳<b>2</b></button></div>
+        <div class="choiceGroup"><span class="choiceLabel">Ball</span><button type="button" class="roundChoice ballChoice" id="ballOneChoice" onclick="setBallPreset(0)" aria-label="Ball 1">🎳<b>Ball 1</b></button><button type="button" class="roundChoice ballChoice" id="ballTwoChoice" onclick="setBallPreset(1)" aria-label="Ball 2">🎳<b>Ball 2</b></button></div>
       </div>
 
       <div class="currentRoll">
@@ -2884,7 +2883,7 @@ function renderScoreControls(){
   [0,1].forEach((index)=>{
     const button=document.getElementById(index===0?'ballOneChoice':'ballTwoChoice');
     const item=arsenal?.[index];
-    if(button){button.disabled=!item;button.title=item?item.name:'Add a second ball to your arsenal';button.classList.toggle('active',!!item&&ball===item.name);}
+    if(button){button.disabled=!item;button.title=item?item.name:'Add a second ball to your arsenal';button.classList.toggle('active',!!item&&ball===item.name);const label=button.querySelector('b');if(label) label.textContent=item?item.name:`Ball ${index+1}`;}
   });
 }
 
@@ -2895,7 +2894,7 @@ function renderArsenal(){
 
   list.innerHTML=arsenal.length ? arsenal.map(ball=>{
     const stats=LaneLabArsenal.calculateStats(state.games,ball.name);
-    return `<button class="listItem row ballListButton" data-ball-id="${escapeHtml(ball.id)}" onclick="openBallDetails(this.dataset.ballId)">
+    return `<button draggable="true" ondragstart="startBallDrag(event,this.dataset.ballId)" ondragover="event.preventDefault()" ondrop="dropBallDrag(event,this.dataset.ballId)" class="listItem row ballListButton" data-ball-id="${escapeHtml(ball.id)}" onclick="openBallDetails(this.dataset.ballId)">
       <span class="row">${ballVisual(ball)}<span><b>${escapeHtml(ball.name)}</b><span class="muted small" style="display:block">${ball.weight} lb · ${escapeHtml(ball.role)}</span></span></span>
       <span class="center"><b>${stats.average??'—'}</b><span class="muted small" style="display:block">${stats.games} game${stats.games===1?'':'s'}</span></span>
     </button>`;
@@ -2908,6 +2907,20 @@ function renderArsenal(){
     <div class="muted small" style="margin-top:6px">${stats.games} game${stats.games===1?'':'s'} · High ${stats.high}${stats.strikeRate===null?'':` · ${stats.strikeRate}% strikes`}</div>
   </div>`).join('') : '<div class="listItem center"><b>No ball stats yet</b><div class="muted small" style="margin-top:4px">Choose a ball while scoring, then save the game.</div></div>';
   syncBallSelect();
+}
+
+let draggedBallId=null;
+function startBallDrag(event,id){draggedBallId=id;event.dataTransfer?.setData('text/plain',id);}
+function dropBallDrag(event,targetId){
+  event.preventDefault();
+  const sourceId=draggedBallId||event.dataTransfer?.getData('text/plain'); draggedBallId=null;
+  if(!sourceId||sourceId===targetId) return;
+  const from=arsenal.findIndex(ball=>ball.id===sourceId), to=arsenal.findIndex(ball=>ball.id===targetId);
+  if(from<0||to<0) return;
+  const next=arsenal.slice(), [moved]=next.splice(from,1); next.splice(to,0,moved);
+  arsenal=LaneLabArsenal.save(getGameStorage(),next);
+  syncBallSelect(); renderArsenal(); renderScoreControls();
+  toast('Arsenal order updated');
 }
 
 function openBallDetails(id){
