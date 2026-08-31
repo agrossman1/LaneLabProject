@@ -54,7 +54,28 @@
         })
       : [];
     const scores = games.map(game => Number(game.score)).filter(score => Number.isInteger(score));
-    const rates = games.map(game => Number(game.strikeRate)).filter(rate => Number.isFinite(rate));
+    const rates = [];
+    games.forEach(game => {
+      const hasThrowData = Array.isArray(game?.frameThrows);
+      if (hasThrowData && Array.isArray(game.frames)) {
+        let opportunities = 0, strikes = 0;
+        game.frameThrows.forEach((frame, index) => {
+          const throws = Array.isArray(frame?.throws) ? frame.throws : [];
+          throws.forEach((item, throwIndex) => {
+            if (normalizeName(item?.ball) !== target) return;
+            if (throwIndex === 0) {
+              opportunities++;
+              const notation = String(game.frames[index] || '');
+              if (notation.startsWith('X')) strikes++;
+            }
+          });
+        });
+        if (opportunities) rates.push(Math.round(strikes / opportunities * 100));
+      } else {
+        const rate = Number(game.strikeRate);
+        if (Number.isFinite(rate)) rates.push(rate);
+      }
+    });
 
     return {
       games: scores.length,
