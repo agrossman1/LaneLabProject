@@ -156,11 +156,8 @@ p{color:var(--muted);line-height:1.5}
 @media (max-width:520px){
   .scoreChoices{grid-template-columns:auto 1fr;gap:8px;align-items:center}
   .choiceGroup{justify-content:flex-start}
-  .scoreChoices .choiceGroup:nth-child(2){justify-content:flex-end}
+  .scoreChoices .choiceGroup:nth-child(2){justify-content:flex-end;flex-direction:column;align-items:flex-end;gap:5px}
   .choiceGroup .ballChoice{flex:0 1 96px;width:96px;max-width:96px}
-}
-@media (max-width:360px){
-  .scoreChoices .choiceGroup:nth-child(2){flex-direction:column;align-items:flex-end;gap:5px}
 }
 .gameDateRow{display:flex;justify-content:flex-end;margin:4px 0 10px}
 .gameDateRow label{display:flex;align-items:center;gap:8px}
