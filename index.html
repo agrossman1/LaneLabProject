@@ -1515,10 +1515,15 @@ function importCsvText(text){
     const frames=framesIndex===undefined
       ? (frameColumns.length?frameColumns.map(column=>String(cells[column.index]||'').trim()).filter(Boolean):undefined)
       : String(cells[framesIndex]||'').split(/[|;]/).map(frame=>frame.trim()).filter(Boolean);
+    const detailValue=(frame,kind)=>{const column=headers.indexOf(`frame${frame}${kind}`);return column>=0?String(cells[column]||'').trim():null};
+    const pinList=value=>value===null?null:(value?value.split(/[-|;]/).map(Number).filter(pin=>Number.isInteger(pin)&&pin>=1&&pin<=10):[]);
+    const importedPinData=Array.from({length:10},(_,index)=>{const frame=index+1;const first=detailValue(frame,'pinsleftafterfirst'), knocked=detailValue(frame,'pinsknockeddownsecond'), second=detailValue(frame,'pinsleftaftersecond');return {pinsLeftAfterFirst:pinList(first),pinsKnockedDownSecond:pinList(knocked),pinsLeftAfterSecond:pinList(second)};});
+    const importedFrameThrows=Array.from({length:10},(_,index)=>({throws:Array.from({length:3},(_,throwIndex)=>{const number=throwIndex+1;const hand=detailValue(index+1,`throw${number}hand`), ball=detailValue(index+1,`throw${number}ball`);return hand||ball?{hand:hand||null,ball:ball||null}:null;}).filter(Boolean)}));
+    const hasDetails=importedPinData.some(item=>item.pinsLeftAfterFirst||item.pinsKnockedDownSecond||item.pinsLeftAfterSecond)||importedFrameThrows.some(item=>item.throws.length);
     const numberAt=index=>index===undefined?undefined:Number(String(cells[index]??'').replace(/[^0-9.-]/g,''));
     const strikes=numberAt(strikesIndex), spares=numberAt(sparesIndex), spareChances=numberAt(spareChancesIndex);
     const spareRate=spares!==undefined&&spareChances>0 ? Math.round(spares/spareChances*100) : undefined;
-    return {score,date:rawDate&&!Number.isNaN(new Date(rawDate).getTime())?rawDate:undefined,frames,hand:handIndex===undefined?undefined:cells[handIndex],ball:ballIndex===undefined?undefined:cells[ballIndex],strikes,spares,spareOpportunities:spareChances,spareRate,metricsProvided:{strikes:strikes!==undefined,spares:spares!==undefined,spareOpportunities:spareChances!==undefined},source:'csv import'};
+    return {score,date:rawDate&&!Number.isNaN(new Date(rawDate).getTime())?rawDate:undefined,frames,hand:handIndex===undefined?undefined:cells[handIndex],ball:ballIndex===undefined?undefined:cells[ballIndex],...(hasDetails?{pinData:importedPinData,frameThrows:importedFrameThrows}:{}),strikes,spares,spareOpportunities:spareChances,spareRate,metricsProvided:{strikes:strikes!==undefined,spares:spares!==undefined,spareOpportunities:spareChances!==undefined},source:'csv import'};
   }).filter(Boolean);
 }
 function importCsvRecords(text){
