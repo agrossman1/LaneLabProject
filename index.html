@@ -146,6 +146,14 @@ p{color:var(--muted);line-height:1.5}
 .pinButton.selected{background:#ff1515;border-color:#ff1515;color:#fff;opacity:1}
 .pinTrackerActions{display:flex;gap:8px;flex-wrap:wrap}.pinTrackerActions button{flex:1;min-width:130px}
 .formRow{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:10px}
+.scoreChoices{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:10px 0}
+.choiceGroup{display:flex;gap:8px;align-items:center}
+.choiceLabel{font-size:11px;color:var(--muted);font-weight:800;text-transform:uppercase;letter-spacing:.08em;min-width:34px}
+.roundChoice{width:48px;height:48px;border-radius:50%;border:1px solid var(--line);background:var(--panel2);color:var(--text);font-weight:900;display:grid;place-items:center;line-height:1;cursor:pointer;padding:0}
+.roundChoice.active{background:var(--accent);color:#fff;border-color:var(--accent)}
+.ballChoice{position:relative;font-size:18px}
+.ballChoice b{font-size:12px;position:absolute;bottom:8px;right:8px;background:var(--accent);color:#fff;border-radius:50%;width:17px;height:17px;display:grid;place-items:center}
+.roundChoice.active b{background:#fff;color:var(--accent)}
 .gameDateRow{display:flex;justify-content:flex-end;margin:4px 0 10px}
 .gameDateRow label{display:flex;align-items:center;gap:8px}
 .gameDateRow input{width:auto;margin:0;padding:7px 9px;font-size:12px}
@@ -731,13 +739,9 @@ body.light-mode .ballMatchPreview img{
         </div>
       </div>
 
-      <div class="formRow">
-        <label id="handField">Hand
-          <select id="hand"><option>Right</option><option>Left</option></select>
-        </label>
-        <label id="ballField">Ball
-          <select id="ballSelect" onchange="rememberBallSelection()"><option>Ascent</option><option>Hy-Road</option><option>Other</option></select>
-        </label>
+      <div class="formRow" style="display:none" aria-hidden="true">
+        <label id="handField">Hand<select id="hand"><option>Right</option><option>Left</option></select></label>
+        <label id="ballField">Ball<select id="ballSelect" onchange="rememberBallSelection()"><option>Ascent</option><option>Hy-Road</option><option>Other</option></select></label>
       </div>
 
       <div class="importOptions">
@@ -750,6 +754,11 @@ body.light-mode .ballMatchPreview img{
       <div class="card">
         <div class="row"><h2>Scorecard</h2><b id="runningTotal">0</b></div>
         <div class="scoreboard" id="scoreboard"></div>
+      </div>
+
+      <div class="scoreChoices" aria-label="Game hand and ball">
+        <div class="choiceGroup"><span class="choiceLabel">Hand</span><button type="button" class="roundChoice" id="handLeftChoice" onclick="setHandChoice('Left')">L</button><button type="button" class="roundChoice" id="handRightChoice" onclick="setHandChoice('Right')">R</button></div>
+        <div class="choiceGroup"><span class="choiceLabel">Ball</span><button type="button" class="roundChoice ballChoice" id="ballOneChoice" onclick="setBallPreset(0)" aria-label="Ball 1">🎳<b>1</b></button><button type="button" class="roundChoice ballChoice" id="ballTwoChoice" onclick="setBallPreset(1)" aria-label="Ball 2">🎳<b>2</b></button></div>
       </div>
 
       <div class="currentRoll">
@@ -2845,6 +2854,27 @@ function syncBallSelect(){
 function rememberBallSelection(){
   const value=document.getElementById('ballSelect')?.value;
   try{if(value)getGameStorage()?.setItem('lanelab-last-ball',value)}catch(e){}
+  renderScoreControls();
+}
+function setHandChoice(value){
+  const select=document.getElementById('hand'); if(!select) return;
+  select.value=value; renderScoreControls();
+}
+function setBallPreset(index){
+  const ball=arsenal[index], select=document.getElementById('ballSelect');
+  if(!ball || !select){toast('Add this ball to your arsenal first');return;}
+  select.value=ball.name; rememberBallSelection();
+}
+function renderScoreControls(){
+  const hand=document.getElementById('hand')?.value;
+  document.getElementById('handLeftChoice')?.classList.toggle('active',hand==='Left');
+  document.getElementById('handRightChoice')?.classList.toggle('active',hand==='Right');
+  const ball=document.getElementById('ballSelect')?.value;
+  [0,1].forEach((index)=>{
+    const button=document.getElementById(index===0?'ballOneChoice':'ballTwoChoice');
+    const item=arsenal?.[index];
+    if(button){button.disabled=!item;button.title=item?item.name:'Add a second ball to your arsenal';button.classList.toggle('active',!!item&&ball===item.name);}
+  });
 }
 
 function renderArsenal(){
@@ -2983,7 +3013,7 @@ function toast(msg){
   const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');
   clearTimeout(window.__toast);window.__toast=setTimeout(()=>t.classList.remove('show'),1600);
 }
-function renderAll(){renderScoreboard();renderKeypad()}
+function renderAll(){renderScoreboard();renderKeypad();renderScoreControls()}
 loadSavedTheme();
 preloadBallCatalogImages();
 const gameDateInput=document.getElementById('gameDate');
