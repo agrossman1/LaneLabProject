@@ -967,7 +967,6 @@ body.light-mode .ballMatchPreview img{
         <h2 id="coachFocusTitle">Collect another session</h2>
         <div class="coachScore" id="coachMetricValue">—</div>
         <div class="muted small" id="coachMetricLabel">Latest session</div>
-        <div class="muted small" id="coachPriorityReason">Your latest session determines this focus.</div>
         <div class="tagWarn small" id="coachMetricTrend">—</div>
         <p id="coachSummary">Complete a bowling session to get a personalized recommendation.</p>
         <div class="muted small" id="coachOpportunity"></div>
@@ -1719,7 +1718,7 @@ function renderCoach(){
   const sessions=LaneLabStats.groupSessions(getActiveGames()), current=LaneLabStats.summarizeGames(sessions.at(-1)?.games||[]), previous=sessions.length>1?LaneLabStats.summarizeGames(sessions.at(-2).games):null;
   const rec=generateCoachRecommendation(current,previous);
   const set=(id,value)=>{const el=document.getElementById(id);if(el)el.textContent=value};
-  set('coachFocusTitle',sessions.length?rec.title:'Collect another session'); set('coachMetricValue',sessions.length?rec.value:'—'); set('coachMetricLabel',sessions.length?rec.label:'Latest session'); set('coachPriorityReason',sessions.length?(rec.reason||'This focus is based on your latest session data.'):'Your latest session determines this focus.');
+  set('coachFocusTitle',sessions.length?rec.title:'Collect another session'); set('coachMetricValue',sessions.length?rec.value:'—'); set('coachMetricLabel',sessions.length?rec.label:'Latest session');
   const delta=rec.trend; const trendEl=document.getElementById('coachMetricTrend');
   if(trendEl){const good=delta!==null&&delta!==undefined&&((rec.lower&&delta<0)||(!rec.lower&&delta>0)); trendEl.classList.toggle('tagGood',good); trendEl.classList.toggle('tagWarn',delta!==null&&delta!==undefined&&!good); trendEl.classList.toggle('muted',delta===null||delta===undefined);}
   set('coachMetricTrend',delta===null||delta===undefined?'No previous session':`${delta>0?'▲':'▼'} ${delta>0?'+':''}${Math.round(Math.abs(delta)*10)/10}${rec.lower?' /game':' pp'}${rec.lower?(delta<0?' · good':''):((delta>0)?' · good':'')}`);
