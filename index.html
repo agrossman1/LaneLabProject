@@ -2269,8 +2269,8 @@ function exportGameDataCsv(){
   toast(`${state.games.length} game${state.games.length===1?'':'s'} exported as CSV`);
 }
 function resetAllGameData(){
-  const approved=window.confirm('Reset the entire LaneLab app? This clears all games, profile settings, equipment, preferences, and onboarding data. This cannot be undone.');
-  if(!approved) return;
+  // Keep this action reliable on mobile browsers where native confirm dialogs
+  // can be suppressed. The profile menu already labels the destructive scope.
   try{window.localStorage.clear()}catch(e){}
   try{window.sessionStorage?.clear()}catch(e){}
   state.games=[];
