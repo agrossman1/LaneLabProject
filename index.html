@@ -20,6 +20,12 @@
   --radius:22px;
 }
 *{box-sizing:border-box}
+.hidden{display:none!important}
+*,*::before,*::after{
+  user-select:none!important;
+  -webkit-user-select:none!important;
+  -webkit-touch-callout:none;
+}
 html,body,.app{touch-action:manipulation}
 body{
   margin:0;
@@ -27,6 +33,13 @@ body{
   background:radial-gradient(circle at top,#172443 0,#0b1020 38%,#080c18 100%);
   color:var(--text);
   min-height:100vh;
+  user-select:none;
+  -webkit-user-select:none;
+}
+input,textarea,select,[contenteditable="true"]{
+  user-select:text!important;
+  -webkit-user-select:text!important;
+  -webkit-touch-callout:default;
 }
 button,input,select{
   font:inherit;
@@ -51,6 +64,7 @@ header{
 .brand{display:flex;align-items:center;justify-content:space-between}
 .logo{font-weight:850;letter-spacing:-.04em;font-size:24px}
 .logo span{color:var(--accent)}
+.logoImage{display:block;width:220px;height:72px;object-fit:contain;object-position:left center;}
 .avatar{
   width:38px;height:38px;border-radius:50%;
   display:grid;place-items:center;background:var(--panel2);border:1px solid var(--line);font-weight:800;color:var(--text)
@@ -120,7 +134,40 @@ p{color:var(--muted);line-height:1.5}
 }
 .key.special{background:#243760;color:#dce5ff}
 .key:disabled{opacity:.28;cursor:not-allowed}
+.pinTracker{display:none;margin:12px 0;padding:16px;border:1px solid var(--line);border-radius:18px;background:var(--panel2);text-align:center}
+.pinTracker.active{display:block}
+.pinRack{display:grid;grid-template-columns:repeat(7,42px);grid-template-rows:repeat(4,42px);justify-content:center;gap:2px 2px;margin:16px auto}
+.pinButton{width:42px;height:42px;border-radius:50%;border:1px solid var(--line);background:#f5f7ff;color:#16213a;font-weight:900;font-size:20px;box-shadow:0 3px 8px rgba(0,0,0,.2);padding:0;touch-action:none}
+.pinButton:nth-child(1){grid-column:1;grid-row:1}.pinButton:nth-child(2){grid-column:3;grid-row:1}.pinButton:nth-child(3){grid-column:5;grid-row:1}.pinButton:nth-child(4){grid-column:7;grid-row:1}
+.pinButton:nth-child(5){grid-column:2;grid-row:2}.pinButton:nth-child(6){grid-column:4;grid-row:2}.pinButton:nth-child(7){grid-column:6;grid-row:2}
+.pinButton:nth-child(8){grid-column:3;grid-row:3}.pinButton:nth-child(9){grid-column:5;grid-row:3}.pinButton:nth-child(10){grid-column:4;grid-row:4}
+.pinButton.down{opacity:.22;background:#5b6680;color:transparent;box-shadow:none}
+.pinButton.unavailable{opacity:.35;background:#5b6680;color:#16213a;box-shadow:none}
+.pinButton.selected{background:#ff1515;border-color:#ff1515;color:#fff;opacity:1}
+.pinTrackerActions{display:flex;gap:8px;flex-wrap:wrap}.pinTrackerActions button{flex:1;min-width:130px}
 .formRow{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:10px}
+.scoreChoices{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:10px 0}
+.choiceGroup{display:flex;gap:8px;align-items:center}
+.scoreChoices .choiceGroup:nth-child(2){width:100%;justify-content:flex-end}
+.scoreChoices .choiceGroup:nth-child(2) .choiceLabel{margin-right:auto}
+.choiceLabel{font-size:11px;color:var(--muted);font-weight:800;text-transform:uppercase;letter-spacing:.08em;min-width:34px}
+.roundChoice{width:48px;height:48px;border-radius:50%;border:1px solid var(--line);background:var(--panel2);color:var(--text);font-weight:900;display:grid;place-items:center;line-height:1;cursor:pointer;padding:0}
+.roundChoice.active{background:var(--accent);color:#fff;border-color:var(--accent)}
+.ballChoice{width:auto;min-width:96px;max-width:150px;border-radius:24px;font-size:18px;display:flex;gap:6px}
+.ballChoice b{font-size:11px;max-width:100%;overflow-wrap:anywhere;white-space:normal;line-height:1.05;text-align:left}
+@media (max-width:520px){
+  .scoreChoices{grid-template-columns:auto 1fr;gap:8px;align-items:center}
+  .choiceGroup{justify-content:flex-start}
+  .scoreChoices .choiceGroup:nth-child(2){justify-content:flex-end;flex-direction:row;align-items:center;gap:5px;transform:none}
+  .choiceGroup .ballChoice{flex:1 1 0;width:auto;min-width:0;max-width:124px;height:40px;border-radius:16px;font-size:15px;padding:0 6px}
+  .choiceGroup .ballChoice b{font-size:10px}
+}
+.gameDateRow{display:flex;justify-content:flex-end;margin:4px 0 10px}
+.gameDateRow label{display:flex;align-items:center;gap:8px}
+.gameDateRow input{width:auto;margin:0;padding:7px 9px;font-size:12px}
+.scoreHeaderRow{display:flex;align-items:flex-start;justify-content:space-between;gap:10px}
+.scoreHeaderRow h1{margin-top:6px}
+.scoreHeaderRow .gameDateRow{margin:0}
 label{font-size:12px;color:var(--muted);font-weight:700}
 select,input{
   width:100%;margin-top:6px;padding:11px 12px;border-radius:12px;
@@ -165,8 +212,12 @@ select,input{
 .tagGood{color:var(--good)}
 .tagWarn{color:var(--warn)}
 .modal{
-  position:fixed;inset:0;background:rgba(0,0,0,.65);z-index:100;display:none;place-items:end center
+  position:fixed;inset:0;background:rgba(3,7,16,.9);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);z-index:100;display:none;place-items:end center
 }
+body.preview-mobile .app{width:min(100%,390px)}
+body.preview-tablet .app{width:min(100%,768px)}
+body.preview-tablet .grid{grid-template-columns:repeat(2,1fr)}
+body.preview-mobile .scoreChoices{grid-template-columns:auto 1fr}
 .modal.show{display:grid}
 .sheet{
   width:min(100%,430px);background:#11192b;border:1px solid var(--line);border-radius:24px 24px 0 0;
@@ -183,8 +234,13 @@ select,input{
 .center{text-align:center}
 @media (min-width:700px){
   body{padding:22px 0}
-  .app{min-height:calc(100vh - 44px);border:1px solid #22304d;border-radius:30px;overflow:hidden}
-  .nav{bottom:22px;border-radius:0 0 30px 30px}
+  .app{width:min(100%,820px);min-height:calc(100vh - 44px);border:1px solid #22304d;border-radius:30px;overflow:hidden}
+  header{padding-left:28px;padding-right:28px}
+  main{padding-left:28px;padding-right:28px}
+  .nav{width:min(100%,820px);bottom:22px;border-radius:0 0 30px 30px}
+  .grid{grid-template-columns:repeat(4,1fr)}
+  .scoreboard{grid-template-columns:repeat(10,1fr);gap:7px}
+  .modal .sheet{width:min(100%,520px);border-radius:24px}
 }
 
 .profileHero{
@@ -196,8 +252,15 @@ select,input{
   font-size:25px;font-weight:900;
   background:linear-gradient(145deg,#26395f,#16223d);
   border:1px solid #3a4f78;
-  flex:none;
+  flex:none;overflow:hidden;cursor:pointer;padding:0;color:inherit;
 }
+.profileAvatar img,.avatarImage{width:100%;height:100%;object-fit:cover;display:block;border-radius:inherit}
+.avatarPicker{display:grid;grid-template-columns:repeat(5,1fr);gap:9px;margin-top:12px}
+.avatarOption{aspect-ratio:1;border-radius:50%;overflow:hidden;padding:0;border:2px solid transparent;background:var(--panel2);cursor:pointer}
+.avatarOption.selected{border-color:var(--accent);box-shadow:0 0 0 2px rgba(81,176,255,.2)}
+.initialsOption{display:grid;place-items:center;color:var(--text);font-size:18px;font-weight:900}
+.avatarOption img{width:100%;height:100%;display:block;object-fit:cover}
+.avatarActions{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}
 .menuList{display:flex;flex-direction:column;gap:8px}
 .menuBtn{
   width:100%;
@@ -239,7 +302,7 @@ select,input{
 }
 .profileNameField{display:block;margin:0 0 12px}
 .calculatedAverage{
-  margin-top:6px;
+  margin-top:2px;
   min-height:44px;
   display:flex;
   align-items:center;
@@ -248,6 +311,9 @@ select,input{
   font-weight:900;
   letter-spacing:-.04em;
 }
+#profileGoal{font-size:26px;font-weight:900;letter-spacing:-.04em;line-height:1.1}
+.goalAverageField input{margin-top:2px;min-height:44px;padding:7px 10px;border:1px solid var(--line);border-radius:10px}
+.avatarSheet{padding-bottom:22px}
 .historyFilters{
   display:grid;
   grid-template-columns:repeat(3,1fr);
@@ -279,11 +345,24 @@ select,input{
   border:1px solid var(--line);
   background:var(--panel);
 }
+.medal{cursor:pointer;text-align:left}
 .medal.unlocked{background:linear-gradient(145deg,rgba(255,204,102,.17),rgba(124,156,255,.08));border-color:#7d6a42}
 .medal.locked{filter:saturate(.3);opacity:.55}
-.medalIcon{font-size:34px;line-height:1}
-.medal b{font-size:16px}
-.medal small{color:var(--muted)}
+.medalIcon{font-size:34px;line-height:1;width:68px;height:68px;border-radius:50%;overflow:hidden;display:grid;place-items:center;background:var(--panel2)}
+.medalIcon img{width:100%;height:100%;object-fit:cover;display:block}
+.medal b{font-size:16px;color:#fff}
+.medal small{color:var(--muted);display:block;margin-top:4px}
+.onboardingModal{z-index:1000;place-items:center}
+.onboardingCard{width:min(100%,520px);max-height:90vh;overflow:auto}
+.onboardingStep{display:none}.onboardingStep.active{display:block}
+.onboardingConcepts{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:18px 0}.onboardingConcepts .card{padding:12px}
+.onboardingSecondary,.onboardingBack{min-height:44px;padding:10px 16px;border-radius:12px;border:1px solid var(--line);background:var(--panel2);color:var(--text);font-weight:800}
+.onboardingBallActions{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}.onboardingBallActions>button,.onboardingStep .row>button{min-width:0;width:100%;height:52px;min-height:52px;padding:10px 12px;margin-top:8px}.onboardingBallActions .cta{padding-left:10px;padding-right:10px}
+.onboardingImport{display:block;margin:8px auto 0;min-height:36px;padding:7px 12px;border:0;background:transparent;color:var(--muted);font-size:12px;font-weight:700}
+.onboardingWelcome{text-align:center}.onboardingWelcome .onboardingLogo{width:min(72%,230px);height:auto;display:block;margin:0 auto 10px}.onboardingWelcome .onboardingArtwork{width:min(70%,260px);aspect-ratio:1;object-fit:cover;border-radius:22px;display:block;margin:4px auto 18px;box-shadow:0 14px 34px rgba(0,0,0,.35)}
+.onboardingLogoCombo{width:min(82%,280px);height:66px;margin:0 auto 10px;display:flex;align-items:center;justify-content:center;gap:10px}.onboardingLogoCombo .logoMark{width:58px;height:58px;object-fit:contain}.onboardingLogoCombo .logoWord{width:205px;max-height:58px;object-fit:contain}
+.onboardingMergedLogo{width:min(88%,330px);max-height:110px;object-fit:contain;display:block;margin:0 auto 16px}
+.historyScroll{max-height:360px;overflow-y:auto;padding-right:4px;overscroll-behavior:contain}
 .historyGame{display:block}
 .historyBreakdown{
   display:grid;
@@ -303,6 +382,15 @@ select,input{
 }
 .historyMetric b{font-size:16px}
 .historyMetric small{color:var(--muted);font-size:10px}
+.historyActions{display:flex;gap:8px;margin-top:10px}
+.historyActions[hidden]{display:none!important}
+.historyActions button{flex:1;padding:8px 10px;border-radius:10px;border:1px solid var(--line);background:var(--panel2);color:var(--text);font-weight:800;font-size:12px}
+.historyActions .danger{color:var(--bad)}
+.gameDetailMeta{display:flex;flex-wrap:wrap;gap:6px;margin:10px 0 16px}
+.gameDetailMeta span{padding:6px 9px;border-radius:999px;background:var(--panel2);color:var(--muted);font-size:12px}
+.gameDetailFrames{display:grid;grid-template-columns:repeat(5,1fr);gap:7px;margin-top:12px}
+.gameDetailFrame{padding:9px 4px;text-align:center;border:1px solid var(--line);border-radius:11px;background:var(--panel2)}
+.gameDetailFrame small{display:block;color:var(--muted);font-size:10px;margin-bottom:3px}
 .ballListButton{
   width:100%;
   color:var(--text);
@@ -310,6 +398,8 @@ select,input{
   cursor:pointer;
 }
 .ballListButton:hover{background:var(--panel2)}
+.ballListButton{touch-action:none}
+.ballListButton.drag-over{border-color:var(--accent);background:var(--panel2)}
 .ballListButton:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
 .ballDetailHero{display:flex;align-items:center;gap:14px;margin:12px 0 16px}
 .ballDetailStats{display:grid;grid-template-columns:repeat(2,1fr);gap:8px}
@@ -336,7 +426,23 @@ select,input{
 }
 .chartArea{
   position:relative;
+  overflow:hidden;
+  overscroll-behavior-x:contain;
 }
+.chartArea.chart{
+  width:100%;
+  min-width:0;
+  overflow-x:auto;
+  overscroll-behavior-x:contain;
+  -webkit-overflow-scrolling:touch;
+  touch-action:pan-x;
+  padding-right:10px;
+  cursor:grab;
+}
+.chartArea.chart.is-dragging{cursor:grabbing}
+.chartArea.chart.scoreMode{gap:5px}
+.chartArea.chart.scoreMode .chartCol{flex-basis:28px}
+.chartArea.chart.scoreMode .chartValue{font-size:9px}
 .chartValue{
   font-size:10px;
   font-weight:850;
@@ -349,7 +455,12 @@ select,input{
   display:flex;
   flex-direction:column;
   justify-content:flex-end;
+  flex:0 0 46px;
 }
+.chartCol.sessionBar{cursor:pointer;border-radius:8px;padding:4px 2px 0;transition:background .15s ease,transform .15s ease}
+.chartCol.sessionBar:hover,.chartCol.sessionBar:focus-visible{background:var(--panel);transform:translateY(-2px);outline:none}
+.chartCol.sessionBar.selected{background:var(--panel);box-shadow:0 0 0 1px var(--accent) inset}
+.sessionMetricHeading{grid-column:1/-1;display:flex;align-items:center;justify-content:space-between;margin-bottom:2px;color:var(--muted);font-size:11px}
 
 
 .chartToggle{
@@ -384,8 +495,8 @@ select,input{
 
 
 .importOptions{
-  display:grid;
-  grid-template-columns:1fr 1fr;
+  display:flex;
+  justify-content:center;
   gap:10px;
   margin:12px 0;
 }
@@ -398,7 +509,8 @@ select,input{
   text-align:center;
   font-weight:850;
 }
-.importBtn span{display:block;font-size:24px;margin-bottom:6px}
+.importBtn span{display:flex;align-items:center;justify-content:center;gap:8px;font-size:24px;margin-bottom:6px}
+.importBtn span img{width:34px;height:34px;object-fit:contain;border-radius:6px}
 .scanPreview{
   min-height:180px;
   border:1px dashed #405277;
@@ -443,7 +555,7 @@ select,input{
 }
 .detectedFrame small{display:block;color:var(--muted);font-size:9px;margin-bottom:4px}
 .detectedFrame b{font-size:13px}
-.scoreBig{font-size:30px;font-weight:900;letter-spacing:-.05em}
+.scoreBig{font-size:30px;font-weight:900;letter-spacing:-.05em;user-select:none;-webkit-user-select:none;cursor:pointer}
 .editGrid{
   display:grid;
   grid-template-columns:repeat(5,1fr);
@@ -594,7 +706,7 @@ body.light-mode .ballMatchPreview img{
   <div class="toast" id="toast">Saved</div>
   <header>
     <div class="brand">
-      <div class="logo">Lane<span>Lab</span></div>
+      <img class="logoImage" src="./Logo merge.png" alt="LaneLab">
       <button class="avatar avatarBtn" id="headerAvatar" onclick="openProfile()" aria-label="Open profile">AG</button>
     </div>
   </header>
@@ -602,68 +714,54 @@ body.light-mode .ballMatchPreview img{
   <main>
     <section class="screen active" id="home">
       <div class="eyebrow">Bowling improvement tracker</div>
-      <h1>Your game, decoded.</h1>
-      <p class="small">Demo data updates when you finish a game.</p>
+      <h1 id="homeGreeting">Your game, decoded.</h1>
+      <p class="small">Your history updates when you finish a game.</p>
 
       <div class="card hero">
-        <div class="row">
+        <div class="row" onpointerdown="startHomeAverageHold(event)" onpointerup="cancelHomeAverageHold()" onpointerleave="cancelHomeAverageHold()" onpointercancel="cancelHomeAverageHold()">
           <div>
-            <div class="muted small">10-game average</div>
-            <div class="heroScore" id="homeAvg">164</div>
+            <div class="muted small" id="homeAvgLabel">10-game average</div>
+            <div class="heroScore" id="homeAvg">—</div>
           </div>
-          <div class="pill">Last 10</div>
+          <div class="pill" id="homeAvgWindow">Last 10</div>
         </div>
-        <div class="delta">▲ 7 pins vs previous 10</div>
+        <div class="delta" id="trendDelta">Record games to see your averages</div>
+        <div class="muted small" style="margin-top:4px">Hold “Last 10” to toggle all games</div>
       </div>
 
       <div class="grid">
-        <div class="stat"><small>Strike rate</small><b id="strikeRate">34%</b><span class="tagGood small">+3%</span></div>
-        <div class="stat"><small>Spare rate</small><b id="spareRate">68%</b><span class="tagWarn small">-2%</span></div>
-        <div class="stat"><small>High game</small><b id="highGame">203</b><span class="muted small">this season</span></div>
-        <div class="stat"><small>Open frames</small><b>2.1</b><span class="tagGood small">-0.4/game</span></div>
+        <div class="stat"><small>Strike rate</small><b id="strikeRate">—</b><span class="muted small">your games</span></div>
+        <div class="stat"><small>Spare Conversion Rate</small><b id="spareRate">—</b><span class="muted small">your games</span></div>
+        <div class="stat"><small>High game</small><b id="highGame">—</b><span class="muted small">your games</span></div>
+        <div class="stat"><small>Open frames</small><b id="openFrames">—</b><span class="muted small" id="openFramesMeta">your games</span></div>
       </div>
 
       <div class="card">
-        <div class="row"><h2>Biggest opportunity</h2><span class="pill">Coach</span></div>
-        <div class="insight">
-          <strong>Single-pin spare conversion</strong>
-          <div class="muted small">You’re at 71%. Reaching 80% is worth roughly 4–6 pins/game.</div>
-          <div class="bar"><span style="width:71%"></span></div>
-        </div>
-        <button class="cta" onclick="go('coach')">See today’s practice →</button>
-      </div>
-
-      <div class="card">
-        <div class="row"><h2>Recent games</h2><span class="muted small">Practice</span></div>
-        <div class="list" id="recentGames">
-          <div class="listItem row"><span>Game 3 · Tonight</span><b>171</b></div>
-          <div class="listItem row"><span>Game 2 · Tonight</span><b>158</b></div>
-          <div class="listItem row"><span>Game 1 · Tonight</span><b>166</b></div>
-        </div>
+        <div class="row"><h2>Recent Games (Last 3 games)</h2></div>
+        <div class="list" id="recentGames"></div>
       </div>
     </section>
 
     <section class="screen" id="score">
       <div class="eyebrow">Record game</div>
-      <h1 id="gameTitle">Game 1</h1>
+      <div class="scoreHeaderRow">
+        <h1 id="gameTitle">Game 1</h1>
+        <div class="gameDateRow">
+          <label for="gameDate">Game date
+            <input id="gameDate" type="date" aria-label="Game date">
+          </label>
+        </div>
+      </div>
 
-      <div class="formRow">
-        <label>Hand
-          <select id="hand"><option>Right</option><option>Left</option></select>
-        </label>
-        <label>Ball
-          <select id="ballSelect"><option>Ascent</option><option>Hy-Road</option><option>Other</option></select>
-        </label>
+      <div class="formRow" style="display:none" aria-hidden="true">
+        <label id="handField">Hand<select id="hand"><option>Right</option><option>Left</option></select></label>
+        <label id="ballField">Ball<select id="ballSelect" onchange="rememberBallSelection()"><option>Ascent</option><option>Hy-Road</option><option>Other</option></select></label>
       </div>
 
       <div class="importOptions">
-        <button class="importBtn" onclick="startPhotoImport()">
-          <span>📷</span>
-          Import Scoreboard Photo
-        </button>
-        <button class="importBtn" onclick="toast('Manual scoring is active below')">
-          <span>⌨</span>
-          Enter Manually
+        <button class="importBtn" onclick="startPhotoImport()" aria-label="Import scoreboard data from a photo or CSV file">
+          <span>📷 <img src="./csv-bowling-icon-transparent.png" alt="CSV file"></span>
+          Import Scoreboard Data
         </button>
       </div>
 
@@ -672,14 +770,21 @@ body.light-mode .ballMatchPreview img{
         <div class="scoreboard" id="scoreboard"></div>
       </div>
 
+      <div class="scoreChoices" aria-label="Game hand and ball">
+        <div class="choiceGroup"><span class="choiceLabel">Hand</span><button type="button" class="roundChoice" id="handLeftChoice" onclick="setHandChoice('Left')">L</button><button type="button" class="roundChoice" id="handRightChoice" onclick="setHandChoice('Right')">R</button></div>
+        <div class="choiceGroup"><span class="choiceLabel">Ball</span><button type="button" class="roundChoice ballChoice" id="ballOneChoice" onclick="setBallPreset(0)" aria-label="Ball 1">🎳<b>Ball 1</b></button><button type="button" class="roundChoice ballChoice" id="ballTwoChoice" onclick="setBallPreset(1)" aria-label="Ball 2">🎳<b>Ball 2</b></button></div>
+      </div>
+
       <div class="currentRoll">
         <div class="muted small" id="rollLabel">Frame 1 · Ball 1</div>
         <b id="pinPrompt">How many pins?</b>
       </div>
 
+      <div class="pinTracker" id="pinTracker" aria-live="polite"></div>
+
       <div class="keypad" id="keypad"></div>
       <button class="cta secondary" onclick="undoRoll()">↶ Undo last roll</button>
-      <button class="cta danger" onclick="resetGame()">Reset game</button>
+      <button type="button" class="cta danger" onclick="resetGame()">Reset game</button>
     </section>
 
 
@@ -710,7 +815,8 @@ body.light-mode .ballMatchPreview img{
           </div>
         </div>
         <button class="cta" onclick="document.getElementById('scorePhotoInput').click()">Choose / Take Photo</button>
-        <button class="cta secondary" onclick="simulateScan()">Use Sample AI Demo</button>
+        <input id="csvHistoryInput" type="file" accept=".csv,.json,text/csv,application/json" hidden onchange="handleHistoryFileImport(event)">
+        <button class="cta secondary" onclick="document.getElementById('csvHistoryInput').click()">Import Game History CSV / JSON</button>
       </div>
 
       <div class="card">
@@ -778,7 +884,7 @@ body.light-mode .ballMatchPreview img{
 
         <div class="chartToggle">
           <button id="scoreViewBtn" class="active" onclick="setTrendView('scores')">Game Scores</button>
-          <button id="averageViewBtn" onclick="setTrendView('average')">Average Trend</button>
+          <button id="averageViewBtn" onclick="setTrendView('average')">Average Session</button>
         </div>
 
         <div class="avgChartWrap">
@@ -789,7 +895,7 @@ body.light-mode .ballMatchPreview img{
             <span>140</span>
             <span>120</span>
           </div>
-          <div class="chart chartArea" id="avgChart"></div>
+        <div class="chart chartArea" id="avgChart" onpointerdown="startChartDrag(event)" onpointermove="moveChartDrag(event)" onpointerup="endChartDrag(event)" onpointercancel="endChartDrag(event)" onpointerleave="endChartDrag(event)"></div>
         </div>
 
         <div class="chartSubtext" id="trendDescription">
@@ -797,37 +903,26 @@ body.light-mode .ballMatchPreview img{
         </div>
       </div>
 
+      <div class="card">
+        <div class="row"><h2>Session metrics</h2><span class="muted small">vs previous session</span></div>
+        <div class="grid" id="sessionMetrics"></div>
+      </div>
+
       <div class="grid">
-        <div class="stat"><small>Pocket hits</small><b>61%</b><span class="tagGood small">+5%</span></div>
-        <div class="stat"><small>Single pins</small><b>71%</b><span class="tagWarn small">goal 80%</span></div>
+        <div class="stat"><small>Single-pin leaves</small><b id="singlePinCount">—</b><span class="muted small" id="singlePinMeta">calculated from frame history</span></div>
       </div>
 
       <div class="card">
-        <h2>Common leaves</h2>
+        <h2>Common leaves & conversion</h2>
         <div class="list">
-          <div class="listItem">
-            <div class="row"><span>10 pin</span><b>47%</b></div>
-            <div class="bar"><span style="width:47%"></span></div>
-          </div>
-          <div class="listItem">
-            <div class="row"><span>7 pin</span><b>72%</b></div>
-            <div class="bar"><span style="width:72%"></span></div>
-          </div>
-          <div class="listItem">
-            <div class="row"><span>6 pin</span><b>81%</b></div>
-            <div class="bar"><span style="width:81%"></span></div>
-          </div>
+          <div class="listItem" id="commonLeavesStats"><div class="row"><span>Calculating…</span><b>—</b></div></div>
         </div>
       </div>
 
       <div class="card">
         <h2>Game-by-game</h2>
-        <div class="list">
-          <div class="listItem row"><span>Game 1</span><b>168 avg</b></div>
-          <div class="listItem row"><span>Game 2</span><b>165 avg</b></div>
-          <div class="listItem row"><span>Game 3</span><b>157 avg</b></div>
-        </div>
-        <p class="small">Your third game is currently 11 pins below Game 1. That may indicate fatigue or lane-transition adjustments.</p>
+        <div class="list" id="gameBreakdown"></div>
+        <p class="small" id="gameBreakdownMessage">Your recorded games will appear here.</p>
       </div>
     </section>
 
@@ -837,6 +932,7 @@ body.light-mode .ballMatchPreview img{
 
       <div class="card">
         <p class="small" style="margin-top:0">Tap a ball to see its saved-game stats or remove it.</p>
+        <p class="small arsenalOrderHint" style="margin:8px 0 0">↕ Drag and drop balls to reorder them. The top two become Ball 1 and Ball 2 in Score.</p>
         <div class="list" id="ballList" aria-live="polite">
           <div class="listItem row">
             <div class="row">
@@ -864,37 +960,32 @@ body.light-mode .ballMatchPreview img{
 
     <section class="screen" id="coach">
       <div class="eyebrow">Coach</div>
-      <h1>Turn stats into practice.</h1>
+      <h1>What should I work on next?</h1>
 
       <div class="card coach">
-        <div class="muted small">Improvement score</div>
-        <div class="coachScore">76</div>
-        <p>You’re trending up. Spare shooting is currently the fastest path to a higher average.</p>
-      </div>
-
-      <div class="card">
-        <div class="row"><h2>Today’s focus</h2><span class="pill">25 min</span></div>
-        <div class="practice">
-          <div class="practiceCard"><div class="muted small">10 pin</div><b>20×</b><div class="tagWarn small">Priority</div></div>
-          <div class="practiceCard"><div class="muted small">7 pin</div><b>10×</b><div class="muted small">Maintain</div></div>
-          <div class="practiceCard"><div class="muted small">Pocket</div><b>10×</b><div class="tagGood small">Good trend</div></div>
-        </div>
+        <div class="eyebrow">Biggest opportunity</div>
+        <h2 id="coachFocusTitle">Collect another session</h2>
+        <div class="coachScore" id="coachMetricValue">—</div>
+        <div class="muted small" id="coachMetricLabel">Latest session</div>
+        <div class="muted small" id="coachPriorityReason">Your latest session determines this focus.</div>
+        <div class="tagWarn small" id="coachMetricTrend">—</div>
+        <p id="coachSummary">Complete a bowling session to get a personalized recommendation.</p>
+        <div class="muted small" id="coachOpportunity"></div>
       </div>
 
       <div class="card">
         <h2>Why this?</h2>
-        <div class="insight">
-          <strong>10-pin conversion: 47%</strong>
-          <div class="muted small">This is your most frequent single-pin miss in the demo dataset. Improving it to 70% could recover several pins per game.</div>
-        </div>
+        <div class="insight"><div id="coachWhyText">Complete a session to unlock coaching guidance.</div></div>
       </div>
 
       <div class="card">
-        <h2>Hand comparison</h2>
-        <div class="list">
-          <div class="listItem row"><span>Right-hand average</span><b>168</b></div>
-          <div class="listItem row"><span>Left-hand average</span><b>157</b></div>
-        </div>
+        <div class="row"><h2>Today’s practice</h2><span class="pill" id="coachFocusTime">—</span></div>
+        <div class="practiceCard"><b id="coachDrillTitle">—</b><div id="coachDrillValue">—</div><div class="tagGood small" id="coachDrillGoal">—</div></div>
+      </div>
+
+      <div class="card">
+        <h2>What improved</h2>
+        <div class="list" id="coachImproved"><div class="muted small">Complete another session to unlock trend coaching.</div></div>
       </div>
     </section>
 
@@ -908,7 +999,7 @@ body.light-mode .ballMatchPreview img{
       </div>
 
       <div class="card profileHero">
-        <div class="profileAvatar" id="profileAvatar">AG</div>
+        <button class="profileAvatar" id="profileAvatar" type="button" onclick="openAvatarPicker()" aria-label="Change profile photo">AG</button>
         <div>
           <h2 id="profileHeroName" style="margin:0 0 3px">Anthony</h2>
           <div class="muted small" id="profileHeroDetails">Ambidextrous · Two-handed</div>
@@ -941,7 +1032,7 @@ body.light-mode .ballMatchPreview img{
           <div><div class="muted small" style="font-weight:700">Current average</div>
             <div id="profileAverage" class="calculatedAverage" aria-live="polite" title="Calculated from your last 10 games">164</div>
           </div>
-          <label>Goal average
+          <label class="goalAverageField">Goal average
             <input id="profileGoal" type="number" value="180" min="0" max="300" onchange="profileSaved()">
           </label>
         </div>
@@ -966,15 +1057,23 @@ body.light-mode .ballMatchPreview img{
             <span class="left"><span class="menuIcon">☁</span><span><b>Cloud sync</b><div class="muted small">Backup games across devices</div></span></span>
             <span class="chev">›</span>
           </button>
+          <button class="menuBtn" onclick="exportAllGameData()">
+            <span class="left"><span class="menuIcon">⇩</span><span><b>Export game data</b><div class="muted small">Download your games and frame details</div></span></span>
+            <span class="chev">›</span>
+          </button>
+          <button class="menuBtn" onclick="exportGameDataCsv()">
+            <span class="left"><span class="menuIcon">▤</span><span><b>Export CSV</b><div class="muted small">Open your game history in a spreadsheet</div></span></span>
+            <span class="chev">›</span>
+          </button>
+          <button type="button" class="menuBtn" onclick="resetAllGameData()">
+            <span class="left"><span class="menuIcon">⌫</span><span><b>Reset entire app</b><div class="muted small">Clear all LaneLab data and start over</div></span></span>
+            <span class="chev">›</span>
+          </button>
         </div>
       </div>
 
       <div class="card">
         <h2>Preferences</h2>
-        <div class="toggleRow">
-          <div><b>Show coaching tips</b><div class="muted small">Surface practice recommendations</div></div>
-          <button class="switch on" id="coachToggle" onclick="toggleSwitch(this)" aria-label="Toggle coaching tips"></button>
-        </div>
         <div class="toggleRow">
           <div><b>Track hand used</b><div class="muted small">Compare left vs right performance</div></div>
           <button class="switch on" id="handToggle" onclick="toggleSwitch(this)" aria-label="Toggle hand tracking"></button>
@@ -984,12 +1083,17 @@ body.light-mode .ballMatchPreview img{
           <button class="switch on" id="ballToggle" onclick="toggleSwitch(this)" aria-label="Toggle ball tracking"></button>
         </div>
         <div class="toggleRow">
+          <div><b>Track exact pin leaves</b><div class="muted small">Show pin diagrams after first-ball results</div></div>
+          <button class="switch on" id="pinTrackingToggle" onclick="togglePinTracking(this)" aria-label="Toggle exact pin leave tracking"></button>
+        </div>
+        <div class="toggleRow">
           <div>
             <b>Light mode</b>
             <div class="muted small" id="themeModeLabel">Currently using dark mode</div>
           </div>
           <button class="switch" id="themeToggle" onclick="toggleTheme()" aria-label="Toggle light mode"></button>
         </div>
+        <button class="menuBtn" onclick="replayOnboarding()" style="margin-top:10px"><span class="left"><span class="menuIcon">↻</span><span><b>Replay onboarding</b><div class="muted small">Review the LaneLab quick start</div></span></span><span class="chev">›</span></button>
       </div>
 
       <div class="card">
@@ -1026,7 +1130,7 @@ body.light-mode .ballMatchPreview img{
           <button data-history-range="7" onclick="setHistoryRange('7')">7 days</button>
           <button data-history-range="30" onclick="setHistoryRange('30')">30 days</button>
         </div>
-        <div class="list" id="personalHistory" style="margin-top:12px"></div>
+        <div class="historyScroll"><div class="list" id="personalHistory" style="margin-top:12px"></div></div>
       </div>
 
       <div class="card">
@@ -1039,12 +1143,55 @@ body.light-mode .ballMatchPreview img{
   </main>
 
   <nav class="nav">
-    <button class="active" data-target="home" onclick="go('home')"><span>⌂</span>Home</button>
-    <button data-target="score" onclick="go('score')"><span>＋</span>Score</button>
-    <button data-target="stats" onclick="go('stats')"><span>⌁</span>Stats</button>
+    <button class="active" data-target="home" onclick="go('home')"><span>🏠</span>Home</button>
+    <button data-target="score" onclick="go('score')"><span>📝</span>Score</button>
+    <button data-target="stats" onclick="go('stats')"><span>📊</span>Stats</button>
     <button data-target="arsenal" onclick="go('arsenal')"><span>🎳</span>Arsenal</button>
-    <button data-target="coach" onclick="go('coach')"><span>✦</span>Coach</button>
+    <button data-target="coach" onclick="go('coach')"><span>🧠</span>Coach</button>
   </nav>
+</div>
+
+<div class="modal onboardingModal" id="onboardingModal">
+  <div class="sheet onboardingCard" role="dialog" aria-modal="true" aria-labelledby="onboardingTitle">
+    <div class="onboardingStep active onboardingWelcome" data-step="1">
+      <img class="onboardingMergedLogo" src="./Logo merge.png" alt="LaneLab">
+      <h1 id="onboardingTitle">Your game, decoded.</h1>
+      <p>Track your bowling.<br>Find what costs you pins.<br>Know what to practice next.</p>
+      <button class="cta" onclick="onboardingNext()">Get Started</button>
+      <input id="onboardingCsvInput" type="file" accept=".csv,.json,text/csv,application/json" hidden onchange="handleOnboardingHistoryFile(event)">
+      <button class="onboardingImport" onclick="document.getElementById('onboardingCsvInput').click()">Already have game data? (Import CSV or JSON file here)</button>
+    </div>
+    <div class="onboardingStep" data-step="2">
+      <h2>Tell us about you</h2><p class="muted small">Only the basics LaneLab uses.</p>
+      <label>Name<input id="onboardingName" type="text" placeholder="Your name" autocomplete="name" required></label>
+      <label>Bowling hand<select id="onboardingHand"><option value="Right">Right</option><option value="Left">Left</option><option value="Ambidextrous">Both / Ambidextrous</option></select></label>
+      <label>Style <span class="muted small">(optional)</span><select id="onboardingStyle"><option value="">Not sure</option><option value="One-handed">One-handed</option><option value="Two-handed">Two-handed</option></select></label>
+      <div class="row"><button class="onboardingBack" onclick="onboardingBack()">Back</button><button class="cta" onclick="onboardingProfileNext()">Continue</button></div>
+    </div>
+    <div class="onboardingStep" data-step="3">
+      <h2>What are you throwing?</h2><p>Adding your bowling ball lets LaneLab track performance by equipment.</p>
+      <label>Ball name <span class="muted small">(optional)</span><input id="onboardingBallName" placeholder="Ball name"></label>
+      <label>Weight <span class="muted small">(optional)</span><input id="onboardingBallWeight" type="number" min="6" max="16" placeholder="lb"></label>
+      <div class="onboardingBallActions"><button class="onboardingBack" onclick="onboardingBack()">Back</button><button class="onboardingSecondary" onclick="onboardingFinish()">Skip for now</button><button class="cta" onclick="onboardingFinish()">Add Ball</button></div>
+    </div>
+    <div class="onboardingStep" data-step="4">
+      <h2>You’re ready.</h2><p>Record a few games and LaneLab will start finding patterns in your bowling.</p>
+      <div class="onboardingConcepts"><div class="card"><b>Score</b><div class="muted small">Track every game</div></div><div class="card"><b>Stats</b><div class="muted small">See what costs pins</div></div><div class="card"><b>Coach</b><div class="muted small">Know what to practice</div></div></div>
+      <button class="cta" onclick="onboardingFinish(true)">Start Bowling</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal" id="avatarModal" onclick="if(event.target===this) closeAvatarPicker()">
+  <div class="sheet avatarSheet" role="dialog" aria-modal="true" aria-labelledby="avatarModalTitle">
+    <div class="row"><h2 id="avatarModalTitle" style="margin:0">Profile photo</h2><button class="key" style="padding:8px 12px" onclick="closeAvatarPicker()" aria-label="Close profile photo picker">✕</button></div>
+    <p class="small" style="margin:8px 0 0">Choose an avatar or upload a photo from your device.</p>
+    <input id="profilePhotoInput" type="file" accept="image/*" hidden onchange="handleProfilePhotoUpload(event)">
+    <div class="avatarActions">
+      <button class="cta secondary" type="button" onclick="document.getElementById('profilePhotoInput').click()">Upload from device</button>
+    </div>
+    <div class="avatarPicker" id="avatarPicker" aria-label="Choose an avatar"></div>
+  </div>
 </div>
 
 <div class="modal" id="ballModal" onclick="if(event.target===this) closeBallModal()">
@@ -1091,7 +1238,24 @@ body.light-mode .ballMatchPreview img{
   </div>
 </div>
 
-<script src="./js/stats.js"></script>
+<div class="modal" id="gameDetailModal" onclick="if(event.target===this) closeGameDetail()">
+  <div class="sheet" role="dialog" aria-modal="true" aria-labelledby="gameDetailTitle">
+    <div class="row"><h2 id="gameDetailTitle" style="margin:0">Game details</h2><button class="key" style="padding:8px 12px" onclick="closeGameDetail()" aria-label="Close game details">✕</button></div>
+    <div class="gameDetailMeta" id="gameDetailMeta"></div>
+    <div class="historyBreakdown" id="gameDetailStats"></div>
+    <h3 style="margin:18px 0 8px">Frame notation</h3>
+    <div class="gameDetailFrames" id="gameDetailFrames"></div>
+  </div>
+</div>
+
+<div class="modal" id="medalDetailModal" onclick="if(event.target===this) closeMedalDetail()">
+  <div class="sheet" role="dialog" aria-modal="true" aria-labelledby="medalDetailTitle">
+    <div class="row"><h2 id="medalDetailTitle" style="margin:0">Achievement</h2><button class="key" style="padding:8px 12px" onclick="closeMedalDetail()" aria-label="Close achievement details">✕</button></div>
+    <div id="medalDetailContent" style="margin-top:14px"></div>
+  </div>
+</div>
+
+<script src="./js/stats.js?v=20260906"></script>
 <script src="./js/profile.js"></script>
 <script src="./js/arsenal.js"></script>
 <script>
@@ -1207,6 +1371,7 @@ function saveImportedGames(){
   recordGameScore(primary.final,{
     hand:document.getElementById('hand').value,
     ball:document.getElementById('ballSelect').value,
+    date:gameDateValue(),
     source:'scoreboard import'
   });
 
@@ -1214,34 +1379,359 @@ function saveImportedGames(){
   toast(`${scannedPlayers.length} game${scannedPlayers.length>1?'s':''} imported`);
 }
 
-const DEFAULT_RECENT_SCORES=[171,158,166,162,175,149,170,160,155,164];
-
 function getGameStorage(){
   try{return window.localStorage}catch(error){return null}
 }
 
+function localDateInputValue(date=new Date()){
+  const offset=date.getTimezoneOffset()*60000;
+  return new Date(date.getTime()-offset).toISOString().slice(0,10);
+}
+function gameDateValue(){
+  const input=document.getElementById('gameDate');
+  return input?.value ? `${input.value}T12:00:00` : undefined;
+}
+function currentThrowMeta(){
+  return {hand:document.getElementById('hand')?.value||null,ball:document.getElementById('ballSelect')?.value||null};
+}
+function saveFrameThrow(frame,meta,replace=false){
+  if(!frame) return;
+  if(!Array.isArray(frame.throws)) frame.throws=[];
+  const clean={hand:meta?.hand||null,ball:meta?.ball||null};
+  if(replace) frame.throws=[clean]; else frame.throws.push(clean);
+}
+
+// Demo histories are kept out of the product experience; each user starts with their own games.
+const historicalGames=[];
+const savedGames=LaneLabStats.loadGameRecords(getGameStorage(),[]).filter(game=>!['previous','historical'].includes(game.source));
+let hasExistingProfile=false;
+try{hasExistingProfile=Boolean(getGameStorage()?.getItem(LaneLabProfile.STORAGE_KEY))}catch(e){}
+const initialGames=[...(hasExistingProfile?historicalGames:[]),...savedGames];
+const initialRecent=initialGames.slice(-LaneLabStats.MAX_RECENT_GAMES).map(game=>game.score).reverse();
+const sessionDateKey=localDateInputValue();
+let savedSessionDate=null, savedSessionNumber=1;
+try{savedSessionDate=getGameStorage()?.getItem('lanelab-session-date'); savedSessionNumber=Number(getGameStorage()?.getItem('lanelab-session-game'))||1}catch(e){}
+if(savedSessionDate!==sessionDateKey){savedSessionNumber=1;try{getGameStorage()?.setItem('lanelab-session-date',sessionDateKey);getGameStorage()?.setItem('lanelab-session-game','1')}catch(e){}}
+
 const state = {
-  frames: Array.from({length:10},()=>({rolls:[]})),
+  frames: Array.from({length:10},()=>({rolls:[],throws:[]})),
   currentFrame:0,
   completed:false,
-  recent:LaneLabStats.loadScores(getGameStorage(),DEFAULT_RECENT_SCORES),
-  games:[]
+  sessionGameNumber:savedSessionNumber,
+  recent:initialRecent,
+  games:initialGames,
+  pinTracking:null
 };
-state.games=LaneLabStats.loadGameRecords(getGameStorage(),state.recent);
+state.recent=LaneLabStats.saveScores(getGameStorage(),state.recent);
+state.games=LaneLabStats.saveGameRecords(getGameStorage(),state.games);
+let homeDataMode='me';
+const ianGames=[];
+function getActiveGames(){return state.games;}
+function getHomeGames(){return getActiveGames();}
+function setHomeDataMode(){homeDataMode='me';syncAverageDisplays();syncGameSummaries();renderRecent();renderChart();renderSessionMetrics();renderPersonalStats();}
 
 let profile=LaneLabProfile.load(getGameStorage());
+const homeGreetings=[
+  "Welcome, {name}!",
+  "Ready to knock some pins?!",
+  "Let’s roll!",
+  "New day! New high score!",
+  "Ready to beat last time?!",
+  "Find your line!",
+  "Make every frame count!",
+  "One frame at a time!",
+  "Time to find the pocket!",
+  "Keep building your game!",
+  "Stay clean out there!",
+  "Make the next shot count!",
+  "The pins are waiting!",
+  "Find your rhythm!",
+  "Ready to level up?!",
+  "Close frames! Climb scores!",
+  "Trust your shot!",
+  "Let’s see what the lanes give you!",
+  "Today’s a good day to bowl!",
+  "Go chase that high game!"
+];
+function setDailyGreeting(){
+  const storage=getGameStorage();
+  const today=localDateInputValue();
+  let complete=false;
+  try{complete=storage?.getItem('laneLabOnboardingComplete')==='true'}catch(e){}
+  // Keep the default heading visible while the first-time setup is open.
+  if(!complete) return;
+  let saved=null;
+  try{saved=JSON.parse(storage?.getItem('laneLabGreetingState')||'null')}catch(e){}
+  let index=Number.isInteger(saved?.index)?saved.index:0;
+  if(saved?.date && saved.date!==today){
+    index=(index+1)%homeGreetings.length;
+    // The personalized welcome is a one-time first-day greeting.
+    if(index===0) index=1;
+  }
+  if(!saved?.date || saved.date!==today){
+    try{storage?.setItem('laneLabGreetingState',JSON.stringify({date:today,index}))}catch(e){}
+  }
+  const name=profile?.name?.trim() || 'there';
+  const greeting=homeGreetings[index%homeGreetings.length].replace('{name}',name);
+  const heading=document.getElementById('homeGreeting');
+  if(heading) heading.textContent=greeting;
+}
+setDailyGreeting();
+let onboardingStep=1;
+function showOnboardingStep(step){
+  onboardingStep=step;
+  document.querySelectorAll('.onboardingStep').forEach(el=>el.classList.toggle('active',Number(el.dataset.step)===step));
+  document.getElementById('onboardingModal')?.classList.add('show');
+}
+function onboardingNext(){showOnboardingStep(2)}
+function parseCsvLine(line){
+  const cells=[]; let cell='', quoted=false;
+  for(let i=0;i<line.length;i++){
+    const char=line[i];
+    if(char==='"' && line[i+1]==='"'){cell+='"';i++;continue}
+    if(char==='"'){quoted=!quoted;continue}
+    if(char===','&&!quoted){cells.push(cell.trim());cell='';continue}
+    cell+=char;
+  }
+  cells.push(cell.trim());
+  return cells;
+}
+function importCsvText(text){
+  const rows=String(text||'').split(/\r?\n/).map(row=>row.trim()).filter(Boolean);
+  if(!rows.length) return [];
+  const first=parseCsvLine(rows[0]).map(cell=>cell.toLowerCase().replace(/[\s_-]+/g,''));
+  const hasHeader=first.some(cell=>['score','gamescore','finalscore','totalscore','points','date','gamedate','sessiondate','frames','hand','ball','equipment','game','strikes','strikeframes','spares','spareframes','openframes','spareopportunities','sparechances'].includes(cell)||/^frame?\d+$/.test(cell)||/^f\d+$/.test(cell));
+  const headers=hasHeader?first:[];
+  const indexOf=(...names)=>names.map(name=>headers.indexOf(name.replace(/[\s_-]+/g,''))).find(index=>index>=0);
+  const scoreIndex=indexOf('score','gamescore','finalscore','totalscore','points');
+  const dateIndex=indexOf('date','gamedate','sessiondate');
+  const framesIndex=indexOf('frames','frame');
+  const handIndex=indexOf('hand');
+  const ballIndex=indexOf('ball','equipment');
+  const strikesIndex=indexOf('strikes','strike','strikeframes');
+  const strikeRateIndex=indexOf('strikerate','strikeratepercent');
+  const sparesIndex=indexOf('spares','spare','spareframes');
+  const spareChancesIndex=indexOf('spareopportunities','sparechances');
+  const openFramesIndex=indexOf('openframes','opens');
+  const ballRatesIndex=indexOf('ballstrikerates','ballstrikerate');
+  const frameColumns=headers.map((header,index)=>({header,index,number:Number((header.match(/^(?:frame|f)?(\d{1,2})$/)||[])[1])})).filter(item=>item.number>=1&&item.number<=10).sort((a,b)=>a.number-b.number);
+  return rows.slice(hasHeader?1:0).map(row=>{
+    const cells=parseCsvLine(row);
+    const numericScore=value=>{const number=Number(String(value??'').replace(/[^0-9.-]/g,''));return Number.isInteger(number)&&number>=0&&number<=300?number:null};
+    const fallbackScoreIndex=cells.map((value,index)=>({index,score:numericScore(value)})).filter(item=>item.score!==null).at(-1)?.index;
+    const resolvedScoreIndex=scoreIndex===undefined?fallbackScoreIndex:scoreIndex;
+    const score=numericScore(cells[resolvedScoreIndex]);
+    if(!Number.isInteger(score)||score<0||score>300) return null;
+    const rawDate=dateIndex===undefined?'':cells[dateIndex];
+    const frames=framesIndex===undefined
+      ? (frameColumns.length?frameColumns.map(column=>String(cells[column.index]||'').trim()).filter(Boolean):undefined)
+      : String(cells[framesIndex]||'').split(/[|;]/).map(frame=>frame.trim()).filter(Boolean);
+    const detailValue=(frame,kind)=>{const column=headers.indexOf(`frame${frame}${kind}`);return column>=0?String(cells[column]||'').trim():null};
+    const pinList=value=>value===null?null:(value?value.split(/[-|;]/).map(Number).filter(pin=>Number.isInteger(pin)&&pin>=1&&pin<=10):[]);
+    const importedPinData=Array.from({length:10},(_,index)=>{const frame=index+1;const first=detailValue(frame,'pinsleftafterfirst'), knocked=detailValue(frame,'pinsknockeddownsecond'), second=detailValue(frame,'pinsleftaftersecond');return {pinsLeftAfterFirst:pinList(first),pinsKnockedDownSecond:pinList(knocked),pinsLeftAfterSecond:pinList(second)};});
+    const importedFrameThrows=Array.from({length:10},(_,index)=>({throws:Array.from({length:3},(_,throwIndex)=>{const number=throwIndex+1;const hand=detailValue(index+1,`throw${number}hand`), ball=detailValue(index+1,`throw${number}ball`);return hand||ball?{hand:hand||null,ball:ball||null}:null;}).filter(Boolean)}));
+    const hasDetails=importedPinData.some(item=>item.pinsLeftAfterFirst||item.pinsKnockedDownSecond||item.pinsLeftAfterSecond)||importedFrameThrows.some(item=>item.throws.length);
+    const numberAt=index=>index===undefined?undefined:Number(String(cells[index]??'').replace(/[^0-9.-]/g,''));
+    const strikes=numberAt(strikesIndex), spares=numberAt(sparesIndex), spareChances=numberAt(spareChancesIndex);
+    const importedStrikeRate=numberAt(strikeRateIndex) ?? (frames?.length ? Math.round(frames.filter(frame=>String(frame).trim().startsWith('X')).length / frames.length * 100) : undefined);
+    let ballStrikeRates;
+    if(ballRatesIndex!==undefined){try{const parsed=JSON.parse(cells[ballRatesIndex]||'{}');if(parsed&&typeof parsed==='object') ballStrikeRates=parsed;}catch(e){}}
+    // Repair legacy CSV exports that stored an empty per-ball map. When a
+    // game-level ball and frame notation are present, infer its first-ball
+    // strike rate so Arsenal keeps the same value as the JSON import path.
+    if((!ballStrikeRates || !Object.keys(ballStrikeRates).length) && ballIndex!==undefined){
+      const selectedBall=String(cells[ballIndex]||'').trim();
+      if(selectedBall && Array.isArray(frames) && frames.length){
+        const opportunities=Math.min(10,frames.length);
+        const strikesFromFrames=frames.slice(0,opportunities).filter(frame=>String(frame||'').trim().startsWith('X')).length;
+        ballStrikeRates={[selectedBall]:opportunities?Math.round(strikesFromFrames/opportunities*100):null};
+      }
+    }
+    const spareRate=spares!==undefined&&spareChances>0 ? Math.round(spares/spareChances*100) : undefined;
+    return {score,date:rawDate&&!Number.isNaN(new Date(rawDate).getTime())?rawDate:undefined,frames,hand:handIndex===undefined?undefined:cells[handIndex],ball:ballIndex===undefined?undefined:cells[ballIndex],...(hasDetails?{pinData:importedPinData,frameThrows:importedFrameThrows}:{}),ballStrikeRates,strikes,spares,spareOpportunities:spareChances,strikeRate:importedStrikeRate,spareRate,metricsProvided:{strikes:strikes!==undefined,spares:spares!==undefined,spareOpportunities:spareChances!==undefined},source:'csv import'};
+  }).filter(Boolean);
+}
+function importCsvRecords(text){
+  const records=importCsvText(text);
+  records.forEach(record=>recordGameScore(record.score,record));
+  return records.length;
+}
+function importJsonRecords(text){
+  let payload;
+  try{payload=JSON.parse(text)}catch(error){return 0}
+  // Accept raw arrays, app exports, and wrapped records from older exports.
+  const records=[];
+  const collect=value=>{
+    if(Array.isArray(value)){ value.forEach(collect); return; }
+    if(!value || typeof value!=='object') return;
+    if(Number.isFinite(Number(value.score))) records.push(value);
+    ['games','records','state','data'].forEach(key=>{if(value[key] && value[key]!==value) collect(value[key])});
+  };
+  collect(payload);
+  const valid=records.filter(record=>record&&Number.isFinite(Number(record.score)));
+  const used=new Set();
+  valid.forEach(record=>{
+    const imported={...record,source:record.source||'json import'};
+    const recordDate=imported.date ? String(imported.date).slice(0,10) : '';
+    const match=state.games.find((existing,index)=>{
+      if(used.has(index) || Number(existing.score)!==Number(imported.score)) return false;
+      if(imported.id && existing.id===imported.id) return true;
+      const existingDate=existing.date ? String(existing.date).slice(0,10) : '';
+      return recordDate && existingDate===recordDate && (!existing.frames || !existing.frames.length);
+    });
+    if(match){ Object.assign(match,imported); used.add(state.games.indexOf(match)); }
+    else recordGameScore(Number(imported.score),imported);
+  });
+  state.games=LaneLabStats.saveGameRecords(getGameStorage(),state.games);
+  renderPersonalStats();
+  return valid.length;
+}
+function importHistoryFile(file,text){
+  const isJson=/\.json$/i.test(file?.name||'') || /^\s*[\[{]/.test(text);
+  return isJson?importJsonRecords(text):importCsvRecords(text);
+}
+function handleHistoryFileImport(event){
+  const file=event.target.files?.[0]; if(!file) return;
+  const reader=new FileReader();
+  reader.onload=()=>{
+    const count=importHistoryFile(file,String(reader.result||''));
+    toast(count?`${count} game${count===1?'':'s'} imported`:'No valid game records found in that file');
+  };
+  reader.readAsText(file); event.target.value='';
+}
+function handleOnboardingHistoryFile(event){
+  const file=event.target.files?.[0]; if(!file) return;
+  const reader=new FileReader();
+  reader.onload=()=>{
+    const count=importHistoryFile(file,String(reader.result||''));
+    if(!count){toast('No valid game records found in that file');return}
+    toast(`${count} game${count===1?'':'s'} imported`);
+    showOnboardingStep(2);
+  };
+  reader.readAsText(file); event.target.value='';
+}
+function onboardingBack(){showOnboardingStep(Math.max(1,onboardingStep-1))}
+function onboardingProfileNext(){
+  const name=document.getElementById('onboardingName')?.value.trim();
+  if(!name){document.getElementById('onboardingName')?.focus();toast('Enter your name to continue');return}
+  showOnboardingStep(3);
+}
+function onboardingSkipToReady(){showOnboardingStep(4)}
+function onboardingFinish(startScore=false){
+  const name=document.getElementById('onboardingName')?.value.trim() || profile.name;
+  const hand=document.getElementById('onboardingHand')?.value || profile.hand;
+  const style=document.getElementById('onboardingStyle')?.value || profile.style;
+  profile=LaneLabProfile.save(getGameStorage(),{...profile,name,hand,style});
+  try{getGameStorage()?.setItem('laneLabOnboardingComplete','true')}catch(e){}
+  setDailyGreeting();
+  // Adding or skipping the ball completes setup, then shows the final
+  // welcome screen. Only the final "Start Bowling" action closes onboarding.
+  if(!startScore){showOnboardingStep(4); return}
+  document.getElementById('onboardingModal')?.classList.remove('show');
+  renderProfile(); syncAverageDisplays();
+  // New users land on the dashboard first after setup; they can start a
+  // scorecard from the navigation when ready.
+  go('home');
+}
+function replayOnboarding(){
+  document.getElementById('onboardingName').value=profile.name==='Anthony'?'':profile.name;
+  document.getElementById('onboardingHand').value=profile.hand;
+  document.getElementById('onboardingStyle').value=profile.style==='Spinner'?'':profile.style;
+  showOnboardingStep(1);
+}
+function maybeStartOnboarding(){
+  let complete=false;
+  try{complete=getGameStorage()?.getItem('laneLabOnboardingComplete')==='true'}catch(e){}
+  if(!hasExistingProfile && !savedGames.length && !complete){
+    document.getElementById('onboardingName').value='';
+    showOnboardingStep(1);
+  }
+}
 let historyRange='all';
+let homeAverageMode='last10';
+let homeAverageHoldTimer=null;
+let pinTrackingEnabled=true;
+try{pinTrackingEnabled=getGameStorage()?.getItem('lanelab-pin-tracking')!=='off'}catch(e){}
+let handTrackingEnabled=true;
+let ballTrackingEnabled=true;
+try{
+  handTrackingEnabled=getGameStorage()?.getItem('lanelab-hand-tracking')!=='off';
+  ballTrackingEnabled=getGameStorage()?.getItem('lanelab-ball-tracking')!=='off';
+}catch(e){}
 
 function syncAverageDisplays(){
-  const average=LaneLabStats.calculateAverage(state.recent);
+  const homeGames=getHomeGames();
+  const lastTenAverage=LaneLabStats.calculateAverage(homeGames.slice(-10).map(game=>game.score).reverse());
+  const allScores=homeGames.map(game=>Number(game.score)).filter(Number.isFinite);
+  const allAverage=LaneLabStats.calculateAverage(allScores);
+  const average=homeAverageMode==='all' ? allAverage : lastTenAverage;
   const displayValue=average ?? '—';
   const homeAverage=document.getElementById('homeAvg');
+  const homeAverageLabel=document.getElementById('homeAvgLabel');
+  const homeAverageWindow=document.getElementById('homeAvgWindow');
   const profileAverage=document.getElementById('profileAverage');
   const profileAverageBadge=document.getElementById('profileAverageBadge');
 
   if(homeAverage) homeAverage.textContent=displayValue;
-  if(profileAverage) profileAverage.textContent=displayValue;
-  if(profileAverageBadge) profileAverageBadge.textContent=average===null ? 'No games yet' : `${average} avg`;
+  if(homeAverageLabel) homeAverageLabel.textContent=homeAverageMode==='all' ? 'All-game average' : '10-game average';
+  if(homeAverageWindow) homeAverageWindow.textContent=homeAverageMode==='all' ? 'All games' : 'Last 10';
+  if(profileAverage) profileAverage.textContent=lastTenAverage ?? '—';
+  if(profileAverageBadge) profileAverageBadge.textContent=lastTenAverage===null ? 'No games yet' : `${lastTenAverage} avg`;
+  const homeSummary=LaneLabStats.summarizeGames(homeGames);
+  const metricAverage=(key)=>{
+    const value=homeSummary[key];
+    return value===null||value===undefined ? '—' : `${Math.round(value)}%`;
+  };
+  const strikeRate=document.getElementById('strikeRate');
+  const spareRate=document.getElementById('spareRate');
+  if(strikeRate) strikeRate.textContent=metricAverage('strikeRate');
+  if(spareRate) spareRate.textContent=metricAverage('spareRate');
+  renderCoach();
+}
+
+function generateCoachRecommendation(current,previous){
+  const pinLeaves=current.leaves||[];
+  const single= current.singlePct!==null ? current.singlePct : null;
+  if(current.openPerGame!==null && current.openPerGame>=3) return {title:'Close more open frames',label:'Open frames',value:current.openPerGame.toFixed(1)+'/game',reason:'Open frames are prioritized because closing them can add points fastest.',why:'Coach checks open frames first because they represent missed scoring chances.',trend:previous?.openPerGame!==null&&previous?.openPerGame!==undefined?current.openPerGame-previous.openPerGame:null,explanation:`You averaged ${current.openPerGame.toFixed(1)} open frames per game in your latest session. Closing just one more frame is a clear way to raise your average.`,drillTitle:'Open-frame reduction',drillValue:'Play 1 practice game focused on spares',drillGoal:`Goal: ${Math.max(0,Math.ceil(current.openPerGame-1)).toFixed(0)} or fewer open frames`,opportunity:'Potential improvement: ~5–10 pins/game',lower:true};
+  if(single!==null && single<80) return {title:'Improve single-pin spares',label:'Single-pin spare conversion',value:Math.round(single)+'%',trend:previous?.singlePct!==null&&previous?.singlePct!==undefined?single-previous.singlePct:null,explanation:`You converted ${current.singleMakes} of ${current.singleAttempts} tracked single-pin spare attempts. This is your clearest recoverable opportunity.`,drillTitle:'Single-pin spare drill',drillValue:'20 attempts',drillGoal:'Goal: 16 / 20',opportunity:'Potential improvement: ~5–10 pins/game'};
+  if(pinLeaves.length){const leave=pinLeaves[0]; return {title:'Convert your most common leave',label:'Top tracked leave',value:leave.pins.join('-'),trend:null,explanation:`The ${leave.pins.join('-')} leave appeared ${leave.attempts} times in your tracked history. Build a repeatable spare routine for it.`,drillTitle:'Leave conversion drill',drillValue:`Shoot ${Math.max(10,leave.attempts*2)} attempts`,drillGoal:`Goal: ${Math.ceil(Math.max(10,leave.attempts*2)*.7)} makes`,opportunity:'Potential improvement: a few pins/game'};}
+  return {title:'Create more strike opportunities',label:'Spare Conversion Rate',value:current.spareRate===null?'—':Math.round(current.spareRate)+'%',trend:previous?.spareRate!==null&&previous?.spareRate!==undefined?current.spareRate-previous.spareRate:null,explanation:'Your tracked spare conversion rate measures how often you convert an available spare opportunity. More conversions create more chances for higher scores.',drillTitle:'Spare conversion drill',drillValue:'Play 1 practice game focused on first-ball accuracy',drillGoal:'Goal: convert at least 7 spares',opportunity:'Potential improvement: ~5 pins/game'};
+}
+function renderCoach(){
+  const sessions=LaneLabStats.groupSessions(getActiveGames()), current=LaneLabStats.summarizeGames(sessions.at(-1)?.games||[]), previous=sessions.length>1?LaneLabStats.summarizeGames(sessions.at(-2).games):null;
+  const rec=generateCoachRecommendation(current,previous);
+  const set=(id,value)=>{const el=document.getElementById(id);if(el)el.textContent=value};
+  set('coachFocusTitle',sessions.length?rec.title:'Collect another session'); set('coachMetricValue',sessions.length?rec.value:'—'); set('coachMetricLabel',sessions.length?rec.label:'Latest session'); set('coachPriorityReason',sessions.length?(rec.reason||'This focus is based on your latest session data.'):'Your latest session determines this focus.');
+  const delta=rec.trend; const trendEl=document.getElementById('coachMetricTrend');
+  if(trendEl){const good=delta!==null&&delta!==undefined&&((rec.lower&&delta<0)||(!rec.lower&&delta>0)); trendEl.classList.toggle('tagGood',good); trendEl.classList.toggle('tagWarn',delta!==null&&delta!==undefined&&!good); trendEl.classList.toggle('muted',delta===null||delta===undefined);}
+  set('coachMetricTrend',delta===null||delta===undefined?'No previous session':`${delta>0?'▲':'▼'} ${delta>0?'+':''}${Math.round(Math.abs(delta)*10)/10}${rec.lower?' /game':' pp'}${rec.lower?(delta<0?' · good':''):((delta>0)?' · good':'')}`);
+  set('coachSummary',sessions.length?rec.explanation:'Complete a bowling session to get a personalized recommendation.'); set('coachOpportunity',sessions.length?rec.opportunity:''); set('coachFocusTime',sessions.length?'15–20 min':'—'); set('coachWhyText',sessions.length?(rec.why||'This focus is selected from the clearest opportunity in your latest session.'):'Complete another session to unlock trend coaching.'); set('coachDrillTitle',sessions.length?rec.drillTitle:'—'); set('coachDrillValue',sessions.length?rec.drillValue:'—'); set('coachDrillGoal',sessions.length?rec.drillGoal:'—');
+  const improved=[]; if(previous){[['Average score',current.average,previous.average,'pins',false],['Strike rate',current.strikeRate,previous.strikeRate,'pp',false],['Open frames',current.openPerGame,previous.openPerGame,'/game',true]].forEach(([label,a,b,unit,lower])=>{if(a!==null&&b!==null){const d=a-b;if((lower&&d<0)||(!lower&&d>0)) improved.push(`<div class="listItem row"><span>${label}</span><b>${d>0?'▲':'▼'} ${Math.abs(Math.round(d*10)/10)} ${unit}</b></div>`);}})}
+  const improvedEl=document.getElementById('coachImproved'); if(improvedEl) improvedEl.innerHTML=improved.length?improved.join(''):`<div class="muted small">${previous?'No clear improvement trend yet.':'Complete another session to unlock trend coaching.'}</div>`;
+}
+
+function showImprovementExplanation(){
+  const games=state.games.filter(game=>Number.isFinite(Number(game.score)));
+  if(!games.length){toast('Record games to calculate improvement');return;}
+  const midpoint=Math.max(1,Math.floor(games.length/2));
+  const avg=list=>Math.round(list.reduce((a,b)=>a+b,0)/list.length);
+  const earlier=games.slice(0,midpoint).map(game=>Number(game.score));
+  const recent=games.slice(-midpoint).map(game=>Number(game.score));
+  const delta=avg(recent)-avg(earlier);
+  toast(`Improvement score uses 50 baseline + 2 points per pin of trend (${delta>=0?'+':''}${delta} pins).`);
+}
+
+function startHomeAverageHold(event){
+  event.stopPropagation();
+  cancelHomeAverageHold();
+  homeAverageHoldTimer=setTimeout(()=>{
+    homeAverageMode=homeAverageMode==='last10' ? 'all' : 'last10';
+    syncAverageDisplays();
+    if(navigator.vibrate) navigator.vibrate(25);
+  },550);
+}
+function cancelHomeAverageHold(){
+  if(homeAverageHoldTimer){clearTimeout(homeAverageHoldTimer);homeAverageHoldTimer=null;}
 }
 
 function recordGameScore(score,details={}){
@@ -1252,36 +1742,125 @@ function recordGameScore(score,details={}){
   state.recent=LaneLabStats.saveScores(getGameStorage(),state.recent);
   const gameRecord=LaneLabStats.createGameRecord(normalizedScore,details);
   if(gameRecord){
-    state.games=LaneLabStats.saveGameRecords(getGameStorage(),[gameRecord,...state.games]);
+    state.games=LaneLabStats.saveGameRecords(getGameStorage(),[...state.games,gameRecord]);
   }
   syncAverageDisplays();
   syncGameSummaries();
   renderRecent();
+  renderChart();
+  renderSessionMetrics();
+  renderGameBreakdown();
   renderPersonalStats();
   renderArsenal();
   return true;
 }
 
+const PROFILE_AVATARS=[
+  ['01_bowling_ball_photo.png','Bowling ball'],['02_neon_bowling_pins.png','Neon pins'],
+  ['03_retro_bowling_pin.png','Retro pin'],['04_neon_bowling_lane.png','Bowling lane'],
+  ['05_cool_bowling_ball.png','Cool ball'],['06_mountain_adventure.png','Mountain'],
+  ['07_dog_sunglasses.png','Bowling buddy'],['08_ocean_wave.png','Ocean wave'],
+  ['09_starry_mountains.png','Starry mountain'],['10_adventure_mug.png','Adventure mug']
+].map(([file,label])=>({src:`./assets/avatars/${file}`,label}));
+
+function profileAvatarMarkup(photo, initials, name){
+  return photo ? `<img class="avatarImage" src="${escapeHtml(photo)}" alt="${escapeHtml(name)} profile photo">` : escapeHtml(initials);
+}
+function renderAvatarPicker(){
+  const picker=document.getElementById('avatarPicker');
+  if(!picker) return;
+  const initials=LaneLabProfile.initials(profile.name);
+  picker.innerHTML=`<button type="button" class="avatarOption initialsOption${profile.photo?'':' selected'}" onclick="clearProfilePhoto()" aria-label="Use initials avatar">${escapeHtml(initials)}</button>`+PROFILE_AVATARS.map((avatar,index)=>`<button type="button" class="avatarOption${profile.photo===avatar.src?' selected':''}" onclick="selectProfileAvatar(${index})" aria-label="Use ${escapeHtml(avatar.label)} avatar"><img src="${avatar.src}" alt="${escapeHtml(avatar.label)}"></button>`).join('');
+}
+function selectProfileAvatar(index){
+  const avatar=PROFILE_AVATARS[index];
+  if(!avatar) return;
+  profile=LaneLabProfile.save(getGameStorage(),{...profile,photo:avatar.src});
+  renderProfile();
+  closeAvatarPicker();
+  toast('Profile photo updated');
+}
+function clearProfilePhoto(){
+  profile=LaneLabProfile.save(getGameStorage(),{...profile,photo:''});
+  renderProfile();
+  closeAvatarPicker();
+  toast('Using initials');
+}
+function handleProfilePhotoUpload(event){
+  const file=event.target.files?.[0];
+  if(!file || !file.type.startsWith('image/')) return;
+  const reader=new FileReader();
+  reader.onload=()=>{
+    profile=LaneLabProfile.save(getGameStorage(),{...profile,photo:String(reader.result||'')});
+    renderProfile();
+    closeAvatarPicker();
+    toast('Profile photo uploaded');
+  };
+  reader.readAsDataURL(file);
+  event.target.value='';
+}
+function openAvatarPicker(){
+  renderAvatarPicker();
+  document.getElementById('avatarModal')?.classList.add('show');
+}
+function closeAvatarPicker(){document.getElementById('avatarModal')?.classList.remove('show')}
+
 function renderProfile(){
   const initials=LaneLabProfile.initials(profile.name);
-  document.getElementById('headerAvatar').textContent=initials;
-  document.getElementById('profileAvatar').textContent=initials;
+  document.getElementById('headerAvatar').innerHTML=profileAvatarMarkup(profile.photo,initials,profile.name);
+  document.getElementById('profileAvatar').innerHTML=profileAvatarMarkup(profile.photo,initials,profile.name);
+  document.getElementById('profileAvatar').classList.toggle('hasPhoto',Boolean(profile.photo));
   document.getElementById('profileHeroName').textContent=profile.name;
   document.getElementById('profileHeroDetails').textContent=`${profile.hand} · ${profile.style}`;
   document.getElementById('profileName').value=profile.name;
   document.getElementById('profileHand').value=profile.hand;
   document.getElementById('profileStyle').value=profile.style;
   document.getElementById('profileGoal').value=profile.goalAverage;
+  renderAvatarPicker();
   const gameHand=document.getElementById('hand');
   if(gameHand && profile.hand!=='Ambidextrous') gameHand.value=profile.hand;
+  document.getElementById('pinTrackingToggle')?.classList.toggle('on',pinTrackingEnabled);
+  document.getElementById('handToggle')?.classList.toggle('on',handTrackingEnabled);
+  document.getElementById('ballToggle')?.classList.toggle('on',ballTrackingEnabled);
+  syncScoreTrackingFields();
   syncAverageDisplays();
 }
 
+function frameAnalysis(games){
+  const frames=games.flatMap(game=>Array.isArray(game.frames)?game.frames.slice(0,10):[]).map(frame=>String(frame).trim()).filter(Boolean);
+  const open=frames.filter(frame=>!frame.startsWith('X')&&!frame.includes('/')).length;
+  const single=frames.filter(frame=>/^9(?:[/\-]|$)/.test(frame)).length;
+  const leaves={};
+  games.forEach(game=>(Array.isArray(game.pinData)?game.pinData:[]).forEach(frame=>{
+    const pins=Array.isArray(frame?.pinsLeftAfterFirst)?frame.pinsLeftAfterFirst.slice().sort((a,b)=>a-b):[];
+    if(pins.length){const key=pins.join('-');leaves[key]=(leaves[key]||0)+1;}
+  }));
+  return {frames:frames.length,open,single,leaves};
+}
+function renderHistoryMetrics(games=state.games){
+  const analysis=LaneLabStats.summarizeGames(games);
+  const openFrames=document.getElementById('openFrames');
+  const openMeta=document.getElementById('openFramesMeta');
+  if(openFrames) openFrames.textContent=analysis.openPerGame===null?'—':analysis.openPerGame.toFixed(1);
+  if(openMeta) openMeta.textContent='your games';
+  const single=document.getElementById('singlePinCount');
+  const singleMeta=document.getElementById('singlePinMeta');
+  if(single) single.textContent=analysis.singlePct===null?'—':`${Math.round(analysis.singlePct)}%`;
+  if(singleMeta) singleMeta.textContent=analysis.singleAttempts?`${analysis.singleMakes} / ${analysis.singleAttempts} converted`:'no exact pin data';
+  const leaves=document.getElementById('commonLeavesStats');
+  if(leaves){
+    const ranked=Object.entries(analysis.leaves).sort((a,b)=>b[1]-a[1]).slice(0,3);
+    leaves.innerHTML=ranked.length?ranked.map(([pins,count])=>`<div class="row"><span>${pins.split('-').length} pin${pins.split('-').length===1?'':'s'} left <small class="muted">(${pins})</small></span><b>${count}</b></div>`).join(''):'<div class="row"><span>Exact leaves</span><b>—</b></div><div class="muted small">Pin-level leave tracking will appear for games recorded with exact pin tracking.</div>';
+  }
+  return analysis;
+}
 function syncGameSummaries(){
-  const scores=state.games.map(game=>game.score);
+  const homeGames=getHomeGames();
+  const scores=homeGames.map(game=>Number(game.score)).filter(Number.isFinite);
   const high=scores.length ? Math.max(...scores) : null;
   const highGame=document.getElementById('highGame');
   if(highGame) highGame.textContent=high ?? '—';
+  renderHistoryMetrics(homeGames);
 }
 
 function formatGameDate(value){
@@ -1292,10 +1871,16 @@ function formatGameDate(value){
 }
 
 function getFilteredHistory(){
-  if(historyRange==='all') return state.games;
-  const days=Number(historyRange);
-  const cutoff=Date.now()-(days*24*60*60*1000);
-  return state.games.filter(game=>game.date && new Date(game.date).getTime()>=cutoff);
+  const games=historyRange==='all' ? state.games.slice() : (()=>{
+    const days=Number(historyRange);
+    const cutoff=Date.now()-(days*24*60*60*1000);
+    return state.games.filter(game=>game.date && new Date(game.date).getTime()>=cutoff);
+  })();
+  return games.sort((a,b)=>{
+    const aTime=a.date ? new Date(a.date).getTime() : 0;
+    const bTime=b.date ? new Date(b.date).getTime() : 0;
+    return (bTime-aTime) || (state.games.indexOf(b)-state.games.indexOf(a));
+  });
 }
 
 function setHistoryRange(range){
@@ -1313,51 +1898,238 @@ function renderPersonalHistory(){
   if(!box || !count) return;
   count.textContent=`${games.length} shown`;
   box.innerHTML=games.length ? games.map(game=>{
-    const details=[game.hand,game.ball].filter(Boolean).join(' · ') || 'Details unavailable';
-    const metric=(value,label)=>`<span class="historyMetric"><b>${value}</b><small>${label}</small></span>`;
-    return `<div class="listItem historyGame">
-      <div class="row"><div><b>${formatGameDate(game.date)}</b><div class="muted small">${escapeHtml(details)}</div></div><b class="scoreBig">${game.score}</b></div>
-      <div class="historyBreakdown">
-        ${metric(game.strikeRate===null?'—':`${game.strikeRate}%`,'Strike rate')}
-        ${metric(game.spareRate===null?'—':`${game.spareRate}%`,'Spare rate')}
-        ${metric(game.strikes===null?'—':game.strikes,'Strikes')}
+    const details=[game.hand,game.ball].filter(Boolean).join(' · ') || (game.source==='csv import' ? 'Imported from CSV' : 'Details unavailable');
+    return `<div class="listItem historyGame" data-game-id="${escapeHtml(game.id)}" onclick="openGameDetail(event,'${escapeHtml(game.id)}')">
+      <div class="row"><div><b>${formatGameDate(game.date)}</b><div class="muted small">${escapeHtml(details)}</div><div class="muted small" style="margin-top:5px">Tap for breakdown · hold score for options</div></div><b class="scoreBig" onpointerdown="startHistoryHold(event,'${escapeHtml(game.id)}')" onpointerup="cancelHistoryHold()" onpointerleave="cancelHistoryHold()" onpointercancel="cancelHistoryHold()" onclick="event.stopPropagation()">${game.score}</b></div>
+      <div class="historyActions" hidden>
+        <button type="button" onclick="editHistoryGame(event,'${escapeHtml(game.id)}')">Edit score</button>
+        <button type="button" class="danger" onclick="deleteHistoryGame(event,'${escapeHtml(game.id)}')">Delete game</button>
       </div>
-      ${game.strikeRate===null && game.spareRate===null && game.strikes===null ? '<div class="muted small" style="margin-top:8px">Breakdown unavailable for this older score-only game.</div>' : ''}
     </div>`;
   }).join('') : '<div class="listItem center"><b>No games in this date range</b><div class="muted small" style="margin-top:4px">Try another filter or save a new game.</div></div>';
 }
 
-function renderMedals(){
-  const milestones=[
-    {score:100,icon:'🥉',name:'Triple Digits'},
-    {score:150,icon:'🥈',name:'Rising Star'},
-    {score:200,icon:'🥇',name:'Club 200'},
-    {score:250,icon:'🏆',name:'Elite 250'},
-    {score:300,icon:'💎',name:'Perfect Game'}
-  ];
-  const scores=state.games.map(game=>game.score);
-  const high=scores.length ? Math.max(...scores) : 0;
-  const unlocked=milestones.filter(milestone=>high>=milestone.score).length;
-  document.getElementById('medalCount').textContent=`${unlocked} / ${milestones.length}`;
-  document.getElementById('medalGrid').innerHTML=milestones.map(milestone=>{
-    const earned=high>=milestone.score;
-    return `<div class="medal ${earned?'unlocked':'locked'}">
-      <div class="medalIcon">${earned?milestone.icon:'🔒'}</div>
-      <div><b>${milestone.name}</b><small>${earned?`Earned with a ${high} high`:`Score ${milestone.score} to unlock`}</small></div>
-    </div>`;
-  }).join('');
+function normalizeBowlingNotation(value){
+  const text=String(value??'');
+  if(text.trim()==='10') return 'X';
+  return text.replace(/0/g,'-');
+}
+function circledPinCount(value){
+  return ({'0':'⓪','1':'①','2':'②','3':'③','4':'④','5':'⑤','6':'⑥','7':'⑦','8':'⑧','9':'⑨','10':'⑩'})[String(value)] || String(value);
+}
+function pinLeaveIsSplit(pins){
+  if(!Array.isArray(pins)||pins.length<2||pins.includes(1)) return false;
+  const positions={2:[-0.5,1],3:[0.5,1],4:[-1,2],5:[0,2],6:[1,2],7:[-1.5,3],8:[-0.5,3],9:[0.5,3],10:[1.5,3]};
+  const standing=pins.map(Number).filter(pin=>positions[pin]);
+  for(let i=0;i<standing.length;i++) for(let j=i+1;j<standing.length;j++){
+    const a=positions[standing[i]], b=positions[standing[j]];
+    if(Math.abs(a[0]-b[0])>1.01 || Math.abs(a[1]-b[1])>1) return true;
+  }
+  return false;
+}
+function gameFrameNotation(game){
+  const objectToken=(frame,index)=>{
+    if(typeof frame==='string') return normalizeBowlingNotation(frame);
+    const rolls=Array.isArray(frame?.rolls)?frame.rolls.map(Number).filter(Number.isFinite):[];
+    if(!rolls.length) return null;
+    if(rolls[0]===10) return index===9 ? rolls.map(value=>value===10?'X':(value===0?'-':String(value))).join('') : 'X';
+    const first=Math.max(0,Math.min(10,rolls[0]));
+    const second=rolls.length>1?Math.max(0,Math.min(10-first,rolls[1])):null;
+    return `${first===0?'-':first}${second===null?'':(first+second===10?'/':(second===0?'-':second))}`;
+  };
+  const withSplit=(token,index)=>{
+    const leave=game?.pinData?.[index]?.pinsLeftAfterFirst;
+    if(!pinLeaveIsSplit(leave) || !token || String(token).startsWith('X')) return token;
+    const value=String(token);
+    if(/^[①②③④⑤⑥⑦⑧⑨⑩⓪]/.test(value)) return value;
+    return /^\d/.test(value) ? `${circledPinCount(value[0])}${value.slice(1)}` : value;
+  };
+  if(Array.isArray(game?.frames) && game.frames.some(Boolean)) return game.frames.slice(0,10).map((frame,index)=>withSplit(objectToken(frame,index),index));
+  const pinFrames=Array.isArray(game?.pinData)?game.pinData.slice(0,10):[];
+  const frames=Array.from({length:10},(_,index)=>{
+    const frame=pinFrames[index];
+    const first=Array.isArray(frame?.pinsLeftAfterFirst)?frame.pinsLeftAfterFirst:null;
+    const second=Array.isArray(frame?.pinsLeftAfterSecond)?frame.pinsLeftAfterSecond:null;
+    if(!first) return null;
+    if(first.length===0) return 'X';
+    const firstDown=Math.max(0,10-first.length);
+    if(second===null) return withSplit(`${firstDown===0?'-':firstDown}-`,index);
+    if(second.length===0) return withSplit(`${firstDown}/`,index);
+    const secondDown=Math.max(0,first.length-second.length);
+    return withSplit(`${firstDown===0?'-':firstDown}${secondDown===0?'-':secondDown}`,index);
+  });
+  let remaining=Math.max(0,(Number(game?.strikes)||0)-frames.filter(frame=>frame==='X').length);
+  for(let index=9;index>=0&&remaining>0;index--){
+    if(frames[index]===null){frames[index]='X';remaining--;}
+  }
+  // If the recorded total still exceeds the visible pin states, preserve the
+  // authoritative total by treating the 10th frame as an inferred strike.
+  if(remaining>0 && frames[9]!=='X'){frames[9]='X';}
+  return frames;
 }
 
+let historyHoldTimer=null;
+function closeHistoryMenus(){
+  cancelHistoryHold();
+  document.querySelectorAll('.historyGame.historyMenuOpen').forEach(card=>{
+    const actions=card.querySelector('.historyActions');
+    if(actions) actions.hidden=true;
+    card.classList.remove('historyMenuOpen');
+  });
+}
+document.addEventListener('pointerdown',event=>{
+  if(!event.target.closest('.historyGame .scoreBig')&&!event.target.closest('.historyActions')) closeHistoryMenus();
+},true);
+document.addEventListener('input',closeHistoryMenus,true);
+function startHistoryHold(event,id){
+  event.stopPropagation();
+  cancelHistoryHold();
+  historyHoldTimer=setTimeout(()=>{
+    const card=document.querySelector(`[data-game-id="${CSS.escape(id)}"]`);
+    const actions=card?.querySelector('.historyActions');
+    if(actions){actions.hidden=false; card.classList.add('historyMenuOpen');}
+    if(navigator.vibrate) navigator.vibrate(25);
+  },550);
+}
+
+function openGameDetail(event,id){
+  if(event) event.stopPropagation();
+  const game=state.games.find(item=>item.id===id);
+  if(!game) return;
+  const gameSummary=LaneLabStats.summarizeGames([game]);
+  const frames=gameFrameNotation(game).filter(Boolean);
+  const strikes=frames.length ? frames.filter(frame=>String(frame).trim().startsWith('X')).length : (Number.isFinite(Number(game.strikes))?Number(game.strikes):null);
+  const metrics=[
+    ['Score',game.score],
+    ['Strike rate',(gameSummary.strikeRate===0 || (Number.isFinite(Number(game.strikes)) && Number(game.strikes)===0))?'N/A':(gameSummary.strikeRate===null?'—':`${Math.round(gameSummary.strikeRate)}%`)],
+    ['Spare Conversion Rate',(!Number(game.spareOpportunities) && !gameSummary.spareRate)?'N/A':(gameSummary.spareRate===null?'—':`${Math.round(gameSummary.spareRate)}%`)],
+    ['Strikes',strikes===null?'—':strikes]
+  ];
+  document.getElementById('gameDetailTitle').textContent=`Game ${state.games.indexOf(game)+1}`;
+  document.getElementById('gameDetailMeta').innerHTML=[formatGameDate(game.date),game.hand,game.ball].filter(Boolean).map(item=>`<span>${escapeHtml(String(item))}</span>`).join('');
+  document.getElementById('gameDetailStats').innerHTML=metrics.map(([label,value])=>`<span class="historyMetric"><b>${value}</b><small>${label}</small></span>`).join('');
+  const notation=gameFrameNotation(game);
+  const frameMarkup=notation.some(Boolean)
+    ? notation.map((frame,index)=>`<div class="gameDetailFrame"><small>Frame ${index+1}</small><b>${escapeHtml(frame||'—')}</b></div>`).join('')
+    : '<div class="muted small">Frame notation is unavailable for this game.</div>';
+  document.getElementById('gameDetailFrames').innerHTML=frameMarkup;
+  document.getElementById('gameDetailModal').classList.add('show');
+}
+function closeGameDetail(){document.getElementById('gameDetailModal').classList.remove('show')}
+function cancelHistoryHold(){
+  if(historyHoldTimer){clearTimeout(historyHoldTimer);historyHoldTimer=null;}
+}
+function editHistoryGame(event,id){
+  event.stopPropagation();
+  const game=state.games.find(item=>item.id===id);
+  if(!game) return;
+  const value=window.prompt('Update this game score (0–300):',String(game.score));
+  if(value===null) return;
+  const score=Number(value);
+  if(!Number.isInteger(score)||score<0||score>300){toast('Enter a whole number from 0 to 300');return;}
+  game.score=score;
+  state.games=LaneLabStats.saveGameRecords(getGameStorage(),state.games);
+  state.recent=LaneLabStats.saveScores(getGameStorage(),state.games.slice(-LaneLabStats.MAX_RECENT_GAMES).map(item=>item.score).reverse());
+  syncAverageDisplays();syncGameSummaries();renderChart();renderRecent();renderGameBreakdown();renderPersonalStats();renderArsenal();
+  toast('Game updated');
+}
+function deleteHistoryGame(event,id){
+  event.stopPropagation();
+  const game=state.games.find(item=>item.id===id);
+  if(!game || !window.confirm(`Delete the ${game.score} game from your history?`)) return;
+  state.games=LaneLabStats.saveGameRecords(getGameStorage(),state.games.filter(item=>item.id!==id));
+  state.recent=LaneLabStats.saveScores(getGameStorage(),state.games.slice(-LaneLabStats.MAX_RECENT_GAMES).map(item=>item.score).reverse());
+  syncAverageDisplays();syncGameSummaries();renderChart();renderRecent();renderGameBreakdown();renderPersonalStats();renderArsenal();
+  toast('Game deleted');
+}
+
+const MEDAL_DEFINITIONS=[
+  {id:'first100',name:'First 100',description:'Reach three digits in a game for the first time.',image:'first_100_bowling_achievement_badge.png',test:game=>game.score>=100},
+  {id:'first150',name:'First 150',description:'Break 150 and mark a new scoring tier.',image:'bowling_150_achievement_badge.png',test:game=>game.score>=150},
+  {id:'first175',name:'First 175',description:'Join the 175 club with a strong all-around game.',image:'royal_bowling_champion_175_badge.png',test:game=>game.score>=175},
+  {id:'first200',name:'First 200',description:'Breaking 200 is a major milestone that takes sustained strike-making and spare shooting.',image:'premium_bowling_200_achievement_badge.png',test:game=>game.score>=200},
+  {id:'clean',name:'Clean Game',description:'Complete all 10 frames with a strike or spare in every frame—zero open frames.',image:'clean_game_bowling_achievement_badge.png',test:game=>{const frames=Array.isArray(game.frames)?game.frames.slice(0,10):[];return frames.length===10&&frames.every(frame=>String(frame).trim().startsWith('X')||String(frame).includes('/'))}},
+  {id:'dutch200',name:'Dutch 200',description:'Score exactly 200 by alternating strikes and spares through the game.',image:'dutch_200_bowling_achievement_badge.png',test:game=>{const frames=Array.isArray(game.frames)?game.frames.slice(0,10):[];return game.score===200&&frames.length===10&&frames.every((frame,index)=>index%2===0?String(frame).trim().startsWith('X'):String(frame).includes('/'))}},
+  {id:'turkey',name:'Turkey',description:'String three strikes in a row.',image:'turkey_bowling_achievement_badge.png',streak:3},
+  {id:'hambone',name:'Hambone',description:'String four strikes in a row.',image:'hambone_bowling_champion_badge.png',streak:4},
+  {id:'sixpack',name:'Six-Pack',description:'String six strikes in a row.',image:'glossy_six_pack_bowling_medal_badge.png',streak:6},
+  {id:'highfive',name:'High Five',description:'Celebrate five consecutive strikes.',image:'ChatGPT Image Aug 29, 2026, 08_42_56 AM.png',streak:5},
+  {id:'wildturkey',name:'Wild Turkey',description:'String nine strikes in a row.',image:'wild_turkey_bowling_championship_badge.png',streak:9}
+];
+function strikeStreak(game){
+  let best=0,current=0;
+  (Array.isArray(game.frames)?game.frames:[]).forEach(frame=>{const token=String(frame).trim().match(/^X+/);if(token){current+=token[0].length;best=Math.max(best,current)}else current=0;});
+  return best;
+}
+function achievedMedal(def){
+  const games=[...state.games].sort((a,b)=>new Date(a.date||0)-new Date(b.date||0));
+  return games.find(game=>def.streak?strikeStreak(game)>=def.streak:def.test(game))||null;
+}
+function renderMedals(){
+  const results=MEDAL_DEFINITIONS.map(def=>({def,game:achievedMedal(def)}));
+  const unlocked=results.filter(result=>result.game).length;
+  document.getElementById('medalCount').textContent=`${unlocked} / ${MEDAL_DEFINITIONS.length}`;
+  document.getElementById('medalGrid').innerHTML=results.map(({def,game})=>{
+    const earned=Boolean(game);
+    const icon=earned?(def.image?`<img src="./assets/medals/${def.image}" alt="${escapeHtml(def.name)} medal">`:'—'):'🔒';
+    return `<button type="button" class="medal ${earned?'unlocked':'locked'}" onclick="openMedalDetail('${def.id}')"><div class="medalIcon">${icon}</div><div><b>${def.name}</b><small>${earned?`Earned ${formatGameDate(game.date)}`:'Tap for requirements'}</small></div></button>`;
+  }).join('');
+}
+function openMedalDetail(id){
+  const def=MEDAL_DEFINITIONS.find(item=>item.id===id); if(!def) return;
+  const game=achievedMedal(def); const icon=def.image?`<img src="./assets/medals/${def.image}" alt="${escapeHtml(def.name)} medal" style="width:110px;height:110px;object-fit:contain;display:block;margin:0 auto 12px">`:`<div class="muted center" style="margin:18px 0">Artwork not added yet</div>`;
+  document.getElementById('medalDetailTitle').textContent=def.name;
+  document.getElementById('medalDetailContent').innerHTML=`${icon}<p>${escapeHtml(def.description)}</p><div class="listItem row"><span>${game?'Achieved on':'Status'}</span><b>${game?formatGameDate(game.date):'Not yet unlocked'}</b></div>${game?`<div class="listItem row" style="margin-top:8px"><span>Game score</span><b>${game.score}</b></div>`:''}`;
+  document.getElementById('medalDetailModal').classList.add('show');
+}
+function closeMedalDetail(){document.getElementById('medalDetailModal').classList.remove('show')}
+
 function renderPersonalStats(){
-  const high=state.games.length ? Math.max(...state.games.map(game=>game.score)) : null;
+  const activeGames=getActiveGames();
+  const high=activeGames.length ? Math.max(...activeGames.map(game=>game.score)) : null;
   const next=[100,150,200,250,300].find(score=>(high??0)<score);
   document.getElementById('personalHigh').textContent=high ?? '—';
-  document.getElementById('personalGameCount').textContent=`${state.games.length} game${state.games.length===1?'':'s'}`;
+  document.getElementById('personalGameCount').textContent=`${activeGames.length} game${activeGames.length===1?'':'s'}`;
   document.getElementById('personalHighMessage').textContent=high===null
     ? 'Save a game to start your story.'
     : next ? `${next-high} pins to your next medal` : 'Perfect game achieved — every medal unlocked!';
+  const summary=LaneLabStats.summarizeGames(activeGames);
+  const single=document.getElementById('singlePinCount');
+  const singleMeta=document.getElementById('singlePinMeta');
+  if(single) single.textContent=summary.singlePct===null?'—':`${Math.round(summary.singlePct)}%`;
+  if(singleMeta) singleMeta.textContent=summary.singlePct===null?'No exact pin data':`${summary.singleMakes} / ${summary.singleAttempts} converted`;
+  const leaves=document.getElementById('commonLeavesStats');
+  if(leaves){
+    leaves.innerHTML=summary.leaves.length ? summary.leaves.slice(0,3).map(leave=>`<div class="listItem"><div class="row"><span>${leave.pins.length===1?`${leave.pins[0]} pin` : leave.pins.join('-')}</span><b>${leave.attempts?`${Math.round(leave.makes/leave.attempts*100)}%`: '—'}</b></div><div class="muted small">${leave.makes} / ${leave.attempts} converted</div></div>`).join('') : '<div class="listItem"><div class="row"><span>Exact leaves</span><b>—</b></div><div class="muted small">Pin-level leave tracking will appear for games recorded with exact pin tracking.</div></div>';
+  }
   renderPersonalHistory();
   renderMedals();
+}
+let selectedSessionDate=null;
+function renderSessionMetrics(date=selectedSessionDate){
+  const box=document.getElementById('sessionMetrics'); if(!box) return;
+  const sessions=LaneLabStats.groupSessions(getActiveGames());
+  if(!sessions.length){ box.innerHTML='<div class="muted small">Record games to see session comparisons.</div>'; return; }
+  let index=date ? sessions.findIndex(session=>session.date===date) : sessions.length-1;
+  if(index<0) index=sessions.length-1;
+  const current=LaneLabStats.summarizeGames(sessions[index].games);
+  const previous=index>0 ? LaneLabStats.summarizeGames(sessions[index-1].games) : null;
+  const metric=(label,value,key,unit,lowerBetter=false)=>{
+    let trend='— No previous session', cls='muted';
+    if(previous && current[key]!==null && previous[key]!==null){
+      const delta=current[key]-previous[key], rounded=Math.round(delta*10)/10;
+      if(Math.abs(delta)<0.05) trend='→ 0';
+      else {const good=lowerBetter?delta<0:delta>0; trend=`${delta>0?'▲':'▼'} ${delta>0?'+':''}${rounded} ${unit}`; cls=good?'tagGood':'tagWarn';}
+    }
+    return `<div class="stat"><small>${label}</small><b>${value===null?'—':(key==='average'?Math.round(value):key==='openPerGame'?value.toFixed(1):`${Math.round(value)}%`)}</b><span class="${cls} small">${trend}</span></div>`;
+  };
+  box.innerHTML=`<div class="sessionMetricHeading"><span>${date?'Selected session':'Latest session'} · ${formatChartDate(sessions[index].date)}</span><button class="textButton small" type="button" onclick="selectedSessionDate=null;renderSessionMetrics()">Latest</button></div>`+metric('Average score',current.average,'average','pins')+metric('Strike rate',current.strikeRate,'strikeRate','%')+metric('Spare Conversion Rate',current.spareRate,'spareRate','%')+metric('Open frames / game',current.openPerGame,'openPerGame','/game',true);
+}
+function showSessionMetrics(date){
+  selectedSessionDate=date;
+  renderSessionMetrics(date);
+  if(trendView==='average') renderChart();
+  document.getElementById('sessionMetrics')?.scrollIntoView({behavior:'smooth',block:'nearest'});
 }
 
 function openPersonalStats(){
@@ -1402,17 +2174,108 @@ function openProfile(){
 }
 function toggleSwitch(el){
   el.classList.toggle('on');
+  if(el.id==='handToggle'){
+    handTrackingEnabled=el.classList.contains('on');
+    try{getGameStorage()?.setItem('lanelab-hand-tracking',handTrackingEnabled?'on':'off')}catch(e){}
+    syncScoreTrackingFields();
+  }
+  if(el.id==='ballToggle'){
+    ballTrackingEnabled=el.classList.contains('on');
+    try{getGameStorage()?.setItem('lanelab-ball-tracking',ballTrackingEnabled?'on':'off')}catch(e){}
+    syncScoreTrackingFields();
+  }
   toast(el.classList.contains('on') ? 'Preference enabled' : 'Preference disabled');
+}
+function syncScoreTrackingFields(){
+  document.getElementById('handField')?.classList.toggle('hidden',!handTrackingEnabled);
+  document.getElementById('ballField')?.classList.toggle('hidden',!ballTrackingEnabled);
+}
+function togglePinTracking(el){
+  el.classList.toggle('on');
+  pinTrackingEnabled=el.classList.contains('on');
+  try{getGameStorage()?.setItem('lanelab-pin-tracking',pinTrackingEnabled?'on':'off')}catch(e){}
+  toast(pinTrackingEnabled ? 'Exact pin tracking enabled' : 'Quick numeric scoring enabled');
 }
 function profileSaved(){
   profile=LaneLabProfile.save(getGameStorage(),{
     name:document.getElementById('profileName').value,
     hand:document.getElementById('profileHand').value,
     style:document.getElementById('profileStyle').value,
-    goalAverage:document.getElementById('profileGoal').value
+    goalAverage:document.getElementById('profileGoal').value,
+    photo:profile.photo
   });
   renderProfile();
   toast('Profile updated');
+}
+function exportAllGameData(){
+  const payload={schemaVersion:1,exportedAt:new Date().toISOString(),profile, games:state.games, recentScores:state.recent};
+  const blob=new Blob([JSON.stringify(payload,null,2)],{type:'application/json'});
+  const url=URL.createObjectURL(blob), link=document.createElement('a');
+  link.href=url; link.download=`lanelab-game-data-${new Date().toISOString().slice(0,10)}.json`;
+  document.body.appendChild(link); link.click(); link.remove(); URL.revokeObjectURL(url);
+  toast(`${state.games.length} game${state.games.length===1?'':'s'} exported`);
+}
+function exportGameDataCsv(){
+  const detailHeaders=Array.from({length:10},(_,index)=>{
+    const frame=index+1;
+    return [`frame_${frame}_pins_left_after_first`,`frame_${frame}_pins_knocked_down_second`,`frame_${frame}_pins_left_after_second`,...Array.from({length:3},(_,throwIndex)=>[`frame_${frame}_throw_${throwIndex+1}_hand`,`frame_${frame}_throw_${throwIndex+1}_ball`]).flat()];
+  }).flat();
+  const headers=['id','date','score',...Array.from({length:10},(_,index)=>`frame_${index+1}`),'strike_frames','strike_rate','spare_frames','open_frames','hand','ball','ball_strike_rates',...detailHeaders];
+  const quote=value=>`"${String(value??'').replace(/"/g,'""')}"`;
+  const rows=state.games.map(game=>{
+    // Normalize object-based manual frames and imported records before writing
+    // CSV so frame-by-frame details match the JSON export and app calculations.
+    const normalized=LaneLabStats.normalizeGameRecord(game) || game;
+    const frames=gameFrameNotation(normalized).slice(0,10);
+    const frameStrikes=frames.filter(frame=>String(frame).trim().startsWith('X')).length;
+    const strikes=frames.length ? frameStrikes : (Number.isFinite(Number(game.strikes)) ? Number(game.strikes) : 0);
+    const spares=frames.filter(frame=>String(frame).includes('/')).length;
+    const open=frames.filter(frame=>LaneLabStats.frameIsOpen(frame)).length;
+    const pinData=Array.isArray(normalized.pinData)?normalized.pinData:[];
+    const frameThrows=Array.isArray(normalized.frameThrows)?normalized.frameThrows:[];
+    const detailValues=Array.from({length:10},(_,index)=>{
+      const pins=pinData[index]||{};
+      const list=value=>Array.isArray(value)?value.join('-'):'';
+      const throws=Array.isArray(frameThrows[index]?.throws)?frameThrows[index].throws:[];
+      return [list(pins.pinsLeftAfterFirst),list(pins.pinsKnockedDownSecond),list(pins.pinsLeftAfterSecond),...Array.from({length:3},(_,throwIndex)=>[throws[throwIndex]?.hand||'',throws[throwIndex]?.ball||'']).flat()];
+    }).flat();
+    const ballStrikeRates={};
+    frameThrows.forEach((frame,index)=>{
+      const notation=String(frames[index]||'');
+      (Array.isArray(frame?.throws)?frame.throws:[]).forEach((item,throwIndex)=>{
+        const name=String(item?.ball||'').trim(); if(!name||throwIndex!==0) return;
+        if(!ballStrikeRates[name]) ballStrikeRates[name]={opportunities:0,strikes:0};
+        ballStrikeRates[name].opportunities++;
+        if(notation.startsWith('X')) ballStrikeRates[name].strikes++;
+      });
+    });
+    // Older/manual records may have pin data and a selected game ball but no
+    // per-throw metadata. In that case every frame's first ball used the
+    // selected ball, so preserve its strike rate instead of exporting {}.
+    const selectedBall=String(normalized.ball||'').trim();
+    if(selectedBall && !Object.keys(ballStrikeRates).length && frames.length){
+      const opportunities=Math.min(10,frames.length);
+      const selectedStrikes=frames.slice(0,opportunities).filter(frame=>String(frame||'').trim().startsWith('X')).length;
+      ballStrikeRates[selectedBall]=opportunities?Math.round(selectedStrikes/opportunities*100):null;
+    }
+    Object.keys(ballStrikeRates).forEach(name=>{const item=ballStrikeRates[name];ballStrikeRates[name]=item.opportunities?Math.round(item.strikes/item.opportunities*100):null});
+    const strikeRate=frames.length?Math.round(strikes/frames.length*100):Number.isFinite(Number(normalized.strikeRate))?Number(normalized.strikeRate):'';
+    return [normalized.id||'',normalized.date?String(normalized.date).slice(0,10):'',normalized.score,...Array.from({length:10},(_,index)=>frames[index]||''),strikes,strikeRate,spares,open,normalized.hand||'',normalized.ball||'',JSON.stringify(ballStrikeRates),...detailValues].map(quote).join(',');
+  });
+  const blob=new Blob([[headers.map(quote).join(','),...rows].join('\r\n')],{type:'text/csv;charset=utf-8'});
+  const url=URL.createObjectURL(blob), link=document.createElement('a');
+  link.href=url; link.download=`lanelab-game-history-${new Date().toISOString().slice(0,10)}.csv`;
+  document.body.appendChild(link); link.click(); link.remove(); URL.revokeObjectURL(url);
+  toast(`${state.games.length} game${state.games.length===1?'':'s'} exported as CSV`);
+}
+function resetAllGameData(){
+  const approved=window.confirm('Reset the entire LaneLab app? This clears all games, profile settings, equipment, preferences, and onboarding data. This cannot be undone.');
+  if(!approved) return;
+  try{window.localStorage.clear()}catch(e){}
+  try{window.sessionStorage?.clear()}catch(e){}
+  state.games=[];
+  state.recent=[];
+  window.location.replace(`${window.location.pathname}?reset=${Date.now()}`);
 }
 
 function go(id){
@@ -1420,6 +2283,7 @@ function go(id){
   document.querySelectorAll('.nav button').forEach(b=>b.classList.toggle('active',b.dataset.target===id));
   if(id==='arsenal') renderArsenal();
   if(id==='personalStats') renderPersonalStats();
+  if(id==='stats'){ renderChart(); renderSessionMetrics(); }
   window.scrollTo({top:0,behavior:'smooth'});
 }
 
@@ -1487,7 +2351,6 @@ function rollDisplay(frameIndex, rollIndex){
   const r=state.frames[frameIndex].rolls;
   const val=r[rollIndex];
   if(val===undefined) return '';
-  if(val===10) return 'X';
   if(rollIndex>0){
     if(frameIndex<9 && r[0]!==10 && r[0]+val===10) return '/';
     if(frameIndex===9){
@@ -1495,6 +2358,9 @@ function rollDisplay(frameIndex, rollIndex){
       if(rollIndex===2 && r[1]!==10 && r[1]+val===10 && r[0]===10) return '/';
     }
   }
+  if(val===0) return '-';
+  if(val===10) return 'X';
+  if(rollIndex===0 && pinLeaveIsSplit(state.frames[frameIndex]?.pinsLeftAfterFirst)) return circledPinCount(val);
   return String(val);
 }
 
@@ -1505,6 +2371,8 @@ function renderScoreboard(){
   state.frames.forEach((f,i)=>{
     const div=document.createElement('div');
     div.className='frame'+(i===state.currentFrame && !state.completed?' current':'');
+    div.title='Tap to edit this frame';
+    div.onclick=()=>editGameFrame(i);
     const rolls=f.rolls.map((_,ri)=>`<span>${rollDisplay(i,ri)}</span>`).join('');
     div.innerHTML=`<div class="fnum">F${i+1}</div><div class="rolls">${rolls}</div><div class="fscore">${cum[i]??'—'}</div>`;
     board.appendChild(div);
@@ -1513,9 +2381,62 @@ function renderScoreboard(){
   document.getElementById('runningTotal').textContent=lastKnown;
 }
 
+function parseFrameNotation(value, frameIndex){
+  const token=String(value??'').toUpperCase().replace(/\s+/g,'');
+  if(!token) return null;
+  if(frameIndex<9){
+    if(token==='X') return [10];
+    if(token.length!==2) return null;
+    const first=token[0]==='-'?0:Number(token[0]);
+    if(!Number.isInteger(first)||first<0||first>9) return null;
+    const second=token[1]==='/'?10-first:token[1]==='-'?0:Number(token[1]);
+    if(!Number.isInteger(second)||second<0||first+second>10) return null;
+    return [first,second];
+  }
+  if(token.length>3) return null;
+  const rolls=[];
+  for(let i=0;i<token.length;i++){
+    const mark=token[i];
+    if(mark==='X') rolls.push(10);
+    else if(mark==='-') rolls.push(0);
+    else if(mark==='/'){
+      if(!rolls.length||rolls[rolls.length-1]===10) return null;
+      rolls.push(10-rolls[rolls.length-1]);
+    }else if(/[0-9]/.test(mark)) rolls.push(Number(mark));
+    else return null;
+    if(rolls.length>1 && rolls[0]!==10 && rolls[0]+rolls[1]>10) return null;
+    if(rolls.length>2 && rolls[0]===10 && rolls[1]!==10 && rolls[1]+rolls[2]>10) return null;
+  }
+  return rolls.length>=2?rolls:null;
+}
+
+function editGameFrame(frameIndex){
+  if(state.pinTracking) return;
+  const frame=state.frames[frameIndex], first=Number(frame.rolls[0]);
+  if(!Number.isFinite(first)) return;
+  if(first===10){
+    // Strikes have no leave to edit; clear only this frame so it can be re-entered.
+    state.frames[frameIndex]={rolls:[],throws:[]};
+    state.currentFrame=frameIndex;
+    state.completed=false;
+    renderAll();
+    toast(`Frame ${frameIndex+1} cleared — re-enter the rolls`);
+    return;
+  }
+  const existing=Array.isArray(frame.pinsLeftAfterFirst)?frame.pinsLeftAfterFirst.slice():[];
+  state.pinTracking={frameIndex,firstBall:first,firstMeta:frame.throws?.[0]||currentThrowMeta(),phase:'leave',leave:existing,standing:[],knocked:[],editing:true};
+  renderAll();
+}
+
 function renderKeypad(){
   const pad=document.getElementById('keypad');
   pad.innerHTML='';
+  const tracker=document.getElementById('pinTracker');
+  if(state.pinTracking){
+    if(tracker) renderPinTracker();
+    return;
+  }
+  if(tracker) tracker.classList.remove('active');
   if(state.completed){
     pad.innerHTML='<button class="cta" style="grid-column:1/-1" onclick="saveGame()">Save finished game</button>';
     document.getElementById('rollLabel').textContent='Game complete';
@@ -1531,7 +2452,7 @@ function renderKeypad(){
   for(let n=0;n<=9;n++){
     const b=document.createElement('button');
     b.className='key';
-    b.textContent=n;
+    b.textContent=n===0?'-':n;
     b.disabled=n>max;
     b.onclick=()=>recordRoll(n);
     pad.appendChild(b);
@@ -1552,22 +2473,202 @@ function renderKeypad(){
   pad.appendChild(spare);
 }
 
+function isFreshRack(frameIndex){
+  const r=state.frames[frameIndex].rolls;
+  if(currentMaxPins()!==10) return false;
+  if(frameIndex<9) return r.length===0;
+  if(r.length===0) return true;
+  if(r.length===1) return r[0]===10;
+  if(r.length===2) return (r[0]===10 && r[1]===10) || (r[0]!==10 && r[0]+r[1]===10);
+  return false;
+}
+
+function renderPinTracker(){
+  const box=document.getElementById('pinTracker');
+  const t=state.pinTracking;
+  if(!box || !t) return;
+  box.classList.add('active');
+  const leavePhase=t.phase==='leave';
+  const selectable=leavePhase ? Array.from({length:10},(_,i)=>i+1) : t.standing;
+  const selected=leavePhase ? t.leave : t.knocked;
+  const selectedCount=selected.length;
+  const target=leavePhase ? t.firstBall===0 ? 10 : 10-t.firstBall : t.standing.length;
+  const prompt=leavePhase ? 'Which pins are still standing?' : 'Which pins did you knock down?';
+  const hint='Tap a pin or drag across pins to select them.';
+  const detail=leavePhase ? `${target} pins left · ${selectedCount} selected` : `${selectedCount} pin${selectedCount===1?'':'s'} knocked down`;
+  const buttons=[7,8,9,10,4,5,6,2,3,1].map(pin=>{
+    const active=selectable.includes(pin);
+    const on=selected.includes(pin);
+    const canSelect=active && !(leavePhase && selectedCount>=target && !on);
+    const unavailable=leavePhase && active && !on && selectedCount>=target;
+    return `<button class="pinButton ${on?'selected':''} ${!active?'down':''} ${unavailable?'unavailable':''}" ${canSelect?`onclick="toggleTrackedPin(${pin})"`: 'disabled'} aria-label="Pin ${pin}">${active?pin:''}</button>`;
+  }).join('');
+  box.innerHTML=`<div class="muted small">${prompt}</div><b class="pinTrackerDetail">${detail}${!leavePhase && selectedCount===t.standing.length?' ✓':''}</b><div class="muted small" style="margin-top:4px">${hint}</div><div class="pinRack">${buttons}</div><div class="pinTrackerActions"><button class="cta secondary" onclick="skipPinTracking()">Skip pin tracking</button>${leavePhase?`${t.firstBall===0?`<button class="cta secondary" onclick="selectAllStanding()">All pins still up</button>`:''}<button class="cta" ${selectedCount===target?'':'disabled'} onclick="saveTrackedLeave()">Save Leave</button>`:`<button class="cta secondary" onclick="selectAllStanding();saveTrackedThrow()">Knock Down All / Spare</button><button class="cta secondary" onclick="clearBallTwo()">Clear Ball 2</button><button class="cta" onclick="saveTrackedThrow()">Save Throw</button>`}</div>`;
+  box.querySelectorAll('.pinButton').forEach(button=>{
+    const pin=Number(button.getAttribute('aria-label')?.replace('Pin ',''));
+    button.setAttribute('onpointerdown',`pinDragStart(event,${pin})`);
+    button.setAttribute('onpointermove','pinDragMove(event)');
+    button.setAttribute('onpointerup','pinDragEnd(event)');
+    button.setAttribute('onpointercancel','pinDragEnd(event)');
+    if(button.getAttribute('onclick')) button.setAttribute('onclick',`pinTap(event,${pin})`);
+  });
+}
+
+let pinDragState=null;
+let pinSuppressClickUntil=0;
+function pinTap(event,pin){
+  if(Date.now()<pinSuppressClickUntil){event.preventDefault();event.stopPropagation();return;}
+  toggleTrackedPin(pin);
+}
+function pinDragStart(event,pin){
+  if(event.pointerType==='mouse' && event.button!==0) return;
+  pinDragState={pointerId:event.pointerId,startX:event.clientX,startY:event.clientY,startPin:pin,moved:false,visited:new Set()};
+  try{event.currentTarget.setPointerCapture(event.pointerId)}catch(e){}
+}
+function pinDragMove(event){
+  const drag=pinDragState;
+  if(!drag || drag.pointerId!==event.pointerId) return;
+  if(Math.hypot(event.clientX-drag.startX,event.clientY-drag.startY)>5) drag.moved=true;
+  if(!drag.moved) return;
+  const hit=document.elementFromPoint(event.clientX,event.clientY)?.closest?.('.pinButton');
+  const pin=hit?Number(hit.getAttribute('aria-label')?.replace('Pin ','')):null;
+  [drag.startPin,pin].forEach(value=>{
+    if(!Number.isInteger(value)||drag.visited.has(value)) return;
+    drag.visited.add(value);
+    const t=state.pinTracking;
+    if(!t) return;
+    const list=t.phase==='leave'?t.leave:t.knocked;
+    const target=t.phase==='leave' ? (t.firstBall===0?10:10-t.firstBall) : t.standing.length;
+    if(list.includes(value) || !((t.phase==='leave'?Array.from({length:10},(_,i)=>i+1):t.standing).includes(value)) || list.length>=target) return;
+    list.push(value);
+  });
+  syncPinDragUI();
+  event.preventDefault();
+}
+function syncPinDragUI(){
+  const t=state.pinTracking, box=document.getElementById('pinTracker');
+  if(!t||!box) return;
+  const leave=t.phase==='leave', list=leave?t.leave:t.knocked;
+  const target=leave?(t.firstBall===0?10:10-t.firstBall):t.standing.length;
+  const detail=leave?`${target} pins left · ${list.length} selected`:`${list.length} pin${list.length===1?'':'s'} knocked down`;
+  const detailNode=box.querySelector('.pinTrackerDetail'); if(detailNode) detailNode.textContent=detail+(!leave&&list.length===t.standing.length?' ✓':'');
+  box.querySelectorAll('.pinButton').forEach(button=>{
+    const pin=Number(button.getAttribute('aria-label')?.replace('Pin ',''));
+    const active=(leave?Array.from({length:10},(_,i)=>i+1):t.standing).includes(pin), on=list.includes(pin), unavailable=leave&&active&&!on&&list.length>=target;
+    button.classList.toggle('selected',on); button.classList.toggle('unavailable',unavailable); button.disabled=!active||unavailable;
+  });
+}
+function pinDragEnd(event){
+  const drag=pinDragState;
+  if(!drag || drag.pointerId!==event.pointerId) return;
+  if(drag.moved){pinSuppressClickUntil=Date.now()+350;renderPinTracker();}
+  pinDragState=null;
+}
+
+function toggleTrackedPin(pin){
+  const t=state.pinTracking;
+  if(!t) return;
+  const list=t.phase==='leave'?t.leave:t.knocked;
+  const idx=list.indexOf(pin);
+  if(idx>=0) list.splice(idx,1); else if(t.phase==='leave' || t.standing.includes(pin)) list.push(pin);
+  if(t.phase==='leave' && idx<0){
+    const maxLeave=t.firstBall===0 ? 10 : 10-t.firstBall;
+    if(list.length>maxLeave) list.pop();
+  }
+  renderPinTracker();
+}
+function selectAllStanding(){
+  const t=state.pinTracking;
+  if(!t) return;
+  if(t.phase==='leave') t.leave=Array.from({length:10},(_,i)=>i+1);
+  else t.knocked=t.standing.slice();
+  renderPinTracker();
+}
+function saveTrackedLeave(){
+  const t=state.pinTracking;
+  if(!t || t.phase!=='leave') return;
+  const frame=state.frames[t.frameIndex];
+  if(t.editing) frame.rolls=[t.firstBall]; else frame.rolls.push(t.firstBall);
+  saveFrameThrow(frame,t.firstMeta||currentThrowMeta(),t.editing);
+  frame.pinsLeftAfterFirst=t.leave.slice();
+  t.standing=t.leave.slice(); t.knocked=[]; t.phase='throw';
+  renderAll();
+}
+function saveTrackedThrow(){
+  const t=state.pinTracking;
+  if(!t || t.phase!=='throw') return;
+  const frame=state.frames[t.frameIndex];
+  if(t.editing) frame.rolls=[t.firstBall,t.knocked.length]; else frame.rolls.push(t.knocked.length);
+  saveFrameThrow(frame,t.secondMeta||currentThrowMeta(),false);
+  frame.pinsKnockedDownSecond=t.knocked.slice(); frame.pinsLeftAfterSecond=t.standing.filter(pin=>!t.knocked.includes(pin));
+  state.pinTracking=null;
+  if(t.editing){
+    state.completed=state.frames.every((_,i)=>isFrameComplete(i));
+    state.currentFrame=state.frames.findIndex((_,i)=>!isFrameComplete(i));
+    if(state.currentFrame<0) state.currentFrame=9;
+    renderAll();
+    return;
+  }
+  if(isFrameComplete(t.frameIndex)){ if(t.frameIndex===9) state.completed=true; else state.currentFrame++; }
+  renderAll();
+}
+function clearBallTwo(){ if(state.pinTracking){state.pinTracking.knocked=[];renderPinTracker();} }
+function skipPinTracking(){
+  const t=state.pinTracking; if(!t) return;
+  if(t.phase==='throw'){
+    state.pinTracking=null;
+    renderAll();
+    return;
+  }
+  state.frames[t.frameIndex].rolls.push(t.firstBall); saveFrameThrow(state.frames[t.frameIndex],t.firstMeta||currentThrowMeta()); state.pinTracking=null;
+  if(isFrameComplete(t.frameIndex)){if(t.frameIndex===9) state.completed=true; else state.currentFrame++;}
+  renderAll();
+}
+
 function recordRoll(pins){
   if(state.completed) return;
+  // Regulation scoring allows at most three rolls in the 10th frame.
+  if(state.currentFrame===9 && state.frames[9].rolls.length>=3) return;
   const max=currentMaxPins();
   if(pins<0 || pins>max) return;
-  state.frames[state.currentFrame].rolls.push(pins);
-  if(isFrameComplete(state.currentFrame)){
-    if(state.currentFrame===9){
+  const frameIndex=state.currentFrame;
+  if(pins===10){
+    state.frames[frameIndex].rolls.push(pins);
+    saveFrameThrow(state.frames[frameIndex],currentThrowMeta());
+  }else if(isFreshRack(frameIndex) && pinTrackingEnabled){
+    state.pinTracking={frameIndex,firstBall:pins,firstMeta:currentThrowMeta(),phase:'leave',leave:[],standing:[],knocked:[]};
+    renderAll();
+    return;
+  }else{
+    state.frames[frameIndex].rolls.push(pins);
+    saveFrameThrow(state.frames[frameIndex],currentThrowMeta());
+  }
+  if(isFrameComplete(frameIndex)){
+    if(frameIndex===9){
       state.completed=true;
     }else{
-      state.currentFrame++;
+      state.currentFrame=frameIndex+1;
     }
   }
   renderAll();
 }
 
 function undoRoll(){
+  if(state.pinTracking){ state.pinTracking=null; renderAll(); return; }
+  const previousFrameIndex=Math.min(9,state.currentFrame);
+  const completedIndex=(state.frames[previousFrameIndex]?.rolls.length ? previousFrameIndex : Math.max(0,previousFrameIndex-1));
+  const trackedFrame=state.frames[completedIndex];
+  if(trackedFrame && trackedFrame.rolls.length>=2 && Array.isArray(trackedFrame.pinsLeftAfterFirst)){
+    trackedFrame.rolls.pop();
+    const standing=trackedFrame.pinsLeftAfterFirst.slice();
+    trackedFrame.pinsKnockedDownSecond=[];
+    trackedFrame.pinsLeftAfterSecond=standing.slice();
+    state.currentFrame=completedIndex;
+    state.completed=false;
+    state.pinTracking={frameIndex:completedIndex,firstBall:trackedFrame.rolls[0],phase:'throw',leave:standing.slice(),standing,knocked:[]};
+    renderAll();
+    return;
+  }
   if(state.completed) state.completed=false;
   let i=state.currentFrame;
   if(state.frames[i] && state.frames[i].rolls.length){
@@ -1584,9 +2685,13 @@ function undoRoll(){
 }
 
 function resetGame(){
-  state.frames=Array.from({length:10},()=>({rolls:[]}));
+  state.frames=Array.from({length:10},()=>({rolls:[],throws:[]}));
   state.currentFrame=0;
   state.completed=false;
+  state.pinTracking=null;
+  state.editingFrame=null;
+  const title=document.getElementById('gameTitle');
+  if(title) title.textContent=`Game ${state.sessionGameNumber}`;
   renderAll();
   toast('Game reset');
 }
@@ -1607,31 +2712,59 @@ function calculateGameStats(){
   });
   const tenth=state.frames[9].rolls;
   if(tenth[0]===10) strikes++;
+  if(tenth[0]!==10 && tenth.length>=2){
+    spareChances++;
+    if(tenth[0]+tenth[1]===10) spares++;
+  } else if(tenth[0]===10 && tenth.length>=3 && tenth[1]!==10){
+    spareChances++;
+    if(tenth[1]+tenth[2]===10) spares++;
+  }
   return {strikes, strikeRate:Math.round(strikes/10*100), spareRate:spareChances?Math.round(spares/spareChances*100):0};
 }
 
 function saveGame(){
   const score=finalScore();
   const stats=calculateGameStats();
+  const today=localDateInputValue();
+  if(today!==getGameStorage()?.getItem('lanelab-session-date')){state.sessionGameNumber=1;try{getGameStorage()?.setItem('lanelab-session-date',today)}catch(e){}}
   recordGameScore(score,{
     hand:document.getElementById('hand').value,
     ball:document.getElementById('ballSelect').value,
+    date:gameDateValue(),
     source:'manual',
+    frames:state.frames.map(frame=>({rolls:frame.rolls.slice(),...(Array.isArray(frame.pinsLeftAfterFirst)?{pinsLeftAfterFirst:frame.pinsLeftAfterFirst.slice()}:{}),...(Array.isArray(frame.pinsKnockedDownSecond)?{pinsKnockedDownSecond:frame.pinsKnockedDownSecond.slice()}:{}),...(Array.isArray(frame.pinsLeftAfterSecond)?{pinsLeftAfterSecond:frame.pinsLeftAfterSecond.slice()}: {})})),
+    frameThrows:state.frames.map(frame=>({throws:Array.isArray(frame.throws)?frame.throws.map(item=>({hand:item?.hand||null,ball:item?.ball||null})):[]})),
+    pinData:state.frames.map(frame=>{
+      // A strike is an explicit all-pins-cleared result; no second ball was needed.
+      if(frame.rolls[0]===10) return {
+        pinsLeftAfterFirst:[],
+        pinsKnockedDownSecond:[],
+        pinsLeftAfterSecond:[]
+      };
+      return {
+        pinsLeftAfterFirst:Array.isArray(frame.pinsLeftAfterFirst)?frame.pinsLeftAfterFirst.slice():null,
+        pinsKnockedDownSecond:Array.isArray(frame.pinsKnockedDownSecond)?frame.pinsKnockedDownSecond.slice():null,
+        pinsLeftAfterSecond:Array.isArray(frame.pinsLeftAfterSecond)?frame.pinsLeftAfterSecond.slice():null
+      };
+    }),
     ...stats
   });
   document.getElementById('strikeRate').textContent=stats.strikeRate+'%';
   if(stats.spareRate) document.getElementById('spareRate').textContent=stats.spareRate+'%';
+  state.sessionGameNumber+=1;
+  try{getGameStorage()?.setItem('lanelab-session-game',String(state.sessionGameNumber))}catch(e){}
   resetGame();
-  go('home');
-  toast(`Game saved: ${score}`);
+  go('score');
+  toast(`Game saved: ${score} · Ready for Game ${state.sessionGameNumber}`);
 }
 
 function renderRecent(){
   const box=document.getElementById('recentGames');
-  box.innerHTML=state.recent.slice(0,3).map((s,i)=>`<div class="listItem row"><span>Game ${3-i} · Recent</span><b>${s}</b></div>`).join('');
+  const games=getHomeGames();
+  const recent=games.slice(-3).reverse();
+  box.innerHTML=recent.map((game,i)=>`<div class="listItem row"><span>Game ${games.length-i}</span><b>${game.score}</b></div>`).join('');
 }
 
-const demoGameScores=[148,172,159,181,164,176,155,169];
 let trendView='scores';
 
 function runningAverages(values){
@@ -1642,41 +2775,104 @@ function runningAverages(values){
   });
 }
 
+function formatChartDate(value){
+  if(!value) return '—';
+  const date=new Date(value);
+  if(Number.isNaN(date.getTime())) return '—';
+  return new Intl.DateTimeFormat(undefined,{month:'short',day:'numeric'}).format(date);
+}
+
+function dailyAverageRecords(games){
+  const groups=new Map();
+  games.forEach(game=>{
+    const date=game.date ? new Date(game.date) : null;
+    const key=date && !Number.isNaN(date.getTime()) ? date.toISOString().slice(0,10) : 'undated';
+    const group=groups.get(key) || {date:game.date,scores:[]};
+    group.scores.push(Number(game.score));
+    groups.set(key,group);
+  });
+  return [...groups.values()].map(group=>({date:group.date,score:Math.round(group.scores.reduce((sum,value)=>sum+value,0)/group.scores.length)}));
+}
+
+let chartDragState=null;
+function startChartDrag(event){
+  const chart=event.currentTarget;
+  chartDragState={chart,startX:event.clientX,startScroll:chart.scrollLeft,moved:false};
+  chart.classList.add('is-dragging');
+  if(chart.setPointerCapture) chart.setPointerCapture(event.pointerId);
+}
+function moveChartDrag(event){
+  if(!chartDragState) return;
+  const delta=event.clientX-chartDragState.startX;
+  if(Math.abs(delta)>3) chartDragState.moved=true;
+  chartDragState.chart.scrollLeft=chartDragState.startScroll-delta;
+}
+function endChartDrag(event){
+  if(!chartDragState) return;
+  chartDragState.chart.classList.remove('is-dragging');
+  if(chartDragState.chart.releasePointerCapture && chartDragState.chart.hasPointerCapture?.(event.pointerId)) chartDragState.chart.releasePointerCapture(event.pointerId);
+  chartDragState=null;
+}
+
 function setTrendView(view){
   trendView=view;
   document.getElementById('scoreViewBtn').classList.toggle('active',view==='scores');
   document.getElementById('averageViewBtn').classList.toggle('active',view==='average');
   renderChart();
+  if(view==='average') renderSessionMetrics();
 }
 
 function renderChart(){
   const isScores=trendView==='scores';
-  const vals=isScores ? demoGameScores : runningAverages(demoGameScores);
+  const chartGames=isScores ? getActiveGames() : LaneLabStats.groupSessions(getActiveGames()).map(session=>{
+    const scores=session.games.map(game=>Number(game.score)).filter(Number.isFinite);
+    return {date:session.date,score:scores.length ? (scores.reduce((sum,value)=>sum+value,0)/scores.length) : null,games:session.games};
+  }).filter(session=>session.score!==null);
+  const scores=chartGames.map(game=>game.score);
+  const vals=scores;
+  const rawMin=vals.length ? Math.min(...vals) : 0;
+  const rawMax=vals.length ? Math.max(...vals) : 0;
+  const min=Math.floor((rawMin-10)/10)*10;
+  const max=Math.ceil((rawMax+10)/10)*10 || 10;
 
-  const min=isScores ? 120 : 140;
-  const max=isScores ? 200 : 180;
-
-  document.getElementById('trendTitle').textContent=isScores ? 'Game scores' : 'Average trend';
-  document.getElementById('trendBadge').textContent=isScores ? 'Raw scores' : 'Rolling avg';
+  document.getElementById('trendTitle').textContent=isScores ? 'Game scores' : 'Average session';
+  document.getElementById('trendBadge').textContent=isScores ? 'Raw scores' : 'Session averages';
   document.getElementById('trendDescription').textContent=isScores
     ? 'Each bar is the score from that individual game.'
-    : 'Each bar is your average after all games played up to that point.';
+    : 'Each bar is the average of all games recorded in that session. Tap a bar to compare sessions.';
 
   const axis=document.getElementById('trendYAxis');
-  axis.innerHTML=(isScores
-    ? [200,180,160,140,120]
-    : [180,170,160,150,140]
-  ).map(v=>`<span>${v}</span>`).join('');
+  const step=(max-min)/4;
+  axis.innerHTML=Array.from({length:5},(_,i)=>Math.round(max-(step*i))).map(v=>`<span>${v}</span>`).join('');
 
   const box=document.getElementById('avgChart');
-  box.innerHTML=vals.map((v,i)=>{
+  box.classList.toggle('scoreMode',isScores);
+  box.innerHTML=vals.length ? vals.map((v,i)=>{
     const h=Math.max(8, ((v-min)/(max-min))*112);
-    return `<div class="chartCol">
-      <div class="chartValue">${v}</div>
+    const label=isScores ? i+1 : formatChartDate(chartGames[i]?.date);
+    const sessionDate=chartGames[i]?.date||'';
+    const attrs=isScores ? '' : ' role="button" tabindex="0" data-session-date="'+sessionDate+'" aria-label="Session average '+Math.round(v)+'"';
+    const selectedClass=!isScores && selectedSessionDate===sessionDate ? ' selected' : '';
+    return `<div class="chartCol${isScores?'':' sessionBar'}${selectedClass}"${attrs}>
+      <div class="chartValue">${isScores ? v : Math.round(v)}</div>
       <div class="chartBar" style="height:${h}px"></div>
-      <div>${i+1}</div>
+      <div>${label}</div>
     </div>`;
-  }).join('');
+  }).join('') : '<div class="muted small" style="padding:16px">No games recorded yet.</div>';
+  if(!isScores) box.querySelectorAll('.sessionBar').forEach(bar=>{
+    bar.addEventListener('click',()=>showSessionMetrics(bar.dataset.sessionDate));
+    bar.addEventListener('keydown',event=>{if(event.key==='Enter'||event.key===' '){event.preventDefault();showSessionMetrics(bar.dataset.sessionDate)}});
+  });
+}
+
+function renderGameBreakdown(){
+  const box=document.getElementById('gameBreakdown');
+  if(!box) return;
+  const activeGames=getActiveGames();
+  const source=document.getElementById('gameBreakdownMessage');
+  if(source) source.textContent='Your recorded games will appear here.';
+  const games=activeGames.slice(-3).reverse();
+  box.innerHTML=games.length ? games.map((game,index)=>`<div class="listItem row"><span>Game ${activeGames.length-index}</span><b>${game.score}</b></div>`).join('') : '<div class="listItem center"><b>No games recorded yet.</b></div>';
 }
 
 
@@ -1769,7 +2965,34 @@ function syncBallSelect(){
   if(!select) return;
   const previous=select.value;
   select.innerHTML=arsenal.map(ball=>`<option>${escapeHtml(ball.name)}</option>`).join('')+'<option>Other</option>';
-  if([...select.options].some(option=>option.value===previous)) select.value=previous;
+  let preferred=previous;
+  try{preferred=preferred||getGameStorage()?.getItem('lanelab-last-ball')||''}catch(e){}
+  if([...select.options].some(option=>option.value===preferred)) select.value=preferred;
+}
+function rememberBallSelection(){
+  const value=document.getElementById('ballSelect')?.value;
+  try{if(value)getGameStorage()?.setItem('lanelab-last-ball',value)}catch(e){}
+  renderScoreControls();
+}
+function setHandChoice(value){
+  const select=document.getElementById('hand'); if(!select) return;
+  select.value=value; renderScoreControls();
+}
+function setBallPreset(index){
+  const ball=arsenal[index], select=document.getElementById('ballSelect');
+  if(!ball || !select){toast('Add this ball to your arsenal first');return;}
+  select.value=ball.name; rememberBallSelection();
+}
+function renderScoreControls(){
+  const hand=document.getElementById('hand')?.value;
+  document.getElementById('handLeftChoice')?.classList.toggle('active',hand==='Left');
+  document.getElementById('handRightChoice')?.classList.toggle('active',hand==='Right');
+  const ball=document.getElementById('ballSelect')?.value;
+  [0,1].forEach((index)=>{
+    const button=document.getElementById(index===0?'ballOneChoice':'ballTwoChoice');
+    const item=arsenal?.[index];
+    if(button){button.disabled=!item;button.title=item?item.name:'Add a second ball to your arsenal';button.classList.toggle('active',!!item&&ball===item.name);const label=button.querySelector('b');if(label) label.textContent=item?item.name:`Ball ${index+1}`;}
+  });
 }
 
 function renderArsenal(){
@@ -1779,7 +3002,7 @@ function renderArsenal(){
 
   list.innerHTML=arsenal.length ? arsenal.map(ball=>{
     const stats=LaneLabArsenal.calculateStats(state.games,ball.name);
-    return `<button class="listItem row ballListButton" data-ball-id="${escapeHtml(ball.id)}" onclick="openBallDetails(this.dataset.ballId)">
+    return `<button draggable="true" ondragstart="startBallDrag(event,this.dataset.ballId)" ondragover="event.preventDefault()" ondrop="dropBallDrag(event,this.dataset.ballId)" onpointerdown="ballPointerStart(event,this.dataset.ballId)" onpointermove="ballPointerMove(event)" onpointerup="ballPointerEnd(event)" onpointercancel="ballPointerEnd(event)" class="listItem row ballListButton" data-ball-id="${escapeHtml(ball.id)}" onclick="ballClick(event,this.dataset.ballId)">
       <span class="row">${ballVisual(ball)}<span><b>${escapeHtml(ball.name)}</b><span class="muted small" style="display:block">${ball.weight} lb · ${escapeHtml(ball.role)}</span></span></span>
       <span class="center"><b>${stats.average??'—'}</b><span class="muted small" style="display:block">${stats.games} game${stats.games===1?'':'s'}</span></span>
     </button>`;
@@ -1792,6 +3015,47 @@ function renderArsenal(){
     <div class="muted small" style="margin-top:6px">${stats.games} game${stats.games===1?'':'s'} · High ${stats.high}${stats.strikeRate===null?'':` · ${stats.strikeRate}% strikes`}</div>
   </div>`).join('') : '<div class="listItem center"><b>No ball stats yet</b><div class="muted small" style="margin-top:4px">Choose a ball while scoring, then save the game.</div></div>';
   syncBallSelect();
+}
+
+let draggedBallId=null;
+let ballPointerDrag=null, ballSuppressClickUntil=0;
+function ballClick(event,id){if(Date.now()<ballSuppressClickUntil){event.preventDefault();return;}openBallDetails(id);}
+function ballPointerStart(event,id){
+  if(event.pointerType==='mouse'&&event.button!==0)return;
+  ballPointerDrag={id,startX:event.clientX,startY:event.clientY,moved:false,overId:null};
+  try{event.currentTarget.setPointerCapture(event.pointerId)}catch(e){}
+}
+function ballPointerMove(event){
+  const drag=ballPointerDrag;if(!drag)return;
+  if(Math.hypot(event.clientX-drag.startX,event.clientY-drag.startY)>6)drag.moved=true;
+  if(!drag.moved)return;
+  const target=document.elementFromPoint(event.clientX,event.clientY)?.closest?.('.ballListButton');
+  const targetId=target?.dataset.ballId;
+  document.querySelectorAll('.ballListButton.drag-over').forEach(button=>button.classList.remove('drag-over'));
+  drag.overId=targetId&&targetId!==drag.id?targetId:null;
+  if(drag.overId)target.classList.add('drag-over');
+  event.preventDefault();
+}
+function ballPointerEnd(event){
+  const drag=ballPointerDrag;
+  if(drag?.moved){ballSuppressClickUntil=Date.now()+450;if(drag.overId)reorderBall(drag.id,drag.overId);}
+  document.querySelectorAll('.ballListButton.drag-over').forEach(button=>button.classList.remove('drag-over'));
+  ballPointerDrag=null;
+}
+function startBallDrag(event,id){draggedBallId=id;event.dataTransfer?.setData('text/plain',id);}
+function dropBallDrag(event,targetId){
+  event.preventDefault();
+  const sourceId=draggedBallId||event.dataTransfer?.getData('text/plain'); draggedBallId=null;
+  reorderBall(sourceId,targetId);
+}
+function reorderBall(sourceId,targetId){
+  if(!sourceId||sourceId===targetId) return;
+  const from=arsenal.findIndex(ball=>ball.id===sourceId), to=arsenal.findIndex(ball=>ball.id===targetId);
+  if(from<0||to<0) return;
+  const next=arsenal.slice(), [moved]=next.splice(from,1); next.splice(to,0,moved);
+  arsenal=LaneLabArsenal.save(getGameStorage(),next);
+  syncBallSelect(); renderArsenal(); renderScoreControls();
+  toast('Arsenal order updated');
 }
 
 function openBallDetails(id){
@@ -1908,11 +3172,14 @@ function toast(msg){
   const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');
   clearTimeout(window.__toast);window.__toast=setTimeout(()=>t.classList.remove('show'),1600);
 }
-function renderAll(){renderScoreboard();renderKeypad()}
+function renderAll(){renderScoreboard();renderKeypad();renderScoreControls()}
 loadSavedTheme();
 preloadBallCatalogImages();
-renderAll();renderChart();renderRecent();renderProfile();
+const gameDateInput=document.getElementById('gameDate');
+if(gameDateInput) gameDateInput.value=localDateInputValue();
+renderAll();renderChart();renderRecent();renderGameBreakdown();renderProfile();renderSessionMetrics();
 syncAverageDisplays();syncGameSummaries();renderPersonalStats();renderArsenal();
+maybeStartOnboarding();
 </script>
 </body>
 </html>
