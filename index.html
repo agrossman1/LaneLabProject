@@ -153,6 +153,11 @@ p{color:var(--muted);line-height:1.5}
 .roundChoice.active{background:var(--accent);color:#fff;border-color:var(--accent)}
 .ballChoice{width:116px;border-radius:24px;font-size:18px;display:flex;gap:6px}
 .ballChoice b{font-size:11px;max-width:76px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+@media (max-width:520px){
+  .scoreChoices{grid-template-columns:1fr;gap:8px}
+  .choiceGroup{justify-content:flex-start}
+  .choiceGroup .ballChoice{flex:1 1 0;width:auto;max-width:170px}
+}
 .gameDateRow{display:flex;justify-content:flex-end;margin:4px 0 10px}
 .gameDateRow label{display:flex;align-items:center;gap:8px}
 .gameDateRow input{width:auto;margin:0;padding:7px 9px;font-size:12px}
@@ -802,7 +807,6 @@ body.light-mode .ballMatchPreview img{
         <button class="cta" onclick="document.getElementById('scorePhotoInput').click()">Choose / Take Photo</button>
         <input id="csvHistoryInput" type="file" accept=".csv,.json,text/csv,application/json" hidden onchange="handleHistoryFileImport(event)">
         <button class="cta secondary" onclick="document.getElementById('csvHistoryInput').click()">Import Game History CSV / JSON</button>
-        <button class="cta secondary" onclick="simulateScan()">Use Sample AI Demo</button>
       </div>
 
       <div class="card">
@@ -952,6 +956,7 @@ body.light-mode .ballMatchPreview img{
         <h2 id="coachFocusTitle">Collect another session</h2>
         <div class="coachScore" id="coachMetricValue">—</div>
         <div class="muted small" id="coachMetricLabel">Latest session</div>
+        <div class="muted small" id="coachPriorityReason">Your latest session determines this focus.</div>
         <div class="tagWarn small" id="coachMetricTrend">—</div>
         <p id="coachSummary">Complete a bowling session to get a personalized recommendation.</p>
         <div class="muted small" id="coachOpportunity"></div>
@@ -1655,7 +1660,7 @@ function syncAverageDisplays(){
 function generateCoachRecommendation(current,previous){
   const pinLeaves=current.leaves||[];
   const single= current.singlePct!==null ? current.singlePct : null;
-  if(current.openPerGame!==null && current.openPerGame>=3) return {title:'Close more open frames',label:'Open frames',value:current.openPerGame.toFixed(1)+'/game',trend:previous?.openPerGame!==null&&previous?.openPerGame!==undefined?current.openPerGame-previous.openPerGame:null,explanation:`You averaged ${current.openPerGame.toFixed(1)} open frames per game in your latest session. Closing just one more frame is a clear way to raise your average.`,drillTitle:'Open-frame reduction',drillValue:'Play 1 practice game focused on spares',drillGoal:`Goal: ${Math.max(0,Math.ceil(current.openPerGame-1)).toFixed(0)} or fewer open frames`,opportunity:'Potential improvement: ~5–10 pins/game',lower:true};
+  if(current.openPerGame!==null && current.openPerGame>=3) return {title:'Close more open frames',label:'Open frames',value:current.openPerGame.toFixed(1)+'/game',reason:'Open frames are prioritized because closing them can add points fastest.',trend:previous?.openPerGame!==null&&previous?.openPerGame!==undefined?current.openPerGame-previous.openPerGame:null,explanation:`You averaged ${current.openPerGame.toFixed(1)} open frames per game in your latest session. Closing just one more frame is a clear way to raise your average.`,drillTitle:'Open-frame reduction',drillValue:'Play 1 practice game focused on spares',drillGoal:`Goal: ${Math.max(0,Math.ceil(current.openPerGame-1)).toFixed(0)} or fewer open frames`,opportunity:'Potential improvement: ~5–10 pins/game',lower:true};
   if(single!==null && single<80) return {title:'Improve single-pin spares',label:'Single-pin spare conversion',value:Math.round(single)+'%',trend:previous?.singlePct!==null&&previous?.singlePct!==undefined?single-previous.singlePct:null,explanation:`You converted ${current.singleMakes} of ${current.singleAttempts} tracked single-pin spare attempts. This is your clearest recoverable opportunity.`,drillTitle:'Single-pin spare drill',drillValue:'20 attempts',drillGoal:'Goal: 16 / 20',opportunity:'Potential improvement: ~5–10 pins/game'};
   if(pinLeaves.length){const leave=pinLeaves[0]; return {title:'Convert your most common leave',label:'Top tracked leave',value:leave.pins.join('-'),trend:null,explanation:`The ${leave.pins.join('-')} leave appeared ${leave.attempts} times in your tracked history. Build a repeatable spare routine for it.`,drillTitle:'Leave conversion drill',drillValue:`Shoot ${Math.max(10,leave.attempts*2)} attempts`,drillGoal:`Goal: ${Math.ceil(Math.max(10,leave.attempts*2)*.7)} makes`,opportunity:'Potential improvement: a few pins/game'};}
   return {title:'Create more strike opportunities',label:'Spare Conversion Rate',value:current.spareRate===null?'—':Math.round(current.spareRate)+'%',trend:previous?.spareRate!==null&&previous?.spareRate!==undefined?current.spareRate-previous.spareRate:null,explanation:'Your tracked spare conversion rate measures how often you convert an available spare opportunity. More conversions create more chances for higher scores.',drillTitle:'Spare conversion drill',drillValue:'Play 1 practice game focused on first-ball accuracy',drillGoal:'Goal: convert at least 7 spares',opportunity:'Potential improvement: ~5 pins/game'};
@@ -1664,7 +1669,7 @@ function renderCoach(){
   const sessions=LaneLabStats.groupSessions(getActiveGames()), current=LaneLabStats.summarizeGames(sessions.at(-1)?.games||[]), previous=sessions.length>1?LaneLabStats.summarizeGames(sessions.at(-2).games):null;
   const rec=generateCoachRecommendation(current,previous);
   const set=(id,value)=>{const el=document.getElementById(id);if(el)el.textContent=value};
-  set('coachFocusTitle',sessions.length?rec.title:'Collect another session'); set('coachMetricValue',sessions.length?rec.value:'—'); set('coachMetricLabel',sessions.length?rec.label:'Latest session');
+  set('coachFocusTitle',sessions.length?rec.title:'Collect another session'); set('coachMetricValue',sessions.length?rec.value:'—'); set('coachMetricLabel',sessions.length?rec.label:'Latest session'); set('coachPriorityReason',sessions.length?(rec.reason||'This focus is based on your latest session data.'):'Your latest session determines this focus.');
   const delta=rec.trend; const trendEl=document.getElementById('coachMetricTrend');
   if(trendEl){const good=delta!==null&&delta!==undefined&&((rec.lower&&delta<0)||(!rec.lower&&delta>0)); trendEl.classList.toggle('tagGood',good); trendEl.classList.toggle('tagWarn',delta!==null&&delta!==undefined&&!good); trendEl.classList.toggle('muted',delta===null||delta===undefined);}
   set('coachMetricTrend',delta===null||delta===undefined?'No previous session':`${delta>0?'▲':'▼'} ${delta>0?'+':''}${Math.round(Math.abs(delta)*10)/10}${rec.lower?' /game':' pp'}${rec.lower?(delta<0?' · good':''):((delta>0)?' · good':'')}`);
