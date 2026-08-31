@@ -1536,6 +1536,17 @@ function importCsvText(text){
     const importedStrikeRate=numberAt(strikeRateIndex) ?? (frames?.length ? Math.round(frames.filter(frame=>String(frame).trim().startsWith('X')).length / frames.length * 100) : undefined);
     let ballStrikeRates;
     if(ballRatesIndex!==undefined){try{const parsed=JSON.parse(cells[ballRatesIndex]||'{}');if(parsed&&typeof parsed==='object') ballStrikeRates=parsed;}catch(e){}}
+    // Repair legacy CSV exports that stored an empty per-ball map. When a
+    // game-level ball and frame notation are present, infer its first-ball
+    // strike rate so Arsenal keeps the same value as the JSON import path.
+    if((!ballStrikeRates || !Object.keys(ballStrikeRates).length) && ballIndex!==undefined){
+      const selectedBall=String(cells[ballIndex]||'').trim();
+      if(selectedBall && Array.isArray(frames) && frames.length){
+        const opportunities=Math.min(10,frames.length);
+        const strikesFromFrames=frames.slice(0,opportunities).filter(frame=>String(frame||'').trim().startsWith('X')).length;
+        ballStrikeRates={[selectedBall]:opportunities?Math.round(strikesFromFrames/opportunities*100):null};
+      }
+    }
     const spareRate=spares!==undefined&&spareChances>0 ? Math.round(spares/spareChances*100) : undefined;
     return {score,date:rawDate&&!Number.isNaN(new Date(rawDate).getTime())?rawDate:undefined,frames,hand:handIndex===undefined?undefined:cells[handIndex],ball:ballIndex===undefined?undefined:cells[ballIndex],...(hasDetails?{pinData:importedPinData,frameThrows:importedFrameThrows}:{}),ballStrikeRates,strikes,spares,spareOpportunities:spareChances,strikeRate:importedStrikeRate,spareRate,metricsProvided:{strikes:strikes!==undefined,spares:spares!==undefined,spareOpportunities:spareChances!==undefined},source:'csv import'};
   }).filter(Boolean);
@@ -2238,6 +2249,15 @@ function exportGameDataCsv(){
         if(notation.startsWith('X')) ballStrikeRates[name].strikes++;
       });
     });
+    // Older/manual records may have pin data and a selected game ball but no
+    // per-throw metadata. In that case every frame's first ball used the
+    // selected ball, so preserve its strike rate instead of exporting {}.
+    const selectedBall=String(normalized.ball||'').trim();
+    if(selectedBall && !Object.keys(ballStrikeRates).length && frames.length){
+      const opportunities=Math.min(10,frames.length);
+      const selectedStrikes=frames.slice(0,opportunities).filter(frame=>String(frame||'').trim().startsWith('X')).length;
+      ballStrikeRates[selectedBall]=opportunities?Math.round(selectedStrikes/opportunities*100):null;
+    }
     Object.keys(ballStrikeRates).forEach(name=>{const item=ballStrikeRates[name];ballStrikeRates[name]=item.opportunities?Math.round(item.strikes/item.opportunities*100):null});
     const strikeRate=frames.length?Math.round(strikes/frames.length*100):Number.isFinite(Number(normalized.strikeRate))?Number(normalized.strikeRate):'';
     return [normalized.id||'',normalized.date?String(normalized.date).slice(0,10):'',normalized.score,...Array.from({length:10},(_,index)=>frames[index]||''),strikes,strikeRate,spares,open,normalized.hand||'',normalized.ball||'',JSON.stringify(ballStrikeRates),...detailValues].map(quote).join(',');
