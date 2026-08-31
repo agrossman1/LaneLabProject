@@ -2319,6 +2319,7 @@ function rollDisplay(frameIndex, rollIndex){
   }
   if(val===0) return '-';
   if(val===10) return 'X';
+  if(rollIndex===0 && pinLeaveIsSplit(state.frames[frameIndex]?.pinsLeftAfterFirst)) return `${val}S`;
   return String(val);
 }
 
