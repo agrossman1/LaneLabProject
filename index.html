@@ -761,7 +761,7 @@ body.light-mode .ballMatchPreview img{
 
       <div class="keypad" id="keypad"></div>
       <button class="cta secondary" onclick="undoRoll()">↶ Undo last roll</button>
-      <button class="cta danger" onclick="resetGame()">Reset game</button>
+      <button type="button" class="cta danger" onclick="resetGame()">Reset game</button>
     </section>
 
 
@@ -1041,7 +1041,7 @@ body.light-mode .ballMatchPreview img{
             <span class="left"><span class="menuIcon">▤</span><span><b>Export CSV</b><div class="muted small">Open your game history in a spreadsheet</div></span></span>
             <span class="chev">›</span>
           </button>
-          <button class="menuBtn" onclick="resetAllGameData()">
+          <button type="button" class="menuBtn" onclick="resetAllGameData()">
             <span class="left"><span class="menuIcon">⌫</span><span><b>Reset entire app</b><div class="muted small">Clear all LaneLab data and start over</div></span></span>
             <span class="chev">›</span>
           </button>
@@ -2566,6 +2566,7 @@ function resetGame(){
   state.currentFrame=0;
   state.completed=false;
   state.pinTracking=null;
+  state.editingFrame=null;
   renderAll();
   toast('Game reset');
 }
