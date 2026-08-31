@@ -46,7 +46,12 @@
   function calculateStats(records, ballName) {
     const target = normalizeName(ballName);
     const games = Array.isArray(records)
-      ? records.filter(record => normalizeName(record?.ball) === target)
+      ? records.filter(record => {
+          if (normalizeName(record?.ball) === target) return true;
+          return Array.isArray(record?.frameThrows) && record.frameThrows.some(frame =>
+            Array.isArray(frame?.throws) && frame.throws.some(item => normalizeName(item?.ball) === target)
+          );
+        })
       : [];
     const scores = games.map(game => Number(game.score)).filter(score => Number.isInteger(score));
     const rates = games.map(game => Number(game.strikeRate)).filter(rate => Number.isFinite(rate));
