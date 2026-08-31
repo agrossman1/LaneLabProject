@@ -152,7 +152,12 @@
       ? value.trim().slice(0, 80)
       : null;
     const frameToken = (frame, frameIndex) => {
-      if (typeof frame === 'string') return frame.slice(0, 20);
+      if (typeof frame === 'string') {
+        // Keep bowling notation consistent everywhere: a zero-pin roll is
+        // displayed as a dash, while the two-digit value 10 remains intact.
+        const token = frame.slice(0, 20);
+        return token.trim() === '10' ? 'X' : token.replace(/0/g, '-');
+      }
       if (!frame || !Array.isArray(frame.rolls)) return null;
       const rolls = frame.rolls.map(Number).filter(value => Number.isFinite(value));
       if (!rolls.length) return null;
@@ -183,6 +188,13 @@
           };
         })
       : null;
+    const frameThrows = Array.isArray(record.frameThrows)
+      ? record.frameThrows.slice(0, 10).map(frame => ({
+          throws: Array.isArray(frame?.throws)
+            ? frame.throws.slice(0, 3).map(item => ({hand: text(item?.hand), ball: text(item?.ball)}))
+            : []
+        }))
+      : null;
     const percentage = value => {
       const number = Number(value);
       return Number.isFinite(number) && number >= 0 && number <= 100
@@ -199,6 +211,7 @@
       source: text(record.source) || 'manual',
       frames,
       pinData,
+      frameThrows,
       strikes: Number.isInteger(Number(record.strikes)) && Number(record.strikes) >= 0
         ? Math.min(12, Number(record.strikes))
         : null,
