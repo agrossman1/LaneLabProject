@@ -1513,6 +1513,7 @@ function importCsvText(text){
   const sparesIndex=indexOf('spares','spare','spareframes');
   const spareChancesIndex=indexOf('spareopportunities','sparechances');
   const openFramesIndex=indexOf('openframes','opens');
+  const ballRatesIndex=indexOf('ballstrikerates','ballstrikerate');
   const frameColumns=headers.map((header,index)=>({header,index,number:Number((header.match(/^(?:frame|f)?(\d{1,2})$/)||[])[1])})).filter(item=>item.number>=1&&item.number<=10).sort((a,b)=>a.number-b.number);
   return rows.slice(hasHeader?1:0).map(row=>{
     const cells=parseCsvLine(row);
@@ -1533,8 +1534,10 @@ function importCsvText(text){
     const numberAt=index=>index===undefined?undefined:Number(String(cells[index]??'').replace(/[^0-9.-]/g,''));
     const strikes=numberAt(strikesIndex), spares=numberAt(sparesIndex), spareChances=numberAt(spareChancesIndex);
     const importedStrikeRate=numberAt(strikeRateIndex) ?? (frames?.length ? Math.round(frames.filter(frame=>String(frame).trim().startsWith('X')).length / frames.length * 100) : undefined);
+    let ballStrikeRates;
+    if(ballRatesIndex!==undefined){try{const parsed=JSON.parse(cells[ballRatesIndex]||'{}');if(parsed&&typeof parsed==='object') ballStrikeRates=parsed;}catch(e){}}
     const spareRate=spares!==undefined&&spareChances>0 ? Math.round(spares/spareChances*100) : undefined;
-    return {score,date:rawDate&&!Number.isNaN(new Date(rawDate).getTime())?rawDate:undefined,frames,hand:handIndex===undefined?undefined:cells[handIndex],ball:ballIndex===undefined?undefined:cells[ballIndex],...(hasDetails?{pinData:importedPinData,frameThrows:importedFrameThrows}:{}),strikes,spares,spareOpportunities:spareChances,strikeRate:importedStrikeRate,spareRate,metricsProvided:{strikes:strikes!==undefined,spares:spares!==undefined,spareOpportunities:spareChances!==undefined},source:'csv import'};
+    return {score,date:rawDate&&!Number.isNaN(new Date(rawDate).getTime())?rawDate:undefined,frames,hand:handIndex===undefined?undefined:cells[handIndex],ball:ballIndex===undefined?undefined:cells[ballIndex],...(hasDetails?{pinData:importedPinData,frameThrows:importedFrameThrows}:{}),ballStrikeRates,strikes,spares,spareOpportunities:spareChances,strikeRate:importedStrikeRate,spareRate,metricsProvided:{strikes:strikes!==undefined,spares:spares!==undefined,spareOpportunities:spareChances!==undefined},source:'csv import'};
   }).filter(Boolean);
 }
 function importCsvRecords(text){
@@ -2206,14 +2209,15 @@ function exportGameDataCsv(){
     const frame=index+1;
     return [`frame_${frame}_pins_left_after_first`,`frame_${frame}_pins_knocked_down_second`,`frame_${frame}_pins_left_after_second`,...Array.from({length:3},(_,throwIndex)=>[`frame_${frame}_throw_${throwIndex+1}_hand`,`frame_${frame}_throw_${throwIndex+1}_ball`]).flat()];
   }).flat();
-  const headers=['id','date','score',...Array.from({length:10},(_,index)=>`frame_${index+1}`),'strike_frames','strike_rate','spare_frames','open_frames','hand','ball',...detailHeaders];
+  const headers=['id','date','score',...Array.from({length:10},(_,index)=>`frame_${index+1}`),'strike_frames','strike_rate','spare_frames','open_frames','hand','ball','ball_strike_rates',...detailHeaders];
   const quote=value=>`"${String(value??'').replace(/"/g,'""')}"`;
   const rows=state.games.map(game=>{
     // Normalize object-based manual frames and imported records before writing
     // CSV so frame-by-frame details match the JSON export and app calculations.
     const normalized=LaneLabStats.normalizeGameRecord(game) || game;
     const frames=gameFrameNotation(normalized).slice(0,10);
-    const strikes=Number.isInteger(Number(game.strikes))?Number(game.strikes):frames.filter(frame=>String(frame).trim().startsWith('X')).length;
+    const frameStrikes=frames.filter(frame=>String(frame).trim().startsWith('X')).length;
+    const strikes=frames.length ? frameStrikes : (Number.isFinite(Number(game.strikes)) ? Number(game.strikes) : 0);
     const spares=frames.filter(frame=>String(frame).includes('/')).length;
     const open=frames.filter(frame=>LaneLabStats.frameIsOpen(frame)).length;
     const pinData=Array.isArray(normalized.pinData)?normalized.pinData:[];
@@ -2224,8 +2228,19 @@ function exportGameDataCsv(){
       const throws=Array.isArray(frameThrows[index]?.throws)?frameThrows[index].throws:[];
       return [list(pins.pinsLeftAfterFirst),list(pins.pinsKnockedDownSecond),list(pins.pinsLeftAfterSecond),...Array.from({length:3},(_,throwIndex)=>[throws[throwIndex]?.hand||'',throws[throwIndex]?.ball||'']).flat()];
     }).flat();
+    const ballStrikeRates={};
+    frameThrows.forEach((frame,index)=>{
+      const notation=String(frames[index]||'');
+      (Array.isArray(frame?.throws)?frame.throws:[]).forEach((item,throwIndex)=>{
+        const name=String(item?.ball||'').trim(); if(!name||throwIndex!==0) return;
+        if(!ballStrikeRates[name]) ballStrikeRates[name]={opportunities:0,strikes:0};
+        ballStrikeRates[name].opportunities++;
+        if(notation.startsWith('X')) ballStrikeRates[name].strikes++;
+      });
+    });
+    Object.keys(ballStrikeRates).forEach(name=>{const item=ballStrikeRates[name];ballStrikeRates[name]=item.opportunities?Math.round(item.strikes/item.opportunities*100):null});
     const strikeRate=frames.length?Math.round(strikes/frames.length*100):Number.isFinite(Number(normalized.strikeRate))?Number(normalized.strikeRate):'';
-    return [normalized.id||'',normalized.date?String(normalized.date).slice(0,10):'',normalized.score,...Array.from({length:10},(_,index)=>frames[index]||''),strikes,strikeRate,spares,open,normalized.hand||'',normalized.ball||'',...detailValues].map(quote).join(',');
+    return [normalized.id||'',normalized.date?String(normalized.date).slice(0,10):'',normalized.score,...Array.from({length:10},(_,index)=>frames[index]||''),strikes,strikeRate,spares,open,normalized.hand||'',normalized.ball||'',JSON.stringify(ballStrikeRates),...detailValues].map(quote).join(',');
   });
   const blob=new Blob([[headers.map(quote).join(','),...rows].join('\r\n')],{type:'text/csv;charset=utf-8'});
   const url=URL.createObjectURL(blob), link=document.createElement('a');
