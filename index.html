@@ -770,7 +770,7 @@ body.light-mode .ballMatchPreview img{
 
       <div class="keypad" id="keypad"></div>
       <button class="cta secondary" onclick="undoRoll()">↶ Undo last roll</button>
-      <button type="button" class="cta danger" onclick="resetGame()">Reset game</button>
+      <button type="button" class="cta danger" onclick="resetGame(true)">Reset game</button>
     </section>
 
 
@@ -1240,7 +1240,7 @@ body.light-mode .ballMatchPreview img{
   </div>
 </div>
 
-<script src="./js/stats.js?v=20260904"></script>
+<script src="./js/stats.js?v=20260905"></script>
 <script src="./js/profile.js"></script>
 <script src="./js/arsenal.js"></script>
 <script>
@@ -1389,6 +1389,7 @@ const state = {
   frames: Array.from({length:10},()=>({rolls:[]})),
   currentFrame:0,
   completed:false,
+  sessionGameNumber:1,
   recent:initialRecent,
   games:initialGames,
   pinTracking:null
@@ -2573,12 +2574,15 @@ function undoRoll(){
   renderAll();
 }
 
-function resetGame(){
+function resetGame(resetSession=false){
   state.frames=Array.from({length:10},()=>({rolls:[]}));
   state.currentFrame=0;
   state.completed=false;
   state.pinTracking=null;
   state.editingFrame=null;
+  if(resetSession) state.sessionGameNumber=1;
+  const title=document.getElementById('gameTitle');
+  if(title) title.textContent=`Game ${state.sessionGameNumber}`;
   renderAll();
   toast('Game reset');
 }
@@ -2635,9 +2639,10 @@ function saveGame(){
   });
   document.getElementById('strikeRate').textContent=stats.strikeRate+'%';
   if(stats.spareRate) document.getElementById('spareRate').textContent=stats.spareRate+'%';
+  state.sessionGameNumber+=1;
   resetGame();
-  go('home');
-  toast(`Game saved: ${score}`);
+  go('score');
+  toast(`Game saved: ${score} · Ready for Game ${state.sessionGameNumber}`);
 }
 
 function renderRecent(){
