@@ -967,7 +967,6 @@ body.light-mode .ballMatchPreview img{
         <h2 id="coachFocusTitle">Collect another session</h2>
         <div class="coachScore" id="coachMetricValue">—</div>
         <div class="muted small" id="coachMetricLabel">Latest session</div>
-        <div class="muted small" id="coachPriorityReason">Your latest session determines this focus.</div>
         <div class="tagWarn small" id="coachMetricTrend">—</div>
         <p id="coachSummary">Complete a bowling session to get a personalized recommendation.</p>
         <div class="muted small" id="coachOpportunity"></div>
@@ -1692,6 +1691,24 @@ function syncAverageDisplays(){
 function generateCoachRecommendation(current,previous){
   const pinLeaves=current.leaves||[];
   const single= current.singlePct!==null ? current.singlePct : null;
+  // When a previous session exists, lead with the metric that deteriorated
+  // most instead of always prioritizing open frames. Severity is normalized
+  // against the prior session so pins, rates, and frames can be compared.
+  if(previous){
+    const candidates=[
+      {key:'score',now:current.average,then:previous.average,bad:d=>d<0,severity:d=>Math.abs(d)/Math.max(1,Math.abs(previous.average||1))},
+      {key:'strike',now:current.strikeRate,then:previous.strikeRate,bad:d=>d<0,severity:d=>Math.abs(d)/100},
+      {key:'spare',now:current.spareRate,then:previous.spareRate,bad:d=>d<0,severity:d=>Math.abs(d)/100},
+      {key:'open',now:current.openPerGame,then:previous.openPerGame,bad:d=>d>0,severity:d=>Math.abs(d)/Math.max(1,Math.abs(previous.openPerGame||1))}
+    ].map(item=>({...item,delta:item.now!==null&&item.now!==undefined&&item.then!==null&&item.then!==undefined?item.now-item.then:0})).filter(item=>item.bad(item.delta));
+    const worst=candidates.sort((a,b)=>b.severity(b.delta)-a.severity(a.delta))[0];
+    if(worst){
+      if(worst.key==='score') return {title:'Rebuild your scoring pace',label:'Average score',value:Math.round(current.average),trend:worst.delta,why:'Your average score dropped the most versus the previous session, so this is the clearest place to regain momentum.',explanation:`Your average moved from ${Math.round(previous.average)} to ${Math.round(current.average)}. Focus on completing frames cleanly and turning misses into spares.`,drillTitle:'Scoring reset',drillValue:'Play 1 game with a clean-frame focus',drillGoal:'Goal: finish every frame with a mark',opportunity:'Room to recover lost pins'};
+      if(worst.key==='strike') return {title:'Create more first-ball strikes',label:'Strike rate',value:Math.round(current.strikeRate)+'%',trend:worst.delta,why:'Strike rate fell more than your other tracked measures, so first-ball execution is the biggest change to address.',explanation:`Your strike rate moved from ${Math.round(previous.strikeRate)}% to ${Math.round(current.strikeRate)}%. Rebuild your first-ball target and repeatable launch.`,drillTitle:'First-ball strike drill',drillValue:'10 focused first-ball shots',drillGoal:'Goal: improve your strike rhythm',opportunity:'Room to recover scoring momentum'};
+      if(worst.key==='spare') return {title:'Recover your spare conversions',label:'Spare conversion rate',value:current.spareRate===null?'—':Math.round(current.spareRate)+'%',trend:worst.delta,why:'Spare conversion dropped the most since your last session, making it the clearest opportunity to recover points.',explanation:`Your spare conversion moved from ${Math.round(previous.spareRate)}% to ${Math.round(current.spareRate)}%. Slow down, pick a target, and finish the frame.`,drillTitle:'Spare conversion reset',drillValue:'20 focused spare attempts',drillGoal:'Goal: convert 7 of 10 opportunities',opportunity:'Room to recover several pins/game'};
+      return {title:'Close more open frames',label:'Open frames',value:current.openPerGame.toFixed(1)+'/game',trend:worst.delta,lower:true,reason:'Open frames increased more than your other tracked measures.',why:'This was the largest negative change from your previous session, so closing frames is the most direct recovery.',explanation:`You averaged ${current.openPerGame.toFixed(1)} open frames per game, up from ${previous.openPerGame.toFixed(1)}. Convert one more spare to reverse the trend.`,drillTitle:'Open-frame recovery',drillValue:'Play 1 game with a spare-first focus',drillGoal:'Goal: finish one more frame with a mark',opportunity:'Room to recover roughly 5–10 pins/game'};
+    }
+  }
   if(current.openPerGame!==null && current.openPerGame>=3) return {title:'Turn open frames into spares',label:'Open frames',value:current.openPerGame.toFixed(1)+'/game',reason:'Open frames leave the most points on the lane.',why:'This is the fastest scoring lift available in your latest session: one extra spare can add more than a missed frame.',trend:previous?.openPerGame!==null&&previous?.openPerGame!==undefined?current.openPerGame-previous.openPerGame:null,explanation:`You left ${current.openPerGame.toFixed(1)} frames open per game. Start by converting one more of those frames.` ,drillTitle:'Open-frame reset',drillValue:'Play 1 game with a spare-first focus',drillGoal:`Goal: ${Math.max(0,Math.ceil(current.openPerGame-1)).toFixed(0)} or fewer open frames`,opportunity:'Room to gain roughly 5–10 pins/game',lower:true};
   if(single!==null && single<80) return {title:'Make single-pin spares automatic',label:'Single-pin spare conversion',value:Math.round(single)+'%',trend:previous?.singlePct!==null&&previous?.singlePct!==undefined?single-previous.singlePct:null,why:'Single-pin leaves are repeatable chances, so a small accuracy gain here can quickly raise your score.',explanation:`You made ${current.singleMakes} of ${current.singleAttempts} tracked single-pin attempts. Build a dependable routine for the next one.`,drillTitle:'Single-pin spare drill',drillValue:'20 focused attempts',drillGoal:'Goal: 16 / 20',opportunity:'Room to gain roughly 5–10 pins/game'};
   if(pinLeaves.length){const leave=pinLeaves[0]; return {title:'Own your most common leave',label:'Top tracked leave',value:leave.pins.join('-'),trend:null,why:'This leave shows up most often in your history, so practicing it gives you the clearest targeted return.',explanation:`The ${leave.pins.join('-')} leave appeared ${leave.attempts} times. Use the same visual target and spare line each attempt.`,drillTitle:'Leave conversion drill',drillValue:`Shoot ${Math.max(10,leave.attempts*2)} attempts`,drillGoal:`Goal: ${Math.ceil(Math.max(10,leave.attempts*2)*.7)} makes`,opportunity:'Room to gain a few pins/game'};}
@@ -1701,7 +1718,7 @@ function renderCoach(){
   const sessions=LaneLabStats.groupSessions(getActiveGames()), current=LaneLabStats.summarizeGames(sessions.at(-1)?.games||[]), previous=sessions.length>1?LaneLabStats.summarizeGames(sessions.at(-2).games):null;
   const rec=generateCoachRecommendation(current,previous);
   const set=(id,value)=>{const el=document.getElementById(id);if(el)el.textContent=value};
-  set('coachFocusTitle',sessions.length?rec.title:'Collect another session'); set('coachMetricValue',sessions.length?rec.value:'—'); set('coachMetricLabel',sessions.length?rec.label:'Latest session'); set('coachPriorityReason',sessions.length?(rec.reason||'This focus is based on your latest session data.'):'Your latest session determines this focus.');
+  set('coachFocusTitle',sessions.length?rec.title:'Collect another session'); set('coachMetricValue',sessions.length?rec.value:'—'); set('coachMetricLabel',sessions.length?rec.label:'Latest session');
   const delta=rec.trend; const trendEl=document.getElementById('coachMetricTrend');
   if(trendEl){const good=delta!==null&&delta!==undefined&&((rec.lower&&delta<0)||(!rec.lower&&delta>0)); trendEl.classList.toggle('tagGood',good); trendEl.classList.toggle('tagWarn',delta!==null&&delta!==undefined&&!good); trendEl.classList.toggle('muted',delta===null||delta===undefined);}
   set('coachMetricTrend',delta===null||delta===undefined?'No previous session':`${delta>0?'▲':'▼'} ${delta>0?'+':''}${Math.round(Math.abs(delta)*10)/10}${rec.lower?' /game':' pp'}${rec.lower?(delta<0?' · good':''):((delta>0)?' · good':'')}`);
