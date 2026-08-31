@@ -1375,6 +1375,15 @@ function gameDateValue(){
   const input=document.getElementById('gameDate');
   return input?.value ? `${input.value}T12:00:00` : undefined;
 }
+function currentThrowMeta(){
+  return {hand:document.getElementById('hand')?.value||null,ball:document.getElementById('ballSelect')?.value||null};
+}
+function saveFrameThrow(frame,meta,replace=false){
+  if(!frame) return;
+  if(!Array.isArray(frame.throws)) frame.throws=[];
+  const clean={hand:meta?.hand||null,ball:meta?.ball||null};
+  if(replace) frame.throws=[clean]; else frame.throws.push(clean);
+}
 
 // Demo histories are kept out of the product experience; each user starts with their own games.
 const historicalGames=[];
@@ -1389,7 +1398,7 @@ try{savedSessionDate=getGameStorage()?.getItem('lanelab-session-date'); savedSes
 if(savedSessionDate!==sessionDateKey){savedSessionNumber=1;try{getGameStorage()?.setItem('lanelab-session-date',sessionDateKey);getGameStorage()?.setItem('lanelab-session-game','1')}catch(e){}}
 
 const state = {
-  frames: Array.from({length:10},()=>({rolls:[]})),
+  frames: Array.from({length:10},()=>({rolls:[],throws:[]})),
   currentFrame:0,
   completed:false,
   sessionGameNumber:savedSessionNumber,
@@ -1656,7 +1665,9 @@ function renderCoach(){
   const rec=generateCoachRecommendation(current,previous);
   const set=(id,value)=>{const el=document.getElementById(id);if(el)el.textContent=value};
   set('coachFocusTitle',sessions.length?rec.title:'Collect another session'); set('coachMetricValue',sessions.length?rec.value:'—'); set('coachMetricLabel',sessions.length?rec.label:'Latest session');
-  const delta=rec.trend; set('coachMetricTrend',delta===null||delta===undefined?'No previous session':`${delta>0?'▲':'▼'} ${delta>0?'+':''}${Math.round(Math.abs(delta)*10)/10}${rec.lower?' /game':' pp'}${rec.lower?(delta<0?' · good':''):((delta>0)?' · good':'')}`);
+  const delta=rec.trend; const trendEl=document.getElementById('coachMetricTrend');
+  if(trendEl){const good=delta!==null&&delta!==undefined&&((rec.lower&&delta<0)||(!rec.lower&&delta>0)); trendEl.classList.toggle('tagGood',good); trendEl.classList.toggle('tagWarn',delta!==null&&delta!==undefined&&!good); trendEl.classList.toggle('muted',delta===null||delta===undefined);}
+  set('coachMetricTrend',delta===null||delta===undefined?'No previous session':`${delta>0?'▲':'▼'} ${delta>0?'+':''}${Math.round(Math.abs(delta)*10)/10}${rec.lower?' /game':' pp'}${rec.lower?(delta<0?' · good':''):((delta>0)?' · good':'')}`);
   set('coachSummary',sessions.length?rec.explanation:'Complete a bowling session to get a personalized recommendation.'); set('coachOpportunity',sessions.length?rec.opportunity:''); set('coachFocusTime',sessions.length?'15–20 min':'—'); set('coachWhyText',sessions.length?rec.explanation:'Complete another session to unlock trend coaching.'); set('coachDrillTitle',sessions.length?rec.drillTitle:'—'); set('coachDrillValue',sessions.length?rec.drillValue:'—'); set('coachDrillGoal',sessions.length?rec.drillGoal:'—');
   const improved=[]; if(previous){[['Average score',current.average,previous.average,'pins',false],['Strike rate',current.strikeRate,previous.strikeRate,'pp',false],['Open frames',current.openPerGame,previous.openPerGame,'/game',true]].forEach(([label,a,b,unit,lower])=>{if(a!==null&&b!==null){const d=a-b;if((lower&&d<0)||(!lower&&d>0)) improved.push(`<div class="listItem row"><span>${label}</span><b>${d>0?'▲':'▼'} ${Math.abs(Math.round(d*10)/10)} ${unit}</b></div>`);}})}
   const improvedEl=document.getElementById('coachImproved'); if(improvedEl) improvedEl.innerHTML=improved.length?improved.join(''):`<div class="muted small">${previous?'No clear improvement trend yet.':'Complete another session to unlock trend coaching.'}</div>`;
@@ -2055,7 +2066,7 @@ function renderSessionMetrics(date=selectedSessionDate){
     }
     return `<div class="stat"><small>${label}</small><b>${value===null?'—':(key==='average'?Math.round(value):key==='openPerGame'?value.toFixed(1):`${Math.round(value)}%`)}</b><span class="${cls} small">${trend}</span></div>`;
   };
-  box.innerHTML=`<div class="sessionMetricHeading"><span>${date?'Selected session':'Latest session'} · ${formatChartDate(sessions[index].date)}</span><button class="textButton small" type="button" onclick="selectedSessionDate=null;renderSessionMetrics()">Latest</button></div>`+metric('Average score',current.average,'average','pins')+metric('Strike rate',current.strikeRate,'strikeRate','pp')+metric('Spare Conversion Rate',current.spareRate,'spareRate','pp')+metric('Open frames / game',current.openPerGame,'openPerGame','/game',true);
+  box.innerHTML=`<div class="sessionMetricHeading"><span>${date?'Selected session':'Latest session'} · ${formatChartDate(sessions[index].date)}</span><button class="textButton small" type="button" onclick="selectedSessionDate=null;renderSessionMetrics()">Latest</button></div>`+metric('Average score',current.average,'average','pins')+metric('Strike rate',current.strikeRate,'strikeRate','%')+metric('Spare Conversion Rate',current.spareRate,'spareRate','%')+metric('Open frames / game',current.openPerGame,'openPerGame','/game',true);
 }
 function showSessionMetrics(date){
   selectedSessionDate=date;
@@ -2313,7 +2324,7 @@ function editGameFrame(frameIndex){
   if(!Number.isFinite(first)) return;
   if(first===10){
     // Strikes have no leave to edit; clear only this frame so it can be re-entered.
-    state.frames[frameIndex]={rolls:[]};
+    state.frames[frameIndex]={rolls:[],throws:[]};
     state.currentFrame=frameIndex;
     state.completed=false;
     renderAll();
@@ -2321,7 +2332,7 @@ function editGameFrame(frameIndex){
     return;
   }
   const existing=Array.isArray(frame.pinsLeftAfterFirst)?frame.pinsLeftAfterFirst.slice():[];
-  state.pinTracking={frameIndex,firstBall:first,phase:'leave',leave:existing,standing:[],knocked:[],editing:true};
+  state.pinTracking={frameIndex,firstBall:first,firstMeta:frame.throws?.[0]||currentThrowMeta(),phase:'leave',leave:existing,standing:[],knocked:[],editing:true};
   renderAll();
 }
 
@@ -2486,6 +2497,7 @@ function saveTrackedLeave(){
   if(!t || t.phase!=='leave') return;
   const frame=state.frames[t.frameIndex];
   if(t.editing) frame.rolls=[t.firstBall]; else frame.rolls.push(t.firstBall);
+  saveFrameThrow(frame,t.firstMeta||currentThrowMeta(),t.editing);
   frame.pinsLeftAfterFirst=t.leave.slice();
   t.standing=t.leave.slice(); t.knocked=[]; t.phase='throw';
   renderAll();
@@ -2495,6 +2507,7 @@ function saveTrackedThrow(){
   if(!t || t.phase!=='throw') return;
   const frame=state.frames[t.frameIndex];
   if(t.editing) frame.rolls=[t.firstBall,t.knocked.length]; else frame.rolls.push(t.knocked.length);
+  saveFrameThrow(frame,t.secondMeta||currentThrowMeta(),false);
   frame.pinsKnockedDownSecond=t.knocked.slice(); frame.pinsLeftAfterSecond=t.standing.filter(pin=>!t.knocked.includes(pin));
   state.pinTracking=null;
   if(t.editing){
@@ -2515,7 +2528,7 @@ function skipPinTracking(){
     renderAll();
     return;
   }
-  state.frames[t.frameIndex].rolls.push(t.firstBall); state.pinTracking=null;
+  state.frames[t.frameIndex].rolls.push(t.firstBall); saveFrameThrow(state.frames[t.frameIndex],t.firstMeta||currentThrowMeta()); state.pinTracking=null;
   if(isFrameComplete(t.frameIndex)){if(t.frameIndex===9) state.completed=true; else state.currentFrame++;}
   renderAll();
 }
@@ -2529,12 +2542,14 @@ function recordRoll(pins){
   const frameIndex=state.currentFrame;
   if(pins===10){
     state.frames[frameIndex].rolls.push(pins);
+    saveFrameThrow(state.frames[frameIndex],currentThrowMeta());
   }else if(isFreshRack(frameIndex) && pinTrackingEnabled){
-    state.pinTracking={frameIndex,firstBall:pins,phase:'leave',leave:[],standing:[],knocked:[]};
+    state.pinTracking={frameIndex,firstBall:pins,firstMeta:currentThrowMeta(),phase:'leave',leave:[],standing:[],knocked:[]};
     renderAll();
     return;
   }else{
     state.frames[frameIndex].rolls.push(pins);
+    saveFrameThrow(state.frames[frameIndex],currentThrowMeta());
   }
   if(isFrameComplete(frameIndex)){
     if(frameIndex===9){
@@ -2578,7 +2593,7 @@ function undoRoll(){
 }
 
 function resetGame(){
-  state.frames=Array.from({length:10},()=>({rolls:[]}));
+  state.frames=Array.from({length:10},()=>({rolls:[],throws:[]}));
   state.currentFrame=0;
   state.completed=false;
   state.pinTracking=null;
@@ -2626,6 +2641,7 @@ function saveGame(){
     date:gameDateValue(),
     source:'manual',
     frames:state.frames.map(frame=>({rolls:frame.rolls.slice(),...(Array.isArray(frame.pinsLeftAfterFirst)?{pinsLeftAfterFirst:frame.pinsLeftAfterFirst.slice()}:{}),...(Array.isArray(frame.pinsKnockedDownSecond)?{pinsKnockedDownSecond:frame.pinsKnockedDownSecond.slice()}:{}),...(Array.isArray(frame.pinsLeftAfterSecond)?{pinsLeftAfterSecond:frame.pinsLeftAfterSecond.slice()}: {})})),
+    frameThrows:state.frames.map(frame=>({throws:Array.isArray(frame.throws)?frame.throws.map(item=>({hand:item?.hand||null,ball:item?.ball||null})):[]})),
     pinData:state.frames.map(frame=>{
       // A strike is an explicit all-pins-cleared result; no second ball was needed.
       if(frame.rolls[0]===10) return {
