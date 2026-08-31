@@ -2156,9 +2156,11 @@ function exportGameDataCsv(){
 function resetAllGameData(){
   const approved=window.confirm('Reset the entire LaneLab app? This clears all games, profile settings, equipment, preferences, and onboarding data. This cannot be undone.');
   if(!approved) return;
-  try{getGameStorage()?.clear()}catch(e){}
+  try{window.localStorage.clear()}catch(e){}
   try{window.sessionStorage?.clear()}catch(e){}
-  window.location.reload();
+  state.games=[];
+  state.recent=[];
+  window.location.replace(`${window.location.pathname}?reset=${Date.now()}`);
 }
 
 function go(id){
