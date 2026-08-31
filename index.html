@@ -770,7 +770,7 @@ body.light-mode .ballMatchPreview img{
 
       <div class="keypad" id="keypad"></div>
       <button class="cta secondary" onclick="undoRoll()">↶ Undo last roll</button>
-      <button type="button" class="cta danger" onclick="resetGame(true)">Reset game</button>
+      <button type="button" class="cta danger" onclick="resetGame()">Reset game</button>
     </section>
 
 
@@ -1240,7 +1240,7 @@ body.light-mode .ballMatchPreview img{
   </div>
 </div>
 
-<script src="./js/stats.js?v=20260905"></script>
+<script src="./js/stats.js?v=20260906"></script>
 <script src="./js/profile.js"></script>
 <script src="./js/arsenal.js"></script>
 <script>
@@ -1384,12 +1384,16 @@ let hasExistingProfile=false;
 try{hasExistingProfile=Boolean(getGameStorage()?.getItem(LaneLabProfile.STORAGE_KEY))}catch(e){}
 const initialGames=[...(hasExistingProfile?historicalGames:[]),...savedGames];
 const initialRecent=initialGames.slice(-LaneLabStats.MAX_RECENT_GAMES).map(game=>game.score).reverse();
+const sessionDateKey=localDateInputValue();
+let savedSessionDate=null, savedSessionNumber=1;
+try{savedSessionDate=getGameStorage()?.getItem('lanelab-session-date'); savedSessionNumber=Number(getGameStorage()?.getItem('lanelab-session-game'))||1}catch(e){}
+if(savedSessionDate!==sessionDateKey){savedSessionNumber=1;try{getGameStorage()?.setItem('lanelab-session-date',sessionDateKey);getGameStorage()?.setItem('lanelab-session-game','1')}catch(e){}}
 
 const state = {
   frames: Array.from({length:10},()=>({rolls:[]})),
   currentFrame:0,
   completed:false,
-  sessionGameNumber:1,
+  sessionGameNumber:savedSessionNumber,
   recent:initialRecent,
   games:initialGames,
   pinTracking:null
@@ -2574,13 +2578,12 @@ function undoRoll(){
   renderAll();
 }
 
-function resetGame(resetSession=false){
+function resetGame(){
   state.frames=Array.from({length:10},()=>({rolls:[]}));
   state.currentFrame=0;
   state.completed=false;
   state.pinTracking=null;
   state.editingFrame=null;
-  if(resetSession) state.sessionGameNumber=1;
   const title=document.getElementById('gameTitle');
   if(title) title.textContent=`Game ${state.sessionGameNumber}`;
   renderAll();
@@ -2616,6 +2619,8 @@ function calculateGameStats(){
 function saveGame(){
   const score=finalScore();
   const stats=calculateGameStats();
+  const today=localDateInputValue();
+  if(today!==getGameStorage()?.getItem('lanelab-session-date')){state.sessionGameNumber=1;try{getGameStorage()?.setItem('lanelab-session-date',today)}catch(e){}}
   recordGameScore(score,{
     hand:document.getElementById('hand').value,
     ball:document.getElementById('ballSelect').value,
@@ -2640,6 +2645,7 @@ function saveGame(){
   document.getElementById('strikeRate').textContent=stats.strikeRate+'%';
   if(stats.spareRate) document.getElementById('spareRate').textContent=stats.spareRate+'%';
   state.sessionGameNumber+=1;
+  try{getGameStorage()?.setItem('lanelab-session-game',String(state.sessionGameNumber))}catch(e){}
   resetGame();
   go('score');
   toast(`Game saved: ${score} · Ready for Game ${state.sessionGameNumber}`);
