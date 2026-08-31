@@ -212,6 +212,15 @@ select,input{
 .modal{
   position:fixed;inset:0;background:rgba(3,7,16,.9);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);z-index:100;display:none;place-items:end center
 }
+.layoutPreview{display:flex;align-items:center;justify-content:space-between;gap:8px;margin:10px 0 4px;padding:8px 10px;border:1px solid var(--line);border-radius:14px;background:rgba(14,22,40,.65)}
+.layoutPreview .previewButtons{display:flex;gap:4px}
+.layoutPreview button{border:1px solid transparent;background:transparent;color:var(--muted);border-radius:9px;padding:5px 8px;font-size:11px;font-weight:800}
+.layoutPreview button.active{background:var(--accent);color:#fff}
+body.preview-mobile .app{width:min(100%,390px)}
+body.preview-tablet .app{width:min(100%,768px)}
+body.preview-tablet .grid{grid-template-columns:repeat(2,1fr)}
+body.preview-mobile .layoutPreview{font-size:11px}
+body.preview-mobile .scoreChoices{grid-template-columns:auto 1fr}
 .modal.show{display:grid}
 .sheet{
   width:min(100%,430px);background:#11192b;border:1px solid var(--line);border-radius:24px 24px 0 0;
@@ -392,6 +401,7 @@ select,input{
   cursor:pointer;
 }
 .ballListButton:hover{background:var(--panel2)}
+.ballListButton{touch-action:none}
 .ballListButton:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
 .ballDetailHero{display:flex;align-items:center;gap:14px;margin:12px 0 16px}
 .ballDetailStats{display:grid;grid-template-columns:repeat(2,1fr);gap:8px}
@@ -708,6 +718,7 @@ body.light-mode .ballMatchPreview img{
       <div class="eyebrow">Bowling improvement tracker</div>
       <h1 id="homeGreeting">Your game, decoded.</h1>
       <p class="small">Your history updates when you finish a game.</p>
+      <div class="layoutPreview" aria-label="Layout preview"><span class="muted small">Preview layout</span><div class="previewButtons"><button type="button" data-preview="desktop" onclick="setPreviewMode('desktop')">Desktop</button><button type="button" data-preview="tablet" onclick="setPreviewMode('tablet')">Tablet</button><button type="button" data-preview="mobile" onclick="setPreviewMode('mobile')">Mobile</button></div></div>
 
       <div class="card hero">
         <div class="row" onpointerdown="startHomeAverageHold(event)" onpointerup="cancelHomeAverageHold()" onpointerleave="cancelHomeAverageHold()" onpointercancel="cancelHomeAverageHold()">
@@ -2219,6 +2230,15 @@ function go(id){
   if(id==='stats'){ renderChart(); renderSessionMetrics(); }
   window.scrollTo({top:0,behavior:'smooth'});
 }
+function setPreviewMode(mode){
+  document.body.classList.remove('preview-mobile','preview-tablet');
+  if(mode==='mobile'||mode==='tablet') document.body.classList.add(`preview-${mode}`);
+  document.querySelectorAll('[data-preview]').forEach(button=>button.classList.toggle('active',button.dataset.preview===mode));
+  try{getGameStorage()?.setItem('lanelab-layout-preview',mode)}catch(e){}
+}
+let savedPreviewMode='desktop';
+try{savedPreviewMode=getGameStorage()?.getItem('lanelab-layout-preview')||'desktop'}catch(e){}
+setPreviewMode(savedPreviewMode);
 
 function isFrameComplete(i){
   const r=state.frames[i].rolls;
@@ -2934,7 +2954,7 @@ function renderArsenal(){
 
   list.innerHTML=arsenal.length ? arsenal.map(ball=>{
     const stats=LaneLabArsenal.calculateStats(state.games,ball.name);
-    return `<button draggable="true" ondragstart="startBallDrag(event,this.dataset.ballId)" ondragover="event.preventDefault()" ondrop="dropBallDrag(event,this.dataset.ballId)" class="listItem row ballListButton" data-ball-id="${escapeHtml(ball.id)}" onclick="openBallDetails(this.dataset.ballId)">
+    return `<button draggable="true" ondragstart="startBallDrag(event,this.dataset.ballId)" ondragover="event.preventDefault()" ondrop="dropBallDrag(event,this.dataset.ballId)" onpointerdown="ballPointerStart(event,this.dataset.ballId)" onpointermove="ballPointerMove(event)" onpointerup="ballPointerEnd(event)" onpointercancel="ballPointerEnd(event)" class="listItem row ballListButton" data-ball-id="${escapeHtml(ball.id)}" onclick="ballClick(event,this.dataset.ballId)">
       <span class="row">${ballVisual(ball)}<span><b>${escapeHtml(ball.name)}</b><span class="muted small" style="display:block">${ball.weight} lb · ${escapeHtml(ball.role)}</span></span></span>
       <span class="center"><b>${stats.average??'—'}</b><span class="muted small" style="display:block">${stats.games} game${stats.games===1?'':'s'}</span></span>
     </button>`;
@@ -2950,10 +2970,30 @@ function renderArsenal(){
 }
 
 let draggedBallId=null;
+let ballPointerDrag=null, ballSuppressClickUntil=0;
+function ballClick(event,id){if(Date.now()<ballSuppressClickUntil){event.preventDefault();return;}openBallDetails(id);}
+function ballPointerStart(event,id){
+  if(event.pointerType==='mouse'&&event.button!==0)return;
+  ballPointerDrag={id,startX:event.clientX,startY:event.clientY,moved:false};
+  try{event.currentTarget.setPointerCapture(event.pointerId)}catch(e){}
+}
+function ballPointerMove(event){
+  const drag=ballPointerDrag;if(!drag)return;
+  if(Math.hypot(event.clientX-drag.startX,event.clientY-drag.startY)>6)drag.moved=true;
+  if(!drag.moved)return;
+  const target=document.elementFromPoint(event.clientX,event.clientY)?.closest?.('.ballListButton');
+  const targetId=target?.dataset.ballId;
+  if(targetId&&targetId!==drag.id){reorderBall(drag.id,targetId);drag.id=targetId;}
+  event.preventDefault();
+}
+function ballPointerEnd(event){if(ballPointerDrag?.moved)ballSuppressClickUntil=Date.now()+450;ballPointerDrag=null;}
 function startBallDrag(event,id){draggedBallId=id;event.dataTransfer?.setData('text/plain',id);}
 function dropBallDrag(event,targetId){
   event.preventDefault();
   const sourceId=draggedBallId||event.dataTransfer?.getData('text/plain'); draggedBallId=null;
+  reorderBall(sourceId,targetId);
+}
+function reorderBall(sourceId,targetId){
   if(!sourceId||sourceId===targetId) return;
   const from=arsenal.findIndex(ball=>ball.id===sourceId), to=arsenal.findIndex(ball=>ball.id===targetId);
   if(from<0||to<0) return;
