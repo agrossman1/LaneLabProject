@@ -1,0 +1,11 @@
+{
+  "failureCases": [
+    {"action":"invalid score","message":"Enter a whole number from 0 to 300"},
+    {"action":"empty ball name","message":"Enter a ball name to add it"},
+    {"action":"duplicate ball","message":"already in your arsenal"},
+    {"action":"bad import","message":"No valid game records found in that file"},
+    {"action":"file read error","message":"Could not read that file"},
+    {"action":"unsupported file","message":"Choose a CSV or JSON file"}
+  ],
+  "validScoreRange": [0, 300]
+}
