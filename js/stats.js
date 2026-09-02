@@ -212,6 +212,11 @@
             : []
         }))
       : null;
+    const throwItems = frameThrows ? frameThrows.flatMap(frame => frame.throws) : [];
+    const handsUsed = [...new Set(throwItems.map(item => item.hand).filter(Boolean))];
+    const ballsUsed = [...new Set(throwItems.map(item => item.ball).filter(Boolean))];
+    const handSummary = handsUsed.length > 1 ? 'Ambidextrous' : (handsUsed[0] || text(record.hand));
+    const ballSummary = ballsUsed.length ? ballsUsed.join(', ') : text(record.ball);
     const percentage = value => {
       const number = Number(value);
       return Number.isFinite(number) && number >= 0 && number <= 100
@@ -223,8 +228,8 @@
       id: text(record.id) || `game-${index}-${score}`,
       date,
       score,
-      hand: text(record.hand),
-      ball: text(record.ball),
+      hand: handSummary,
+      ball: ballSummary,
       source: text(record.source) || 'manual',
       frames,
       pinData,
