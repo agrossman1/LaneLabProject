@@ -1421,7 +1421,8 @@ const state = {
   sessionGameNumber:savedSessionNumber,
   recent:initialRecent,
   games:initialGames,
-  pinTracking:null
+  pinTracking:null,
+  editingFrame:null
 };
 state.recent=LaneLabStats.saveScores(getGameStorage(),state.recent);
 state.games=LaneLabStats.saveGameRecords(getGameStorage(),state.games);
@@ -2447,7 +2448,7 @@ function renderScoreboard(){
   board.innerHTML='';
   state.frames.forEach((f,i)=>{
     const div=document.createElement('div');
-    const editing=state.pinTracking?.editing && state.pinTracking.frameIndex===i;
+    const editing=(state.pinTracking?.editing && state.pinTracking.frameIndex===i) || state.editingFrame===i;
     const current=i===state.currentFrame && !state.completed && !state.pinTracking?.editing;
     div.className='frame'+(current?' current':'')+(editing?' editing':'');
     div.title='Tap to edit this frame';
@@ -2490,18 +2491,28 @@ function parseFrameNotation(value, frameIndex){
 }
 
 function editGameFrame(frameIndex){
-  if(state.pinTracking) return;
+  if(state.pinTracking){
+    // Selecting another frame while editing switches the edit target instead
+    // of silently ignoring the tap.
+    if(state.pinTracking.editing && state.pinTracking.frameIndex!==frameIndex){
+      state.pinTracking=null;
+      renderAll();
+    }else return;
+  }
   const frame=state.frames[frameIndex], first=Number(frame.rolls[0]);
   if(!Number.isFinite(first)) return;
   if(first===10){
-    // Strikes have no leave to edit; clear only this frame so it can be re-entered.
+    // Open strikes in the normal keypad editor. The old behavior cleared the
+    // frame without making it obvious how to re-enter it.
     state.frames[frameIndex]={rolls:[],throws:[]};
+    state.editingFrame=frameIndex;
     state.currentFrame=frameIndex;
     state.completed=false;
     renderAll();
-    toast(`Frame ${frameIndex+1} cleared — re-enter the rolls`);
+    toast(`Editing frame ${frameIndex+1} — re-enter the rolls`);
     return;
   }
+  state.editingFrame=null;
   const existing=Array.isArray(frame.pinsLeftAfterFirst)?frame.pinsLeftAfterFirst.slice():[];
   state.pinTracking={frameIndex,firstBall:first,firstMeta:frame.throws?.[0]||currentThrowMeta(),phase:'leave',leave:existing,standing:[],knocked:[],editing:true};
   renderAll();
@@ -2710,12 +2721,13 @@ function skipPinTracking(){
 }
 
 function recordRoll(pins){
-  if(state.completed) return;
+  const editingIndex=Number.isInteger(state.editingFrame)?state.editingFrame:null;
+  if(state.completed && editingIndex===null) return;
   // Regulation scoring allows at most three rolls in the 10th frame.
   if(state.currentFrame===9 && state.frames[9].rolls.length>=3) return;
   const max=currentMaxPins();
   if(pins<0 || pins>max) return;
-  const frameIndex=state.currentFrame;
+  const frameIndex=editingIndex===null?state.currentFrame:editingIndex;
   if(pins===10){
     state.frames[frameIndex].rolls.push(pins);
     saveFrameThrow(state.frames[frameIndex],currentThrowMeta());
@@ -2728,7 +2740,12 @@ function recordRoll(pins){
     saveFrameThrow(state.frames[frameIndex],currentThrowMeta());
   }
   if(isFrameComplete(frameIndex)){
-    if(frameIndex===9){
+    if(editingIndex!==null){
+      state.editingFrame=null;
+      state.completed=state.frames.every((_,i)=>isFrameComplete(i));
+      state.currentFrame=state.completed?frameIndex:state.frames.findIndex((_,i)=>!isFrameComplete(i));
+      if(state.currentFrame<0) state.currentFrame=frameIndex;
+    }else if(frameIndex===9){
       state.completed=true;
     }else{
       state.currentFrame=frameIndex+1;
