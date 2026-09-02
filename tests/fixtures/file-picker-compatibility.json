@@ -1,0 +1,7 @@
+{
+  "supported": ["games.csv", "backup.json"],
+  "unsupported": ["games.txt", "backup.xml", "photo.png"],
+  "oversizedBytes": 10485761,
+  "maxBytes": 10485760,
+  "malformedText": "\\u00ff\\u00fe\\u0000not a valid game record"
+}
