@@ -1,0 +1,5 @@
+{
+  "requirements": ["screen readers", "reduced motion", "color contrast", "enlarged text", "focus order"],
+  "minTouchTargetPx": 44,
+  "contrastTokens": ["--text", "--muted", "--accent"]
+}
