@@ -1,0 +1,8 @@
+{
+  "versions": [
+    {"schemaVersion":0,"score":165,"date":"2026-08-01","frames":["X","9/"]},
+    {"schemaVersion":1,"score":175,"date":"2026-08-02","frames":[{"rolls":[10]},{"rolls":[9,1]}],"hand":"Right","ball":"Hy-Road"},
+    {"schemaVersion":2,"score":185,"date":"2026-08-03","frames":["X","9/"],"hand":"Left","ball":"Ascent","futureField":{"newMetric":42}}
+  ],
+  "expectedScores": [165, 175, 185]
+}

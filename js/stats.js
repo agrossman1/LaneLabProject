@@ -239,20 +239,20 @@
       pinData,
       frameThrows,
       ballStrikeRates: Object.keys(normalizedBallStrikeRates).length ? normalizedBallStrikeRates : null,
-      strikes: Number.isInteger(Number(record.strikes)) && Number(record.strikes) >= 0
+      strikes: record.strikes !== null && record.strikes !== undefined && Number.isInteger(Number(record.strikes)) && Number(record.strikes) >= 0
         ? Math.min(12, Number(record.strikes))
         : null,
-      spares: Number.isInteger(Number(record.spares)) && Number(record.spares) >= 0
+      spares: record.spares !== null && record.spares !== undefined && Number.isInteger(Number(record.spares)) && Number(record.spares) >= 0
         ? Math.min(10, Number(record.spares))
         : null,
-      spareOpportunities: Number.isInteger(Number(record.spareOpportunities)) && Number(record.spareOpportunities) >= 0
+      spareOpportunities: record.spareOpportunities !== null && record.spareOpportunities !== undefined && Number.isInteger(Number(record.spareOpportunities)) && Number(record.spareOpportunities) >= 0
         ? Math.min(10, Number(record.spareOpportunities))
         : null,
       metricsProvided: record.metricsProvided && typeof record.metricsProvided === 'object'
         ? {strikes:record.metricsProvided.strikes===true,spares:record.metricsProvided.spares===true,spareOpportunities:record.metricsProvided.spareOpportunities===true}
         : null,
-      strikeRate: percentage(record.strikeRate),
-      spareRate: percentage(record.spareRate)
+      strikeRate: record.strikeRate === null || record.strikeRate === undefined || record.strikeRate === '' ? null : percentage(record.strikeRate),
+      spareRate: record.spareRate === null || record.spareRate === undefined || record.spareRate === '' ? null : percentage(record.spareRate)
     };
   }
 
