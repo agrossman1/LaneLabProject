@@ -2502,6 +2502,9 @@ function editGameFrame(frameIndex){
     if(state.pinTracking.editing && state.pinTracking.frameIndex!==frameIndex){
       state.pinTracking=null;
       renderAll();
+    }else if(state.pinTracking.editing){
+      state.pinTracking=null;
+      renderAll();
     }else return;
   }
   const frame=state.frames[frameIndex];
@@ -2592,7 +2595,7 @@ function renderPinTracker(){
     const unavailable=leavePhase && active && !on && selectedCount>=target;
     return `<button class="pinButton ${on?'selected':''} ${!active?'down':''} ${unavailable?'unavailable':''}" ${canSelect?`onclick="toggleTrackedPin(${pin})"`: 'disabled'} aria-label="Pin ${pin}">${active?pin:''}</button>`;
   }).join('');
-  box.innerHTML=`<div class="muted small">${prompt}</div><b class="pinTrackerDetail">${detail}${!leavePhase && selectedCount===t.standing.length?' ✓':''}</b><div class="muted small" style="margin-top:4px">${hint}</div><div class="pinRack">${buttons}</div><div class="pinTrackerActions"><button class="cta secondary" onclick="skipPinTracking()">Skip pin tracking</button>${leavePhase?`${t.firstBall===0?`<button class="cta secondary" onclick="selectAllStanding()">All pins still up</button>`:''}<button class="cta" ${selectedCount===target?'':'disabled'} onclick="saveTrackedLeave()">Save Leave</button>`:`<button class="cta secondary" onclick="selectAllStanding();saveTrackedThrow()">Knock Down All / Spare</button><button class="cta secondary gutterBallButton" aria-label="Record gutter ball" title="Gutter ball · 0 pins" onclick="recordGutterBall()">−</button><button class="cta" onclick="saveTrackedThrow()">Save Throw</button>`}</div>`;
+  box.innerHTML=`<div class="muted small">${prompt}</div><b class="pinTrackerDetail">${detail}${!leavePhase && selectedCount===t.standing.length?' ✓':''}</b><div class="muted small" style="margin-top:4px">${hint}</div><div class="pinRack">${buttons}</div><div class="pinTrackerActions"><button class="cta secondary" onclick="skipPinTracking()">Skip pin tracking</button>${leavePhase?`${t.editing?`<button class="cta secondary" onclick="restartEditedFrame()">Edit Ball 1</button>`:''}${t.firstBall===0?`<button class="cta secondary" onclick="selectAllStanding()">All pins still up</button>`:''}<button class="cta" ${selectedCount===target?'':'disabled'} onclick="saveTrackedLeave()">Save Leave</button>`:`<button class="cta secondary" onclick="selectAllStanding();saveTrackedThrow()">Knock Down All / Spare</button><button class="cta secondary gutterBallButton" aria-label="Record gutter ball" title="Gutter ball · 0 pins" onclick="recordGutterBall()">−</button><button class="cta" onclick="saveTrackedThrow()">Save Throw</button>`}</div>`;
   box.querySelectorAll('.pinButton').forEach(button=>{
     const pin=Number(button.getAttribute('aria-label')?.replace('Pin ',''));
     button.setAttribute('onpointerdown',`pinDragStart(event,${pin})`);
@@ -2665,6 +2668,17 @@ function toggleTrackedPin(pin){
     if(list.length>maxLeave) list.pop();
   }
   renderPinTracker();
+}
+function restartEditedFrame(){
+  const t=state.pinTracking;
+  if(!t?.editing) return;
+  state.pinTracking=null;
+  state.frames[t.frameIndex]={rolls:[],throws:[]};
+  state.editingFrame=t.frameIndex;
+  state.currentFrame=t.frameIndex;
+  state.completed=false;
+  renderAll();
+  toast(`Editing frame ${t.frameIndex+1} — re-enter Ball 1`);
 }
 function selectAllStanding(){
   const t=state.pinTracking;
