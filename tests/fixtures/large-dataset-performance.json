@@ -1,0 +1,7 @@
+{
+  "gameCount": 500,
+  "ballCount": 40,
+  "frameCount": 10,
+  "maxPersistedGames": 250,
+  "renderBudgetMs": 2000
+}
