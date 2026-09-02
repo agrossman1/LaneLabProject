@@ -1,0 +1,6 @@
+{
+  "breakpoint": 520,
+  "pinRack": {"columns": 7, "rows": 4, "zeroPinGridColumn": 1, "zeroPinGridRow": 4},
+  "requiredControls": ["zero-pin button", "ball controls", "pin buttons"],
+  "requiredTouchRules": ["pin buttons disable browser gesture handling", "controls remain usable on touch screens"]
+}
