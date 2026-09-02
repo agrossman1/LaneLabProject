@@ -1,0 +1,13 @@
+{
+  "workflow": [
+    "open the app in two tabs",
+    "save a newer game or edit in tab A",
+    "make a stale edit in tab B",
+    "reload tab B and reconcile by stable game ID",
+    "confirm tab A's newer record and unrelated games remain intact"
+  ],
+  "records": [
+    {"id": "game-a", "score": 180, "date": "2026-09-01T18:00:00.000Z"},
+    {"id": "game-b", "score": 210, "date": "2026-09-02T18:00:00.000Z"}
+  ]
+}
