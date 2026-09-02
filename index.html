@@ -2328,7 +2328,12 @@ function resetAllGameData(){
 function go(id){
   document.querySelectorAll('.screen').forEach(s=>s.classList.toggle('active',s.id===id));
   document.querySelectorAll('.nav button').forEach(b=>b.classList.toggle('active',b.dataset.target===id));
-  if(id==='arsenal') renderArsenal();
+  if(id==='arsenal'){
+    // Re-read the persisted catalog whenever Arsenal opens so balls added
+    // during onboarding (or in another view) are immediately visible.
+    arsenal=LaneLabArsenal.load(getGameStorage(),arsenal);
+    renderArsenal();
+  }
   if(id==='personalStats') renderPersonalStats();
   if(id==='stats'){ renderChart(); renderSessionMetrics(); }
   window.scrollTo({top:0,behavior:'smooth'});
