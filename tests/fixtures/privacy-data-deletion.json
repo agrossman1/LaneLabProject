@@ -1,0 +1,20 @@
+{
+  "exportedPayload": {
+    "schemaVersion": 1,
+    "exportedAt": "2026-09-02T12:00:00.000Z",
+    "profile": { "name": "Test Player", "handedness": "right" },
+    "games": [{ "id": "game-1", "score": 180, "date": "2026-09-01" }],
+    "recentScores": [180]
+  },
+  "allowedExportKeys": ["schemaVersion", "exportedAt", "profile", "games", "recentScores"],
+  "sensitiveKeys": ["password", "token", "accessToken", "secret", "apiKey"],
+  "appStorageKeys": [
+    "lanelab-profile-v1",
+    "lanelab-arsenal-v1",
+    "lanelab-game-scores-v1",
+    "lanelab-game-records-v1",
+    "lanelab-session-date",
+    "lanelab-session-game",
+    "lanelab-force-onboarding"
+  ]
+}
