@@ -1256,7 +1256,7 @@ body.light-mode .ballMatchPreview img{
   </div>
 </div>
 
-<script src="./js/stats.js?v=20260910"></script>
+<script src="./js/stats.js?v=20260911"></script>
 <script src="./js/profile.js"></script>
 <script src="./js/arsenal.js"></script>
 <script>
@@ -1955,7 +1955,10 @@ function renderPersonalHistory(){
   if(!box || !count) return;
   count.textContent=`${games.length} shown`;
   box.innerHTML=games.length ? games.map(game=>{
-    const details=[game.hand,game.ball].filter(Boolean).join(' · ') || (game.source==='csv import' ? 'Imported from CSV' : 'Details unavailable');
+    // Do not infer an import method from a missing hand/ball pair. Older
+    // records can carry a CSV-era source tag even when their real origin is
+    // unknown; history should describe the data, not guess where it came from.
+    const details=[game.hand,game.ball].filter(Boolean).join(' · ') || 'Hand/ball not recorded';
     return `<div class="listItem historyGame" data-game-id="${escapeHtml(game.id)}" onclick="openGameDetail(event,'${escapeHtml(game.id)}')">
       <div class="row"><div><b>${formatGameDate(game.date)}</b><div class="muted small">${escapeHtml(details)}</div><div class="muted small" style="margin-top:5px">Tap for breakdown · hold score for options</div></div><b class="scoreBig" onpointerdown="startHistoryHold(event,'${escapeHtml(game.id)}')" onpointerup="cancelHistoryHold()" onpointerleave="cancelHistoryHold()" onpointercancel="cancelHistoryHold()" onclick="event.stopPropagation()">${game.score}</b></div>
       <div class="historyActions" hidden>
