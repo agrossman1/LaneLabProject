@@ -1,0 +1,6 @@
+{
+  "perfectGame": {"frames": [[10],[10],[10],[10],[10],[10],[10],[10],[10],[10,10,10]], "score": 300},
+  "tenthFrame": {"frames": [[10],[10],[10],[10],[10],[10],[10],[10],[10],[10,9,1]], "score": 289},
+  "foulAsZero": {"frames": [[0,9]], "notation": "-9"},
+  "invalidScores": [-1, 301, "not-a-score"]
+}
