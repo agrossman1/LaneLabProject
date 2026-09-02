@@ -1,0 +1,5 @@
+{
+  "requiredInteractions": ["buttons", "frame selection", "pin tracking"],
+  "activationKeys": ["Enter", "Space"],
+  "requiredLabels": ["0 pins", "Save Throw", "Skip pin tracking"]
+}

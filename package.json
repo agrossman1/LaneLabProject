@@ -15,6 +15,7 @@
     "test:arsenal-crud": "node tests/arsenal-crud-regression.test.js",
     "test:coach": "node tests/coach-recommendations-regression.test.js",
     "test:migration": "node tests/migration-compatibility-regression.test.js",
-    "test": "npm run test:import && npm run test:scoring && npm run test:frame-editing && npm run test:roundtrip && npm run test:metadata && npm run test:onboarding-reset && npm run test:arsenal-metrics && npm run test:mobile-layout && npm run test:pin-notation && npm run test:history-editing && npm run test:persistence && npm run test:arsenal-crud && npm run test:coach && npm run test:migration"
+    "test:accessibility": "node tests/accessibility-keyboard-regression.test.js",
+    "test": "npm run test:import && npm run test:scoring && npm run test:frame-editing && npm run test:roundtrip && npm run test:metadata && npm run test:onboarding-reset && npm run test:arsenal-metrics && npm run test:mobile-layout && npm run test:pin-notation && npm run test:history-editing && npm run test:persistence && npm run test:arsenal-crud && npm run test:coach && npm run test:migration && npm run test:accessibility"
   }
 }
