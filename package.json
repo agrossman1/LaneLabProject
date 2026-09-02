@@ -3,6 +3,7 @@
   "scripts": {
     "test:import": "node tests/import-regression.test.js",
     "test:scoring": "node tests/scoring-regression.test.js",
-    "test": "npm run test:import && npm run test:scoring"
+    "test:frame-editing": "node tests/frame-editing-regression.test.js",
+    "test": "npm run test:import && npm run test:scoring && npm run test:frame-editing"
   }
 }
