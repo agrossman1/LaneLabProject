@@ -11,6 +11,7 @@
     "test:mobile-layout": "node tests/mobile-layout-regression.test.js",
     "test:pin-notation": "node tests/pin-notation-split-regression.test.js",
     "test:history-editing": "node tests/history-editing-regression.test.js",
-    "test": "npm run test:import && npm run test:scoring && npm run test:frame-editing && npm run test:roundtrip && npm run test:metadata && npm run test:onboarding-reset && npm run test:arsenal-metrics && npm run test:mobile-layout && npm run test:pin-notation && npm run test:history-editing"
+    "test:persistence": "node tests/persistence-reload-regression.test.js",
+    "test": "npm run test:import && npm run test:scoring && npm run test:frame-editing && npm run test:roundtrip && npm run test:metadata && npm run test:onboarding-reset && npm run test:arsenal-metrics && npm run test:mobile-layout && npm run test:pin-notation && npm run test:history-editing && npm run test:persistence"
   }
 }

@@ -1,0 +1,37 @@
+{
+  "records": [
+    {
+      "id": "persist-game-1",
+      "date": "2026-09-01T18:00:00.000Z",
+      "score": 172,
+      "source": "manual",
+      "hand": "Right",
+      "ball": "Hy-Road",
+      "strikes": 5,
+      "spares": 3,
+      "spareOpportunities": 5,
+      "strikeRate": 50,
+      "spareRate": 60,
+      "frames": ["X", "9/", "8-", "X", "7/", "X", "9-", "X", "8/", "X X 9"],
+      "pinData": [{"pinsLeftAfterFirst": [], "pinsKnockedDownSecond": [], "pinsLeftAfterSecond": []}],
+      "frameThrows": [{"throws": [{"hand": "Right", "ball": "Hy-Road"}]}]
+    },
+    {
+      "id": "persist-game-2",
+      "date": "2026-09-02T18:00:00.000Z",
+      "score": 148,
+      "source": "csv import",
+      "hand": "Ambidextrous",
+      "ball": "Hy-Road, Ascent",
+      "strikes": 5,
+      "spares": 3,
+      "spareOpportunities": 5,
+      "strikeRate": 50,
+      "spareRate": 60,
+      "frames": ["8/", "X", "7-", "9/", "X", "8-", "X", "6/", "9-", "X X 8"],
+      "pinData": [{"pinsLeftAfterFirst": [7, 10], "pinsKnockedDownSecond": [7], "pinsLeftAfterSecond": [10]}],
+      "frameThrows": [{"throws": [{"hand": "Right", "ball": "Hy-Road"}, {"hand": "Left", "ball": "Ascent"}]}],
+      "ballStrikeRates": {"Hy-Road": 50, "Ascent": 33}
+    }
+  ]
+}
