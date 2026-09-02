@@ -3274,5 +3274,12 @@ renderAll();renderChart();renderRecent();renderGameBreakdown();renderProfile();r
 syncAverageDisplays();syncGameSummaries();renderPersonalStats();renderArsenal();
 maybeStartOnboarding();
 </script>
+<script>
+// Keep reset onboarding visible even if another startup task fails after the
+// onboarding step has been selected.
+if(new URLSearchParams(window.location.search).get('onboarding')==='1'){
+  document.getElementById('onboardingModal')?.classList.add('show');
+}
+</script>
 </body>
 </html>
