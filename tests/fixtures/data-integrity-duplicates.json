@@ -1,0 +1,8 @@
+{
+  "validGame": {"id": "integrity-game-1", "date": "2026-09-01T18:00:00.000Z", "score": 190, "frames": ["X"]},
+  "malformedGames": [null, {}, {"score": "not-a-score"}, {"score": 301}, {"score": -1}],
+  "balls": [
+    {"id": "ball-1", "name": "Hy-Road", "weight": 15},
+    {"id": "ball-2", "name": "Ascent", "weight": 14}
+  ]
+}
