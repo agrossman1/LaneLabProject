@@ -1671,9 +1671,15 @@ function replayOnboarding(){
   showOnboardingStep(1);
 }
 function maybeStartOnboarding(){
+  const storage=getGameStorage();
+  let force=false;
   let complete=false;
-  try{complete=getGameStorage()?.getItem('laneLabOnboardingComplete')==='true'}catch(e){}
-  if(!hasExistingProfile && !savedGames.length && !complete){
+  try{
+    force=storage?.getItem('lanelab-force-onboarding')==='true';
+    if(force) storage?.removeItem('lanelab-force-onboarding');
+    complete=storage?.getItem('laneLabOnboardingComplete')==='true';
+  }catch(e){}
+  if(force || (!hasExistingProfile && !savedGames.length && !complete)){
     document.getElementById('onboardingName').value='';
     showOnboardingStep(1);
   }
@@ -2335,6 +2341,7 @@ function resetAllGameData(){
   // can be suppressed. The profile menu already labels the destructive scope.
   try{window.localStorage.clear()}catch(e){}
   try{window.sessionStorage?.clear()}catch(e){}
+  try{window.localStorage?.setItem('lanelab-force-onboarding','true')}catch(e){}
   state.games=[];
   state.recent=[];
   window.location.replace(`${window.location.pathname}?reset=${Date.now()}`);
