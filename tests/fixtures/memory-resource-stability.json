@@ -1,0 +1,7 @@
+{
+  "navigationCycles": 100,
+  "modalCycles": 100,
+  "importCycles": 50,
+  "scoringThrows": 300,
+  "maxRetainedSnapshots": 1
+}
