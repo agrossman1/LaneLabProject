@@ -3280,6 +3280,10 @@ maybeStartOnboarding();
 // onboarding step has been selected.
 if(new URLSearchParams(window.location.search).get('onboarding')==='1'){
   document.getElementById('onboardingModal')?.classList.add('show');
+  const params=new URLSearchParams(window.location.search);
+  params.delete('onboarding');
+  const cleanQuery=params.toString();
+  window.history.replaceState(null,'',`${window.location.pathname}${cleanQuery?`?${cleanQuery}`:''}${window.location.hash}`);
 }
 </script>
 </body>
