@@ -3189,10 +3189,18 @@ function openBallModal(){
 }
 function closeBallModal(){document.getElementById('ballModal').classList.remove('show')}
 function addBall(){
-  const typedName=document.getElementById('newBallName').value.trim();
-  const weight=document.getElementById('newBallWeight').value;
-  const role=document.getElementById('newBallRole').value;
-  if(!typedName){toast('Enter a ball name');return}
+  const nameInput=document.getElementById('newBallName');
+  const weightInput=document.getElementById('newBallWeight');
+  const roleInput=document.getElementById('newBallRole');
+  const typedName=nameInput?.value.trim();
+  if(!typedName){nameInput?.focus();toast('Enter a ball name');return}
+
+  // Keep the modal add flow consistent with onboarding: an empty weight is
+  // valid and defaults to 15 lb, while entered values must be realistic.
+  const rawWeight=weightInput?.value.trim() || '';
+  const weight=rawWeight==='' ? 15 : Number(rawWeight);
+  if(!Number.isFinite(weight)||weight<6||weight>16){weightInput?.focus();toast('Enter a ball weight from 6 to 16 lb');return}
+  const role=roleInput?.value || 'Benchmark';
 
   const match=findBallCatalogMatch(typedName);
   const name=match ? match.canonical : typedName;
@@ -3208,7 +3216,9 @@ function addBall(){
   arsenal=LaneLabArsenal.save(getGameStorage(),[...arsenal,ball]);
   renderArsenal();
 
-  document.getElementById('newBallName').value='';
+  if(nameInput) nameInput.value='';
+  if(weightInput) weightInput.value='15';
+  if(roleInput) roleInput.value='Benchmark';
   matchedBallCatalogItem=null;
   detectBallFromName();
   closeBallModal();
