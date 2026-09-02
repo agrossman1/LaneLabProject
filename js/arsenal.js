@@ -56,6 +56,18 @@
     const scores = games.map(game => Number(game.score)).filter(score => Number.isInteger(score));
     const rates = [];
     games.forEach(game => {
+      // Prefer the persisted per-ball rate when it is present. This keeps
+      // imported JSON/CSV history (including games with mixed balls) aligned
+      // with the rate shown when the game was recorded.
+      const persistedRates = game?.ballStrikeRates;
+      if (persistedRates && typeof persistedRates === 'object') {
+        const persisted = Number(persistedRates[ballName] ?? Object.entries(persistedRates)
+          .find(([name]) => normalizeName(name) === target)?.[1]);
+        if (Number.isFinite(persisted)) {
+          rates.push(persisted);
+          return;
+        }
+      }
       const hasThrowData = Array.isArray(game?.frameThrows);
       if (hasThrowData && Array.isArray(game.frames)) {
         let opportunities = 0, strikes = 0;

@@ -4,6 +4,7 @@
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
 <title>LaneLab — Bowling Improvement Tracker</title>
+<link rel="manifest" href="./manifest.webmanifest">
 <style>
 :root{
   --bg:#0b1020;
@@ -122,6 +123,8 @@ p{color:var(--muted);line-height:1.5}
 }
 .frame.current{outline:2px solid var(--accent)}
 .frame.editing{outline:3px solid var(--accent);box-shadow:0 0 0 3px rgba(124,156,255,.2),0 0 18px rgba(124,156,255,.28)}
+.frame:focus-visible,.key:focus-visible,.pinButton:focus-visible,.cta:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
 .fnum{font-size:10px;color:var(--muted);font-weight:700}
 .rolls{display:flex;gap:5px;justify-content:flex-end;font-weight:800;margin-top:6px;min-height:22px}
 .fscore{font-size:18px;font-weight:900;margin-top:8px}
@@ -2466,8 +2469,11 @@ function renderScoreboard(){
     const editing=(state.pinTracking?.editing && state.pinTracking.frameIndex===i) || state.editingFrame===i;
     const current=i===state.currentFrame && !state.completed && !state.pinTracking?.editing;
     div.className='frame'+(current?' current':'')+(editing?' editing':'');
+    div.setAttribute('role','button');
+    div.tabIndex=0;
     div.title='Tap to edit this frame';
     div.onclick=()=>editGameFrame(i);
+    div.onkeydown=event=>{if(event.key==='Enter'||event.key===' '){event.preventDefault();editGameFrame(i)}};
     // Frames 1–9 have either a strike or two rolls. If older/imported data
     // contains extra rolls, keep them from rendering as impossible notation.
     const displayRolls=i<9
@@ -3336,6 +3342,7 @@ if(gameDateInput) gameDateInput.value=localDateInputValue();
 renderAll();renderChart();renderRecent();renderGameBreakdown();renderProfile();renderSessionMetrics();
 syncAverageDisplays();syncGameSummaries();renderPersonalStats();renderArsenal();
 maybeStartOnboarding();
+if ('serviceWorker' in navigator) navigator.serviceWorker.register('./sw.js').catch(() => {});
 </script>
 <script>
 // Keep reset onboarding visible even if another startup task fails after the
