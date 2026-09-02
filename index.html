@@ -1544,6 +1544,7 @@ function setDailyGreeting(){
 }
 setDailyGreeting();
 let onboardingStep=1;
+let onboardingImportedBalls=false;
 function showOnboardingStep(step){
   onboardingStep=step;
   document.querySelectorAll('.onboardingStep').forEach(el=>el.classList.toggle('active',Number(el.dataset.step)===step));
@@ -1671,12 +1672,50 @@ function handleOnboardingHistoryFile(event){
   const file=event.target.files?.[0]; if(!file) return;
   const reader=new FileReader();
   reader.onload=()=>{
-    const count=importHistoryFile(file,String(reader.result||''));
+    const text=String(reader.result||'');
+    const count=importHistoryFile(file,text);
     if(!count){toast('No valid game records found in that file');return}
+    if(/\.json$/i.test(file.name||'') || /^\s*[\[{]/.test(text)) applyImportedOnboardingMetadata(text);
     toast(`${count} game${count===1?'':'s'} imported`);
     showOnboardingStep(2);
   };
   reader.readAsText(file); event.target.value='';
+}
+function applyImportedOnboardingMetadata(text){
+  let payload;
+  try{payload=JSON.parse(text)}catch(e){return}
+  const importedProfile=payload?.profile||payload?.player||{};
+  const name=String(importedProfile.name||payload?.name||'').trim();
+  const hand=importedProfile.hand||importedProfile.handedness||payload?.hand||'';
+  const style=importedProfile.style||payload?.style||'';
+  const handValue=/^(left)$/i.test(hand)?'Left':/^(both|ambidextrous)$/i.test(hand)?'Ambidextrous':'Right';
+  if(name) document.getElementById('onboardingName').value=name;
+  if(hand) document.getElementById('onboardingHand').value=handValue;
+  if(['One-handed','Two-handed'].includes(style)) document.getElementById('onboardingStyle').value=style;
+  const importedRecords=[];
+  const collectRecords=value=>{
+    if(Array.isArray(value)){value.forEach(collectRecords);return}
+    if(!value||typeof value!=='object') return;
+    if(Number.isFinite(Number(value.score))) importedRecords.push(value);
+    ['games','records','state','data'].forEach(key=>{if(value[key]&&value[key]!==value) collectRecords(value[key])});
+  };
+  collectRecords(payload);
+  const derivedBalls=importedRecords.flatMap(record=>[
+    record.ball,
+    ...(Array.isArray(record.frameThrows)?record.frameThrows.flatMap(frame=>(frame?.throws||[]).map(item=>item.ball)):[])
+  ]).filter(value=>typeof value==='string'&&value.trim()&&value.trim()!=='"');
+  const importedBalls=payload?.arsenal||payload?.balls||importedProfile.balls||derivedBalls;
+  if(Array.isArray(importedBalls)&&importedBalls.length){
+    const normalized=importedBalls.map(ball=>typeof ball==='string'?{name:ball}:ball).map(LaneLabArsenal.normalizeBall).filter(Boolean);
+    if(normalized.length){
+      arsenal=LaneLabArsenal.save(getGameStorage(),normalized);
+      onboardingImportedBalls=true;
+      const first=normalized[0];
+      document.getElementById('onboardingBallName').value=first.name;
+      document.getElementById('onboardingBallWeight').value=first.weight||'';
+      syncBallSelect(); renderArsenal();
+    }
+  }
 }
 function onboardingBack(){showOnboardingStep(Math.max(1,onboardingStep-1))}
 function onboardingProfileNext(){
@@ -1714,7 +1753,10 @@ function onboardingAddBall(){
   const match=findBallCatalogMatch(typedName);
   const name=match ? match.canonical : typedName;
   const duplicate=arsenal.some(ball=>LaneLabArsenal.normalizeName(ball.name)===LaneLabArsenal.normalizeName(name));
-  if(duplicate){toast(`${name} is already in your arsenal`);return}
+  if(duplicate){
+    if(onboardingImportedBalls){onboardingImportedBalls=false;toast(`${name} was imported into your arsenal`);onboardingFinish();return}
+    toast(`${name} is already in your arsenal`);return
+  }
 
   const ball=LaneLabArsenal.normalizeBall({
     id:`ball-${Date.now()}-${Math.random().toString(36).slice(2,7)}`,

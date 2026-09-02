@@ -18,6 +18,10 @@ assert.match(source, /function maybeStartOnboarding\(\)[\s\S]*?maybeStartOnboard
 // Import remains wired to the onboarding file control and JSON parser.
 assert.match(source, /id="csvHistoryInput"[^>]*accept="\.csv,\.json/);
 assert.match(source, /function importJsonRecords\(text\)/);
+assert.match(source, /function applyImportedOnboardingMetadata\(text\)/);
+assert.match(source, /onboardingName.*value=name/);
+assert.match(source, /onboardingHand.*value=handValue/);
+assert.match(source, /const importedBalls=payload\?\.arsenal\|\|payload\?\.balls\|\|importedProfile\.balls\|\|derivedBalls/);
 
 const currentResetStart = source.indexOf('function resetGame(');
 const currentResetEnd = source.indexOf('function finalScore(', currentResetStart);
