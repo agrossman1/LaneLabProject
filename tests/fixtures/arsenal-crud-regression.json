@@ -1,0 +1,5 @@
+{
+  "onboardingBall": {"id": "crud-ball-1", "name": "Template Ball", "weight": 15, "role": "Benchmark"},
+  "editedBall": {"id": "crud-ball-1", "name": "Template Ball Updated", "weight": 14, "role": "Spare"},
+  "history": [{"id": "history-unchanged", "score": 180, "ball": "Hy-Road"}]
+}
