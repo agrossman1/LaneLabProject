@@ -1,0 +1,6 @@
+{
+  "entrypoint": "index.html",
+  "requiredScripts": ["js/profile.js", "js/arsenal.js", "js/stats.js"],
+  "requiredSelectors": ["#app", "#onboardingModal", ".nav"],
+  "deployment": "GitHub Pages"
+}
