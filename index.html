@@ -112,6 +112,7 @@ p{color:var(--muted);line-height:1.5}
   background:var(--accent);color:white;font-weight:800;margin-top:8px;
   box-shadow:0 8px 24px rgba(124,156,255,.28)
 }
+.gutterBallButton{font-size:32px;line-height:1;padding:10px 16px}
 .secondary{background:var(--panel2);box-shadow:none;border:1px solid var(--line)}
 .danger{background:#3a1d27;color:#ffb5bc;border:1px solid #5c2934}
 .scoreboard{display:grid;grid-template-columns:repeat(5,1fr);gap:6px}
@@ -2557,7 +2558,7 @@ function renderPinTracker(){
     const unavailable=leavePhase && active && !on && selectedCount>=target;
     return `<button class="pinButton ${on?'selected':''} ${!active?'down':''} ${unavailable?'unavailable':''}" ${canSelect?`onclick="toggleTrackedPin(${pin})"`: 'disabled'} aria-label="Pin ${pin}">${active?pin:''}</button>`;
   }).join('');
-  box.innerHTML=`<div class="muted small">${prompt}</div><b class="pinTrackerDetail">${detail}${!leavePhase && selectedCount===t.standing.length?' ✓':''}</b><div class="muted small" style="margin-top:4px">${hint}</div><div class="pinRack">${buttons}</div><div class="pinTrackerActions"><button class="cta secondary" onclick="skipPinTracking()">Skip pin tracking</button>${leavePhase?`${t.firstBall===0?`<button class="cta secondary" onclick="selectAllStanding()">All pins still up</button>`:''}<button class="cta" ${selectedCount===target?'':'disabled'} onclick="saveTrackedLeave()">Save Leave</button>`:`<button class="cta secondary" onclick="selectAllStanding();saveTrackedThrow()">Knock Down All / Spare</button><button class="cta secondary" onclick="recordGutterBall()">Gutter ball · 0 pins</button><button class="cta" onclick="saveTrackedThrow()">Save Throw</button>`}</div>`;
+  box.innerHTML=`<div class="muted small">${prompt}</div><b class="pinTrackerDetail">${detail}${!leavePhase && selectedCount===t.standing.length?' ✓':''}</b><div class="muted small" style="margin-top:4px">${hint}</div><div class="pinRack">${buttons}</div><div class="pinTrackerActions"><button class="cta secondary" onclick="skipPinTracking()">Skip pin tracking</button>${leavePhase?`${t.firstBall===0?`<button class="cta secondary" onclick="selectAllStanding()">All pins still up</button>`:''}<button class="cta" ${selectedCount===target?'':'disabled'} onclick="saveTrackedLeave()">Save Leave</button>`:`<button class="cta secondary" onclick="selectAllStanding();saveTrackedThrow()">Knock Down All / Spare</button><button class="cta secondary gutterBallButton" aria-label="Record gutter ball" title="Gutter ball · 0 pins" onclick="recordGutterBall()">−</button><button class="cta" onclick="saveTrackedThrow()">Save Throw</button>`}</div>`;
   box.querySelectorAll('.pinButton').forEach(button=>{
     const pin=Number(button.getAttribute('aria-label')?.replace('Pin ',''));
     button.setAttribute('onpointerdown',`pinDragStart(event,${pin})`);
