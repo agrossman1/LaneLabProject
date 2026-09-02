@@ -1672,11 +1672,12 @@ function replayOnboarding(){
 }
 function maybeStartOnboarding(){
   const storage=getGameStorage();
-  let force=false;
+  let force=new URLSearchParams(window.location.search).get('onboarding')==='1';
   let complete=false;
   try{
-    force=storage?.getItem('lanelab-force-onboarding')==='true';
-    if(force) storage?.removeItem('lanelab-force-onboarding');
+    const storedForce=storage?.getItem('lanelab-force-onboarding')==='true';
+    force=force||storedForce;
+    if(storedForce) storage?.removeItem('lanelab-force-onboarding');
     complete=storage?.getItem('laneLabOnboardingComplete')==='true';
   }catch(e){}
   if(force || (!hasExistingProfile && !savedGames.length && !complete)){
@@ -2344,7 +2345,7 @@ function resetAllGameData(){
   try{window.localStorage?.setItem('lanelab-force-onboarding','true')}catch(e){}
   state.games=[];
   state.recent=[];
-  window.location.replace(`${window.location.pathname}?reset=${Date.now()}`);
+  window.location.replace(`${window.location.pathname}?reset=${Date.now()}&onboarding=1`);
 }
 
 function go(id){
