@@ -1,0 +1,9 @@
+{
+  "requiredBehaviors": [
+    "first visit starts onboarding when no profile or saved games exist",
+    "JSON import remains available during onboarding",
+    "refresh does not force onboarding after completion",
+    "current game reset clears frames and returns to frame one",
+    "full reset clears storage and explicitly starts onboarding"
+  ]
+}
