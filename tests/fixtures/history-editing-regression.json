@@ -1,0 +1,15 @@
+{
+  "before": {
+    "id": "history-edit-game",
+    "date": "2026-09-02T18:00:00.000Z",
+    "score": 148,
+    "source": "manual",
+    "hand": "Ambidextrous",
+    "ball": "Hy-Road, Ascent",
+    "frames": ["8/", "X", "7-", "9/", "X", "8-", "X", "6/", "9-", "X X 8"],
+    "pinData": [{"pinsLeftAfterFirst": [7, 10], "pinsKnockedDownSecond": [7], "pinsLeftAfterSecond": [10]}],
+    "frameThrows": [{"throws": [{"hand": "Right", "ball": "Hy-Road"}, {"hand": "Left", "ball": "Ascent"}]}],
+    "ballStrikeRates": {"Hy-Road": 50, "Ascent": 33}
+  },
+  "editedScore": 176
+}
