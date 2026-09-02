@@ -1,0 +1,6 @@
+{
+  "isoDate": "2026-09-02T18:45:00.000Z",
+  "locales": ["en-US", "en-GB", "de-DE", "ja-JP"],
+  "timeOptions": ["2-digit", "2-digit"],
+  "dateOnlyOptions": ["short", "numeric", "short"]
+}
