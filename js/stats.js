@@ -148,9 +148,14 @@
     const date = parsedDate && !Number.isNaN(parsedDate.getTime())
       ? parsedDate.toISOString()
       : null;
-    const text = value => typeof value === 'string' && value.trim()
-      ? value.trim().slice(0, 80)
-      : null;
+    const text = value => {
+      if (typeof value !== 'string') return null;
+      const cleaned = value.trim();
+      // Some legacy CSV exports represented an empty hand/ball cell as a
+      // lone quote. Do not surface that placeholder in history or stats.
+      if (!cleaned || cleaned === '"' || cleaned === "''") return null;
+      return cleaned.slice(0, 80);
+    };
     const frameToken = (frame, frameIndex) => {
       if (typeof frame === 'string') {
         // Keep bowling notation consistent everywhere: a zero-pin roll is
