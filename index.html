@@ -140,6 +140,7 @@ p{color:var(--muted);line-height:1.5}
 .pinTracker.active{display:block}
 .pinRack{display:grid;grid-template-columns:repeat(7,42px);grid-template-rows:repeat(4,42px);justify-content:center;gap:2px 2px;margin:16px auto}
 .pinButton{width:42px;height:42px;border-radius:50%;border:1px solid var(--line);background:#f5f7ff;color:#16213a;font-weight:900;font-size:20px;box-shadow:0 3px 8px rgba(0,0,0,.2);padding:0;touch-action:none}
+.zeroPinButton{background:var(--panel-2);color:var(--text);font-size:30px;line-height:1}
 .pinButton:nth-child(1){grid-column:1;grid-row:1}.pinButton:nth-child(2){grid-column:3;grid-row:1}.pinButton:nth-child(3){grid-column:5;grid-row:1}.pinButton:nth-child(4){grid-column:7;grid-row:1}
 .pinButton:nth-child(5){grid-column:2;grid-row:2}.pinButton:nth-child(6){grid-column:4;grid-row:2}.pinButton:nth-child(7){grid-column:6;grid-row:2}
 .pinButton:nth-child(8){grid-column:3;grid-row:3}.pinButton:nth-child(9){grid-column:5;grid-row:3}.pinButton:nth-child(10){grid-column:4;grid-row:4}
@@ -2595,8 +2596,8 @@ function renderPinTracker(){
     const unavailable=leavePhase && active && !on && selectedCount>=target;
     return `<button class="pinButton ${on?'selected':''} ${!active?'down':''} ${unavailable?'unavailable':''}" ${canSelect?`onclick="toggleTrackedPin(${pin})"`: 'disabled'} aria-label="Pin ${pin}">${active?pin:''}</button>`;
   }).join('');
-  box.innerHTML=`<div class="muted small">${prompt}</div><b class="pinTrackerDetail">${detail}${!leavePhase && selectedCount===t.standing.length?' ✓':''}</b><div class="muted small" style="margin-top:4px">${hint}</div><div class="pinRack">${buttons}</div><div class="pinTrackerActions"><button class="cta secondary" onclick="skipPinTracking()">Skip pin tracking</button>${leavePhase?`${t.editing?`<button class="cta secondary" onclick="restartEditedFrame()">Edit Ball 1</button>`:''}${t.firstBall===0?`<button class="cta secondary" onclick="selectAllStanding()">All pins still up</button>`:''}<button class="cta" ${selectedCount===target?'':'disabled'} onclick="saveTrackedLeave()">Save Leave</button>`:`<button class="cta secondary" onclick="selectAllStanding();saveTrackedThrow()">Knock Down All / Spare</button><button class="cta secondary gutterBallButton" aria-label="Record gutter ball" title="Gutter ball · 0 pins" onclick="recordGutterBall()">−</button><button class="cta" onclick="saveTrackedThrow()">Save Throw</button>`}</div>`;
-  box.querySelectorAll('.pinButton').forEach(button=>{
+  box.innerHTML=`<div class="muted small">${prompt}</div><b class="pinTrackerDetail">${detail}${!leavePhase && selectedCount===t.standing.length?' ✓':''}</b><div class="muted small" style="margin-top:4px">${hint}</div><div class="pinRack">${buttons}${leavePhase?'':`<button class="pinButton zeroPinButton" aria-label="0 pins" title="0 pins knocked down" onclick="recordGutterBall()">−</button>`}</div><div class="pinTrackerActions"><button class="cta secondary" onclick="skipPinTracking()">Skip pin tracking</button>${leavePhase?`${t.editing?`<button class="cta secondary" onclick="restartEditedFrame()">Edit Ball 1</button>`:''}${t.firstBall===0?`<button class="cta secondary" onclick="selectAllStanding()">All pins still up</button>`:''}<button class="cta" ${selectedCount===target?'':'disabled'} onclick="saveTrackedLeave()">Save Leave</button>`:`<button class="cta secondary" onclick="selectAllStanding();saveTrackedThrow()">Knock Down All / Spare</button><button class="cta" onclick="saveTrackedThrow()">Save Throw</button>`}</div>`;
+  box.querySelectorAll('.pinButton:not(.zeroPinButton)').forEach(button=>{
     const pin=Number(button.getAttribute('aria-label')?.replace('Pin ',''));
     button.setAttribute('onpointerdown',`pinDragStart(event,${pin})`);
     button.setAttribute('onpointermove','pinDragMove(event)');
@@ -2644,7 +2645,7 @@ function syncPinDragUI(){
   const target=leave?(t.firstBall===0?10:10-t.firstBall):t.standing.length;
   const detail=leave?`${target} pins left · ${list.length} selected`:`${list.length} pin${list.length===1?'':'s'} knocked down`;
   const detailNode=box.querySelector('.pinTrackerDetail'); if(detailNode) detailNode.textContent=detail+(!leave&&list.length===t.standing.length?' ✓':'');
-  box.querySelectorAll('.pinButton').forEach(button=>{
+  box.querySelectorAll('.pinButton:not(.zeroPinButton)').forEach(button=>{
     const pin=Number(button.getAttribute('aria-label')?.replace('Pin ',''));
     const active=(leave?Array.from({length:10},(_,i)=>i+1):t.standing).includes(pin), on=list.includes(pin), unavailable=leave&&active&&!on&&list.length>=target;
     button.classList.toggle('selected',on); button.classList.toggle('unavailable',unavailable); button.disabled=!active||unavailable;
