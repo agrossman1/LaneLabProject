@@ -1,0 +1,19 @@
+{
+  "legacyJson": {
+    "score": 165,
+    "date": "2026-08-30",
+    "hand": "Right",
+    "ball": "Hy-Road",
+    "frames": ["X", "9/", "8-", "X", "7/", "X", "9-", "X", "8/", "X X 9"]
+  },
+  "wrappedJson": {
+    "games": [{
+      "score": 142,
+      "date": "2026-08-29",
+      "hand": "Left",
+      "ball": "Ascent",
+      "frames": ["8-", "9/", "X", "7-", "X", "8/", "9-", "X", "7/", "9-"]
+    }]
+  },
+  "legacyCsv": "ID,Game Date,Game Score,F1,F2,F3,F4,F5,F6,F7,F8,F9,F10,Hand,Equipment,Strike Frames\nlegacy-csv,2026-08-28,138,X,9/,8-,X,7/,X,9-,X,8/,9-,Right,Hy-Road,4"
+}
