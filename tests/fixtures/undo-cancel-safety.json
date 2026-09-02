@@ -1,0 +1,10 @@
+{
+  "checks": [
+    "undo latest roll restores the prior frame state",
+    "canceling a modal does not persist a change",
+    "closing detail modals clears visibility and selection",
+    "unsaved scoring edits are only persisted by Save finished game"
+  ],
+  "framesBeforeUndo": [[7, 2], []],
+  "framesAfterUndo": [[7], []]
+}

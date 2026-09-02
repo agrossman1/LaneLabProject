@@ -22,6 +22,7 @@
     "test:data-integrity": "node tests/data-integrity-regression.test.js",
     "test:responsive-visual": "node tests/responsive-visual-regression.test.js",
     "test:game-rules": "node tests/game-rules-validation.test.js",
-    "test": "npm run test:import && npm run test:scoring && npm run test:frame-editing && npm run test:roundtrip && npm run test:metadata && npm run test:onboarding-reset && npm run test:arsenal-metrics && npm run test:mobile-layout && npm run test:pin-notation && npm run test:history-editing && npm run test:persistence && npm run test:arsenal-crud && npm run test:coach && npm run test:migration && npm run test:accessibility && npm run test:csv-export && npm run test:e2e-smoke && npm run test:profile-persistence && npm run test:data-integrity && npm run test:responsive-visual && npm run test:game-rules"
+    "test:undo-cancel": "node tests/undo-cancel-safety.test.js",
+    "test": "npm run test:import && npm run test:scoring && npm run test:frame-editing && npm run test:roundtrip && npm run test:metadata && npm run test:onboarding-reset && npm run test:arsenal-metrics && npm run test:mobile-layout && npm run test:pin-notation && npm run test:history-editing && npm run test:persistence && npm run test:arsenal-crud && npm run test:coach && npm run test:migration && npm run test:accessibility && npm run test:csv-export && npm run test:e2e-smoke && npm run test:profile-persistence && npm run test:data-integrity && npm run test:responsive-visual && npm run test:game-rules && npm run test:undo-cancel"
   }
 }
