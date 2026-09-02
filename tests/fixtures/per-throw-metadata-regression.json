@@ -1,0 +1,22 @@
+{
+  "game": {
+    "id": "per-throw-metadata-game",
+    "date": "2026-09-02T18:00:00.000Z",
+    "score": 156,
+    "frames": ["8/", "X", "7-", "9/", "X", "8-", "X", "6/", "9-", "X X 8"],
+    "frameThrows": [
+      {"throws": [{"hand": "Right", "ball": "Hy-Road"}, {"hand": "Left", "ball": "Ascent"}]},
+      {"throws": [{"hand": "Left", "ball": "Ascent"}]},
+      {"throws": [{"hand": "Right", "ball": "Hy-Road"}]}
+    ]
+  },
+  "expected": {
+    "hand": "Ambidextrous",
+    "ball": "Hy-Road, Ascent",
+    "throwsInFrame1": [
+      {"hand": "Right", "ball": "Hy-Road"},
+      {"hand": "Left", "ball": "Ascent"}
+    ],
+    "uniqueCombinations": ["Right|Hy-Road", "Left|Ascent"]
+  }
+}
