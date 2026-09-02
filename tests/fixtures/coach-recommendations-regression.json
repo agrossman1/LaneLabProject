@@ -1,0 +1,32 @@
+{
+  "cases": [
+    {
+      "name": "largest normalized score drop",
+      "previous": {"average": 180, "strikeRate": 70, "spareRate": 70, "openPerGame": 3},
+      "current": {"average": 150, "strikeRate": 70, "spareRate": 70, "openPerGame": 3},
+      "expectedKey": "Average score",
+      "explanationIncludes": "average moved"
+    },
+    {
+      "name": "largest strike-rate drop",
+      "previous": {"average": 180, "strikeRate": 80, "spareRate": 70, "openPerGame": 3},
+      "current": {"average": 175, "strikeRate": 60, "spareRate": 70, "openPerGame": 3},
+      "expectedKey": "Strike rate",
+      "explanationIncludes": "strike rate moved"
+    },
+    {
+      "name": "largest spare-rate drop",
+      "previous": {"average": 180, "strikeRate": 80, "spareRate": 80, "openPerGame": 3},
+      "current": {"average": 175, "strikeRate": 80, "spareRate": 50, "openPerGame": 3},
+      "expectedKey": "Spare conversion rate",
+      "explanationIncludes": "spare conversion moved"
+    },
+    {
+      "name": "largest open-frame increase",
+      "previous": {"average": 180, "strikeRate": 80, "spareRate": 80, "openPerGame": 2},
+      "current": {"average": 175, "strikeRate": 80, "spareRate": 80, "openPerGame": 4},
+      "expectedKey": "Open frames",
+      "explanationIncludes": "open frames per game"
+    }
+  ]
+}
