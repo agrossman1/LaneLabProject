@@ -41,5 +41,9 @@ assert.match(fullReset, /localStorage\.clear\(\)/);
 assert.match(fullReset, /sessionStorage\?\.clear\(\)/);
 assert.match(fullReset, /lanelab-force-onboarding/);
 assert.match(fullReset, /onboarding=1/);
+assert.match(fullReset, /arsenal=\[\]/);
+assert.match(fullReset, /state\.frames=Array\.from\(\{length:10\}/);
+assert.match(fullReset, /state\.pinTracking=null/);
+assert.match(fullReset, /state\.editingFrame=null/);
 
 console.log('Onboarding/reset checks passed for first visit, import, refresh, current-game reset, and full reset.');

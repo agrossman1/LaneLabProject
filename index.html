@@ -2457,6 +2457,13 @@ function resetAllGameData(){
   // rehydrated as defaults after the reset redirect.
   try{LaneLabArsenal.save(getGameStorage(),[])}catch(e){}
   try{window.localStorage?.setItem('lanelab-force-onboarding','true')}catch(e){}
+  arsenal=[];
+  state.frames=Array.from({length:10},()=>({rolls:[],throws:[]}));
+  state.currentFrame=0;
+  state.completed=false;
+  state.pinTracking=null;
+  state.editingFrame=null;
+  state.sessionGameNumber=1;
   state.games=[];
   state.recent=[];
   window.location.replace(`${window.location.pathname}?reset=${Date.now()}&onboarding=1`);
