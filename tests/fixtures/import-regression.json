@@ -1,0 +1,38 @@
+{
+  "schemaVersion": 2,
+  "games": [
+    {
+      "id": "fixture-json-manual",
+      "date": "2026-08-31T18:00:00.000Z",
+      "score": 172,
+      "source": "manual",
+      "hand": "Right",
+      "ball": "Hy-Road",
+      "frames": ["X", "9/", "8-", "X", "7/", "X", "9-", "X", "8/", "X X 9"],
+      "pinData": [{"pinsLeftAfterFirst": [], "pinsKnockedDownSecond": [], "pinsLeftAfterSecond": []}],
+      "frameThrows": [{"throws": [{"hand": "Right", "ball": "Hy-Road"}]}]
+    },
+    {
+      "id": "fixture-csv-import",
+      "date": "2026-08-31T19:00:00.000Z",
+      "score": 107,
+      "source": "csv import",
+      "hand": null,
+      "ball": null,
+      "frames": ["8-", "61", "X", "9-", "X", "9-", "8-", "9-", "X", "X9-"],
+      "pinData": [],
+      "frameThrows": []
+    },
+    {
+      "id": "fixture-placeholder-cleanup",
+      "date": "2026-08-31T20:00:00.000Z",
+      "score": 140,
+      "source": "manual",
+      "hand": "\"",
+      "ball": "\"",
+      "frames": ["X", "--", "X", "9-"],
+      "pinData": [],
+      "frameThrows": [{"throws": [{"hand": "\"", "ball": "\""}]}]
+    }
+  ]
+}
