@@ -1,0 +1,14 @@
+{
+  "profile": {
+    "name": "Test Bowler",
+    "hand": "Left",
+    "style": "One-handed",
+    "goalAverage": 210
+  },
+  "preferences": {
+    "theme": "light",
+    "handTracking": "off",
+    "ballTracking": "on",
+    "pinTracking": "off"
+  }
+}
