@@ -20,6 +20,7 @@
     "test:e2e-smoke": "node tests/e2e-browser-smoke.test.js",
     "test:profile-persistence": "node tests/profile-settings-persistence.test.js",
     "test:data-integrity": "node tests/data-integrity-regression.test.js",
-    "test": "npm run test:import && npm run test:scoring && npm run test:frame-editing && npm run test:roundtrip && npm run test:metadata && npm run test:onboarding-reset && npm run test:arsenal-metrics && npm run test:mobile-layout && npm run test:pin-notation && npm run test:history-editing && npm run test:persistence && npm run test:arsenal-crud && npm run test:coach && npm run test:migration && npm run test:accessibility && npm run test:csv-export && npm run test:e2e-smoke && npm run test:profile-persistence && npm run test:data-integrity"
+    "test:responsive-visual": "node tests/responsive-visual-regression.test.js",
+    "test": "npm run test:import && npm run test:scoring && npm run test:frame-editing && npm run test:roundtrip && npm run test:metadata && npm run test:onboarding-reset && npm run test:arsenal-metrics && npm run test:mobile-layout && npm run test:pin-notation && npm run test:history-editing && npm run test:persistence && npm run test:arsenal-crud && npm run test:coach && npm run test:migration && npm run test:accessibility && npm run test:csv-export && npm run test:e2e-smoke && npm run test:profile-persistence && npm run test:data-integrity && npm run test:responsive-visual"
   }
 }
