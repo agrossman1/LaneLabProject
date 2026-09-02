@@ -94,6 +94,23 @@
       value.attempts += 1; if (item.converted) value.makes += 1; value.last = index; leaveMap.set(item.key, value);
     });
     const singles = pinLeaves.filter(item => item.pins.length === 1);
+    const normalizedBallStrikeRates = record.ballStrikeRates && typeof record.ballStrikeRates === 'object'
+      ? Object.fromEntries(Object.entries(record.ballStrikeRates).map(([name, rate]) => [String(name).slice(0, 80), Number.isFinite(Number(rate)) ? Math.max(0, Math.min(100, Number(rate))) : null]))
+      : {};
+    // Preserve a per-ball rate for legacy JSON records that have pinData but
+    // no frameThrows/ballStrikeRates. The selected game ball applies to each
+    // recorded frame, and an empty first-ball leave is a strike.
+    const selectedBall = text(record.ball);
+    if (selectedBall && !Object.keys(normalizedBallStrikeRates).length) {
+      const sourceFrames = Array.isArray(frames) && frames.length ? frames : (Array.isArray(pinData) ? pinData : []);
+      const opportunities = Math.min(10, sourceFrames.length);
+      const strikes = sourceFrames.slice(0, opportunities).filter((frame, frameIndex) => {
+        if (typeof frame === 'string') return frame.trim().startsWith('X');
+        return Array.isArray(frame?.pinsLeftAfterFirst) && frame.pinsLeftAfterFirst.length === 0;
+      }).length;
+      if (opportunities) normalizedBallStrikeRates[selectedBall] = Math.round(strikes / opportunities * 100);
+    }
+
     return {
       games: list.length, average: scores.length ? scores.reduce((a, b) => a + b, 0) / scores.length : null,
       openFrames: list.reduce((sum, game) => {
@@ -195,6 +212,11 @@
             : []
         }))
       : null;
+    const throwItems = frameThrows ? frameThrows.flatMap(frame => frame.throws) : [];
+    const handsUsed = [...new Set(throwItems.map(item => item.hand).filter(Boolean))];
+    const ballsUsed = [...new Set(throwItems.map(item => item.ball).filter(Boolean))];
+    const handSummary = handsUsed.length > 1 ? 'Ambidextrous' : (handsUsed[0] || text(record.hand));
+    const ballSummary = ballsUsed.length ? ballsUsed.join(', ') : text(record.ball);
     const percentage = value => {
       const number = Number(value);
       return Number.isFinite(number) && number >= 0 && number <= 100
@@ -206,12 +228,13 @@
       id: text(record.id) || `game-${index}-${score}`,
       date,
       score,
-      hand: text(record.hand),
-      ball: text(record.ball),
+      hand: handSummary,
+      ball: ballSummary,
       source: text(record.source) || 'manual',
       frames,
       pinData,
       frameThrows,
+      ballStrikeRates: Object.keys(normalizedBallStrikeRates).length ? normalizedBallStrikeRates : null,
       strikes: Number.isInteger(Number(record.strikes)) && Number(record.strikes) >= 0
         ? Math.min(12, Number(record.strikes))
         : null,
