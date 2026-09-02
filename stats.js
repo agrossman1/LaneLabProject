@@ -94,6 +94,23 @@
       value.attempts += 1; if (item.converted) value.makes += 1; value.last = index; leaveMap.set(item.key, value);
     });
     const singles = pinLeaves.filter(item => item.pins.length === 1);
+    const normalizedBallStrikeRates = record.ballStrikeRates && typeof record.ballStrikeRates === 'object'
+      ? Object.fromEntries(Object.entries(record.ballStrikeRates).map(([name, rate]) => [String(name).slice(0, 80), Number.isFinite(Number(rate)) ? Math.max(0, Math.min(100, Number(rate))) : null]))
+      : {};
+    // Preserve a per-ball rate for legacy JSON records that have pinData but
+    // no frameThrows/ballStrikeRates. The selected game ball applies to each
+    // recorded frame, and an empty first-ball leave is a strike.
+    const selectedBall = text(record.ball);
+    if (selectedBall && !Object.keys(normalizedBallStrikeRates).length) {
+      const sourceFrames = Array.isArray(frames) && frames.length ? frames : (Array.isArray(pinData) ? pinData : []);
+      const opportunities = Math.min(10, sourceFrames.length);
+      const strikes = sourceFrames.slice(0, opportunities).filter((frame, frameIndex) => {
+        if (typeof frame === 'string') return frame.trim().startsWith('X');
+        return Array.isArray(frame?.pinsLeftAfterFirst) && frame.pinsLeftAfterFirst.length === 0;
+      }).length;
+      if (opportunities) normalizedBallStrikeRates[selectedBall] = Math.round(strikes / opportunities * 100);
+    }
+
     return {
       games: list.length, average: scores.length ? scores.reduce((a, b) => a + b, 0) / scores.length : null,
       openFrames: list.reduce((sum, game) => {
@@ -148,14 +165,9 @@
     const date = parsedDate && !Number.isNaN(parsedDate.getTime())
       ? parsedDate.toISOString()
       : null;
-    const text = value => {
-      if (typeof value !== 'string') return null;
-      const cleaned = value.trim();
-      // Some legacy CSV exports represented an empty hand/ball cell as a
-      // lone quote. Do not surface that placeholder in history or stats.
-      if (!cleaned || cleaned === '"' || cleaned === "''") return null;
-      return cleaned.slice(0, 80);
-    };
+    const text = value => typeof value === 'string' && value.trim()
+      ? value.trim().slice(0, 80)
+      : null;
     const frameToken = (frame, frameIndex) => {
       if (typeof frame === 'string') {
         // Keep bowling notation consistent everywhere: a zero-pin roll is
@@ -200,27 +212,6 @@
             : []
         }))
       : null;
-    const normalizedBallStrikeRates = record.ballStrikeRates && typeof record.ballStrikeRates === 'object'
-      ? Object.fromEntries(Object.entries(record.ballStrikeRates).map(([name, rate]) => [String(name).slice(0, 80), Number.isFinite(Number(rate)) ? Math.max(0, Math.min(100, Number(rate))) : null]))
-      : {};
-    // Preserve a per-ball rate for legacy records that have pinData but no
-    // frameThrows/ballStrikeRates. The selected game ball applies to each
-    // recorded frame, and an empty first-ball leave is a strike.
-    const selectedBall = text(record.ball);
-    if (selectedBall && !Object.keys(normalizedBallStrikeRates).length) {
-      const sourceFrames = Array.isArray(frames) && frames.length ? frames : (Array.isArray(pinData) ? pinData : []);
-      const opportunities = Math.min(10, sourceFrames.length);
-      const strikes = sourceFrames.slice(0, opportunities).filter(frame => {
-        if (typeof frame === 'string') return frame.trim().startsWith('X');
-        return Array.isArray(frame?.pinsLeftAfterFirst) && frame.pinsLeftAfterFirst.length === 0;
-      }).length;
-      if (opportunities) normalizedBallStrikeRates[selectedBall] = Math.round(strikes / opportunities * 100);
-    }
-    const throwItems = frameThrows ? frameThrows.flatMap(frame => frame.throws) : [];
-    const handsUsed = [...new Set(throwItems.map(item => item.hand).filter(Boolean))];
-    const ballsUsed = [...new Set(throwItems.map(item => item.ball).filter(Boolean))];
-    const handSummary = handsUsed.length > 1 ? 'Ambidextrous' : (handsUsed[0] || text(record.hand));
-    const ballSummary = ballsUsed.length ? ballsUsed.join(', ') : text(record.ball);
     const percentage = value => {
       const number = Number(value);
       return Number.isFinite(number) && number >= 0 && number <= 100
@@ -232,8 +223,8 @@
       id: text(record.id) || `game-${index}-${score}`,
       date,
       score,
-      hand: handSummary,
-      ball: ballSummary,
+      hand: text(record.hand),
+      ball: text(record.ball),
       source: text(record.source) || 'manual',
       frames,
       pinData,

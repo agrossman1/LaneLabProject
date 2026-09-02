@@ -56,6 +56,14 @@
     const scores = games.map(game => Number(game.score)).filter(score => Number.isInteger(score));
     const rates = [];
     games.forEach(game => {
+      const gameBallMatches = normalizeName(game?.ball) === target;
+      const explicitRate = game?.ballStrikeRates && typeof game.ballStrikeRates === 'object'
+        ? Object.entries(game.ballStrikeRates).find(([name]) => normalizeName(name) === target)?.[1]
+        : undefined;
+      if (Number.isFinite(Number(explicitRate))) { rates.push(Number(explicitRate)); return; }
+      const notationRate = Array.isArray(game?.frames) && game.frames.length
+        ? Math.round(game.frames.filter(frame => String(frame || '').trim().startsWith('X')).length / Math.min(10, game.frames.length) * 100)
+        : null;
       const hasThrowData = Array.isArray(game?.frameThrows);
       if (hasThrowData && Array.isArray(game.frames)) {
         let opportunities = 0, strikes = 0;
@@ -71,9 +79,19 @@
           });
         });
         if (opportunities) rates.push(Math.round(strikes / opportunities * 100));
-      } else {
+        else if (gameBallMatches) {
+          // Frame notation is the most reliable fallback for imported CSV
+          // rows whose throw list is present but contains no ball metadata.
+          if (notationRate !== null) rates.push(notationRate);
+          else {
+            const rate = Number(game.strikeRate);
+            if (Number.isFinite(rate)) rates.push(rate);
+          }
+        }
+      } else if (gameBallMatches) {
         const rate = Number(game.strikeRate);
         if (Number.isFinite(rate)) rates.push(rate);
+        else if (notationRate !== null) rates.push(notationRate);
       }
     });
 

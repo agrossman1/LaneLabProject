@@ -4,7 +4,6 @@
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
 <title>LaneLab — Bowling Improvement Tracker</title>
-<link rel="manifest" href="./manifest.webmanifest">
 <style>
 :root{
   --bg:#0b1020;
@@ -76,9 +75,6 @@ main{padding:4px 16px 22px}
 .screen{display:none;animation:fade .18s ease}
 .screen.active{display:block}
 @keyframes fade{from{opacity:.2;transform:translateY(4px)}to{opacity:1;transform:none}}
-@media (prefers-reduced-motion:reduce){
-  *,*::before,*::after{animation:none!important;transition:none!important;scroll-behavior:auto!important}
-}
 .eyebrow{color:var(--muted);font-size:12px;text-transform:uppercase;letter-spacing:.13em;font-weight:700}
 h1{font-size:28px;letter-spacing:-.04em;margin:6px 0 6px}
 h2{font-size:18px;margin:0 0 14px}
@@ -126,7 +122,6 @@ p{color:var(--muted);line-height:1.5}
 }
 .frame.current{outline:2px solid var(--accent)}
 .frame.editing{outline:3px solid var(--accent);box-shadow:0 0 0 3px rgba(124,156,255,.2),0 0 18px rgba(124,156,255,.28)}
-.frame:focus-visible,.key:focus-visible,.pinButton:focus-visible,.cta:focus-visible,.roundChoice:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
 .fnum{font-size:10px;color:var(--muted);font-weight:700}
 .rolls{display:flex;gap:5px;justify-content:flex-end;font-weight:800;margin-top:6px;min-height:22px}
 .fscore{font-size:18px;font-weight:900;margin-top:8px}
@@ -769,7 +764,7 @@ body.light-mode .ballMatchPreview img{
 
       <div class="importOptions">
         <button class="importBtn" onclick="startPhotoImport()" aria-label="Import scoreboard data from a photo or CSV file">
-          <span>📷 <img src="./assets/csv-bowling-icon-transparent.png" alt="CSV file"></span>
+          <span>📷 <img src="./csv-bowling-icon-transparent.png" alt="CSV file"></span>
           Import Scoreboard Data
         </button>
       </div>
@@ -1058,7 +1053,7 @@ body.light-mode .ballMatchPreview img{
             <span class="chev">›</span>
           </button>
           <button class="menuBtn" type="button" onclick="go('help')">
-            <span class="left"><span class="menuIcon">?</span><span><b>Help & how to use</b><div class="muted small">Scoring, notation, imports & data</div></span></span>
+            <span class="left"><span class="menuIcon">?</span><span><b>Help &amp; how to use</b><div class="muted small">Scoring, notation, imports &amp; data</div></span></span>
             <span class="chev">›</span>
           </button>
           <button class="menuBtn" onclick="toast('League profiles coming soon')">
@@ -1117,10 +1112,9 @@ body.light-mode .ballMatchPreview img{
 
     <section class="screen" id="help">
       <div class="row"><div><div class="eyebrow">Help</div><h1 style="margin-bottom:0">How LaneLab works.</h1></div><button class="profileBack" type="button" onclick="go('profile')">Back</button></div>
-      <p class="small">Quick answers for recording games and protecting your data.</p>
-      <details class="card" open><summary><b>Recording a game</b></summary><p>Choose the hand and ball used, then enter each throw. A strike is <b>X</b>. A spare is <b>/</b>. Open frames show both pin counts, such as <b>7&nbsp;−</b>.</p><p class="muted small">In the 10th frame, bonus balls appear only when earned.</p></details>
-      <details class="card"><summary><b>Pin tracking and notation</b></summary><p>Tap standing pins, or drag across the rack, to record exactly what was knocked down. Use the <b>−</b> button for a gutter ball. A circled pin number marks a split: the head pin is down and two or more non-adjacent pins remain.</p><p class="muted small">Skip pin tracking when you only need the numeric score.</p></details>
-      <details class="card"><summary><b>Editing a frame or game</b></summary><p>Tap a frame in the scorecard to edit it. The highlighted frame is the one being edited. Re-enter Ball 1 and Ball 2, then save; later totals recalculate automatically.</p></details>
+      <details class="card" open><summary><b>Recording a game</b></summary><p>Choose the hand and ball, select the pins knocked down for each throw, then save. The scorecard updates as you go.</p></details>
+      <details class="card"><summary><b>Pin tracking and notation</b></summary><p>Tap a pin to mark it knocked down. A strike is <b>X</b>, a spare is <b>/</b>, and a gutter is <b>−</b>. Circles identify split pin leaves when applicable.</p></details>
+      <details class="card"><summary><b>Editing a frame or game</b></summary><p>Select a frame on the scorecard to edit its throws. Save the edit to recalculate that frame and all later totals; cancel leaves the saved game unchanged.</p></details>
       <details class="card"><summary><b>Importing and exporting</b></summary><p>Use a CSV or JSON file from onboarding or Profile. JSON preserves the complete game structure; CSV is spreadsheet-friendly and includes frame, pin, hand, ball, and ball-rate columns.</p><p class="muted small">Invalid files are rejected without replacing existing games.</p></details>
       <details class="card"><summary><b>Deleting data safely</b></summary><p><b>Reset game</b> clears only the current game. <b>Reset entire app</b> clears LaneLab’s profile, arsenal, games, and session data, then opens onboarding again.</p><p class="muted small">Export your data first. Deletion cannot be undone without a backup.</p></details>
       <div class="card"><h2>Need a reminder while scoring?</h2><p class="small">The score screen labels the current frame and ball, and the pin tracker explains what to tap. Return here anytime from Profile → Help &amp; how to use.</p></div>
@@ -1613,28 +1607,17 @@ function importHistoryFile(file,text){
   const isJson=/\.json$/i.test(file?.name||'') || /^\s*[\[{]/.test(text);
   return isJson?importJsonRecords(text):importCsvRecords(text);
 }
-const MAX_IMPORT_FILE_BYTES=10*1024*1024;
-function importFileIsSupported(file){
-  const name=String(file?.name||'');
-  const type=String(file?.type||'').toLowerCase();
-  return /\.(csv|json)$/i.test(name) || type==='text/csv' || type==='application/json';
-}
 function handleHistoryFileImport(event){
   const file=event.target.files?.[0]; if(!file) return;
-  if(Number(file.size)>MAX_IMPORT_FILE_BYTES){toast('That file is too large (10 MB maximum)');event.target.value='';return}
-  if(!importFileIsSupported(file)){toast('Choose a CSV or JSON file');event.target.value='';return}
   const reader=new FileReader();
   reader.onload=()=>{
     const count=importHistoryFile(file,String(reader.result||''));
     toast(count?`${count} game${count===1?'':'s'} imported`:'No valid game records found in that file');
   };
-  reader.onerror=()=>toast('Could not read that file');
   reader.readAsText(file); event.target.value='';
 }
 function handleOnboardingHistoryFile(event){
   const file=event.target.files?.[0]; if(!file) return;
-  if(Number(file.size)>MAX_IMPORT_FILE_BYTES){toast('That file is too large (10 MB maximum)');event.target.value='';return}
-  if(!importFileIsSupported(file)){toast('Choose a CSV or JSON file');event.target.value='';return}
   const reader=new FileReader();
   reader.onload=()=>{
     const count=importHistoryFile(file,String(reader.result||''));
@@ -1642,7 +1625,6 @@ function handleOnboardingHistoryFile(event){
     toast(`${count} game${count===1?'':'s'} imported`);
     showOnboardingStep(2);
   };
-  reader.onerror=()=>toast('Could not read that file');
   reader.readAsText(file); event.target.value='';
 }
 function onboardingBack(){showOnboardingStep(Math.max(1,onboardingStep-1))}
@@ -2484,11 +2466,8 @@ function renderScoreboard(){
     const editing=(state.pinTracking?.editing && state.pinTracking.frameIndex===i) || state.editingFrame===i;
     const current=i===state.currentFrame && !state.completed && !state.pinTracking?.editing;
     div.className='frame'+(current?' current':'')+(editing?' editing':'');
-    div.setAttribute('role','button');
-    div.tabIndex=0;
     div.title='Tap to edit this frame';
     div.onclick=()=>editGameFrame(i);
-    div.onkeydown=event=>{if(event.key==='Enter'||event.key===' '){event.preventDefault();editGameFrame(i)}};
     // Frames 1–9 have either a strike or two rolls. If older/imported data
     // contains extra rolls, keep them from rendering as impossible notation.
     const displayRolls=i<9
@@ -3369,11 +3348,6 @@ if(onboardingParams.has('reset')){
   params.delete('onboarding');
   const cleanQuery=params.toString();
   window.history.replaceState(null,'',`${window.location.pathname}${cleanQuery?`?${cleanQuery}`:''}${window.location.hash}`);
-}
-</script>
-<script>
-if('serviceWorker' in navigator){
-  window.addEventListener('load',()=>navigator.serviceWorker.register('./sw.js').catch(()=>{}));
 }
 </script>
 </body>
