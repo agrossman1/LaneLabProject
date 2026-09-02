@@ -2504,23 +2504,17 @@ function editGameFrame(frameIndex){
       renderAll();
     }else return;
   }
-  const frame=state.frames[frameIndex], first=Number(frame.rolls[0]);
-  if(!Number.isFinite(first)) return;
-  if(first===10){
-    // Open strikes in the normal keypad editor. The old behavior cleared the
-    // frame without making it obvious how to re-enter it.
-    state.frames[frameIndex]={rolls:[],throws:[]};
-    state.editingFrame=frameIndex;
-    state.currentFrame=frameIndex;
-    state.completed=false;
-    renderAll();
-    toast(`Editing frame ${frameIndex+1} — re-enter the rolls`);
-    return;
-  }
-  state.editingFrame=null;
-  const existing=Array.isArray(frame.pinsLeftAfterFirst)?frame.pinsLeftAfterFirst.slice():[];
-  state.pinTracking={frameIndex,firstBall:first,firstMeta:frame.throws?.[0]||currentThrowMeta(),phase:'leave',leave:existing,standing:[],knocked:[],editing:true};
+  const frame=state.frames[frameIndex];
+  if(!frame || !Array.isArray(frame.rolls) || !frame.rolls.length) return;
+  // Restart the selected frame at Ball 1. The previous editor locked the
+  // original first roll and opened only the pin-stay step, making it
+  // impossible to correct a mistaken first-ball number.
+  state.frames[frameIndex]={rolls:[],throws:[]};
+  state.editingFrame=frameIndex;
+  state.currentFrame=frameIndex;
+  state.completed=false;
   renderAll();
+  toast(`Editing frame ${frameIndex+1} — re-enter Ball 1`);
 }
 
 function renderKeypad(){
@@ -2698,6 +2692,7 @@ function saveTrackedThrow(){
   frame.pinsKnockedDownSecond=t.knocked.slice(); frame.pinsLeftAfterSecond=t.standing.filter(pin=>!t.knocked.includes(pin));
   state.pinTracking=null;
   if(t.editing){
+    state.editingFrame=null;
     state.completed=state.frames.every((_,i)=>isFrameComplete(i));
     state.currentFrame=state.frames.findIndex((_,i)=>!isFrameComplete(i));
     if(state.currentFrame<0) state.currentFrame=9;
@@ -2737,7 +2732,7 @@ function recordRoll(pins){
     state.frames[frameIndex].rolls.push(pins);
     saveFrameThrow(state.frames[frameIndex],currentThrowMeta());
   }else if(isFreshRack(frameIndex) && pinTrackingEnabled){
-    state.pinTracking={frameIndex,firstBall:pins,firstMeta:currentThrowMeta(),phase:'leave',leave:[],standing:[],knocked:[]};
+    state.pinTracking={frameIndex,firstBall:pins,firstMeta:currentThrowMeta(),phase:'leave',leave:[],standing:[],knocked:[],editing:editingIndex!==null};
     renderAll();
     return;
   }else{
