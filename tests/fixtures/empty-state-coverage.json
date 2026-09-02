@@ -1,0 +1,5 @@
+{
+  "emptyProfile": {},
+  "incompleteGame": {"id":"incomplete","score":42,"frames":["9-","X"]},
+  "missingMetadataGame": {"id":"missing-meta","score":150,"frames":["X"]}
+}
