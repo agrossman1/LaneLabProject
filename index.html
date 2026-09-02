@@ -1169,9 +1169,9 @@ body.light-mode .ballMatchPreview img{
     </div>
     <div class="onboardingStep" data-step="3">
       <h2>What are you throwing?</h2><p>Adding your bowling ball lets LaneLab track performance by equipment.</p>
-      <label>Ball name <span class="muted small">(optional)</span><input id="onboardingBallName" placeholder="Ball name"></label>
+      <label>Ball name<input id="onboardingBallName" placeholder="Ball name" required></label>
       <label>Weight <span class="muted small">(optional)</span><input id="onboardingBallWeight" type="number" min="6" max="16" placeholder="lb"></label>
-      <div class="onboardingBallActions"><button class="onboardingBack" onclick="onboardingBack()">Back</button><button class="onboardingSecondary" onclick="onboardingFinish()">Skip for now</button><button class="cta" onclick="onboardingFinish()">Add Ball</button></div>
+      <div class="onboardingBallActions"><button class="onboardingBack" onclick="onboardingBack()">Back</button><button class="onboardingSecondary" onclick="onboardingFinish()">Skip for now</button><button class="cta" onclick="onboardingAddBall()">Add Ball</button></div>
     </div>
     <div class="onboardingStep" data-step="4">
       <h2>You’re ready.</h2><p>Record a few games and LaneLab will start finding patterns in your bowling.</p>
@@ -1631,6 +1631,36 @@ function onboardingFinish(startScore=false){
   // New users land on the dashboard first after setup; they can start a
   // scorecard from the navigation when ready.
   go('home');
+}
+function onboardingAddBall(){
+  const input=document.getElementById('onboardingBallName');
+  const weightInput=document.getElementById('onboardingBallWeight');
+  const typedName=input?.value.trim();
+  if(!typedName){input?.focus();toast('Enter a ball name to add it');return}
+
+  const rawWeight=weightInput?.value.trim();
+  const weight=rawWeight==='' ? 15 : Number(rawWeight);
+  if(!Number.isFinite(weight)||weight<6||weight>16){weightInput?.focus();toast('Enter a ball weight from 6 to 16 lb');return}
+
+  const match=findBallCatalogMatch(typedName);
+  const name=match ? match.canonical : typedName;
+  const duplicate=arsenal.some(ball=>LaneLabArsenal.normalizeName(ball.name)===LaneLabArsenal.normalizeName(name));
+  if(duplicate){toast(`${name} is already in your arsenal`);return}
+
+  const ball=LaneLabArsenal.normalizeBall({
+    id:`ball-${Date.now()}-${Math.random().toString(36).slice(2,7)}`,
+    name,
+    weight,
+    role:'Benchmark',
+    image:match?.image || null
+  });
+  arsenal=LaneLabArsenal.save(getGameStorage(),[...arsenal,ball]);
+  syncBallSelect();
+  renderArsenal();
+  if(input) input.value='';
+  if(weightInput) weightInput.value='';
+  toast(match ? `${name} added with image` : `${name} added to your arsenal`);
+  onboardingFinish();
 }
 function replayOnboarding(){
   document.getElementById('onboardingName').value=profile.name==='Anthony'?'':profile.name;
