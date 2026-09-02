@@ -1,0 +1,6 @@
+{
+  "dragThresholdPx": 6,
+  "pinDragThresholdPx": 5,
+  "ballClickSuppressionMs": 450,
+  "pinClickSuppressionMs": 350
+}
