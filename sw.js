@@ -1,4 +1,4 @@
-const CACHE_NAME = 'lanelab-shell-v1';
+const CACHE_NAME = 'lanelab-shell-v2';
 const SHELL = ['./', './index.html', './js/stats.js', './js/profile.js', './js/arsenal.js'];
 
 self.addEventListener('install', event => {
