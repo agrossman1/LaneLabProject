@@ -1,0 +1,9 @@
+{
+  "conflictPolicy": "stable-id-with-newer-revision-wins",
+  "records": [
+    {"id":"game-a","score":180,"revision":4,"updatedAt":"2026-09-02T10:00:00.000Z"},
+    {"id":"game-b","score":165,"revision":2,"updatedAt":"2026-09-01T10:00:00.000Z"}
+  ],
+  "staleUpdate": {"id":"game-a","score":175,"revision":3,"updatedAt":"2026-09-02T09:00:00.000Z"},
+  "newerUpdate": {"id":"game-a","score":190,"revision":5,"updatedAt":"2026-09-02T11:00:00.000Z"}
+}
