@@ -12,7 +12,7 @@ assert.equal(manifest.start_url, './');
 assert.equal(manifest.display, 'standalone');
 assert.match(source, /rel="manifest" href="\.\/manifest\.webmanifest"/);
 assert.match(source, /'serviceWorker' in navigator[\s\S]*?register\('\.\/sw\.js'\)/);
-assert.match(worker, /const CACHE_NAME = 'lanelab-shell-v2'/);
+assert.match(worker, /const CACHE_NAME = 'lanelab-shell-v3'/);
 assert.match(worker, /cache\.addAll\(SHELL\)/);
 assert.match(worker, /self\.skipWaiting\(\)/);
 assert.match(worker, /self\.clients\.claim\(\)/);
@@ -23,7 +23,7 @@ fixture.cachedAssets.forEach(asset => {
   const local = asset === './' ? 'index.html' : asset.slice(2);
   assert.equal(fs.existsSync(path.join(root, local)), true, `${asset} must be cacheable offline`);
 });
-assert.equal(fixture.cacheName, 'lanelab-shell-v2');
+assert.equal(fixture.cacheName, 'lanelab-shell-v3');
 assert.equal(fs.existsSync(path.join(root, fixture.manifest)), true);
 assert.equal(fs.existsSync(path.join(root, fixture.serviceWorker)), true);
 
