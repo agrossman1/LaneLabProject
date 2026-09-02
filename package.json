@@ -17,6 +17,7 @@
     "test:migration": "node tests/migration-compatibility-regression.test.js",
     "test:accessibility": "node tests/accessibility-keyboard-regression.test.js",
     "test:csv-export": "node tests/csv-export-validation.test.js",
-    "test": "npm run test:import && npm run test:scoring && npm run test:frame-editing && npm run test:roundtrip && npm run test:metadata && npm run test:onboarding-reset && npm run test:arsenal-metrics && npm run test:mobile-layout && npm run test:pin-notation && npm run test:history-editing && npm run test:persistence && npm run test:arsenal-crud && npm run test:coach && npm run test:migration && npm run test:accessibility && npm run test:csv-export"
+    "test:e2e-smoke": "node tests/e2e-browser-smoke.test.js",
+    "test": "npm run test:import && npm run test:scoring && npm run test:frame-editing && npm run test:roundtrip && npm run test:metadata && npm run test:onboarding-reset && npm run test:arsenal-metrics && npm run test:mobile-layout && npm run test:pin-notation && npm run test:history-editing && npm run test:persistence && npm run test:arsenal-crud && npm run test:coach && npm run test:migration && npm run test:accessibility && npm run test:csv-export && npm run test:e2e-smoke"
   }
 }

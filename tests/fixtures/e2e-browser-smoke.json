@@ -1,0 +1,17 @@
+{
+  "workflow": [
+    "open app and complete onboarding",
+    "add a ball during onboarding",
+    "open Score and record a game",
+    "open game history and confirm the saved score",
+    "open Arsenal and confirm the ball is listed",
+    "refresh and confirm the saved state remains"
+  ],
+  "requiredSelectors": [
+    "onboardingModal",
+    "onboardingBallName",
+    "score",
+    "personalStats",
+    "arsenal"
+  ]
+}
