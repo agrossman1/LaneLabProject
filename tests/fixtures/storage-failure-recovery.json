@@ -1,0 +1,5 @@
+{
+  "fallbackScores": [170, 185],
+  "fallbackProfile": {"name": "Offline Bowler", "hand": "Right", "style": "One-handed"},
+  "fallbackBalls": [{"id": "offline-ball", "name": "Hy-Road", "weight": 15}]
+}
