@@ -2446,7 +2446,8 @@ function renderScoreboard(){
   state.frames.forEach((f,i)=>{
     const div=document.createElement('div');
     const editing=state.pinTracking?.editing && state.pinTracking.frameIndex===i;
-    div.className='frame'+(i===state.currentFrame && !state.completed?' current':'')+(editing?' editing':'');
+    const current=i===state.currentFrame && !state.completed && !state.pinTracking?.editing;
+    div.className='frame'+(current?' current':'')+(editing?' editing':'');
     div.title='Tap to edit this frame';
     div.onclick=()=>editGameFrame(i);
     const rolls=f.rolls.map((_,ri)=>`<span>${rollDisplay(i,ri)}</span>`).join('');
