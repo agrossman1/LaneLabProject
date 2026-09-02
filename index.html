@@ -2411,6 +2411,9 @@ function resetAllGameData(){
   // can be suppressed. The profile menu already labels the destructive scope.
   try{window.localStorage.clear()}catch(e){}
   try{window.sessionStorage?.clear()}catch(e){}
+  // An empty persisted arsenal prevents the built-in starter balls from being
+  // rehydrated as defaults after the reset redirect.
+  try{LaneLabArsenal.save(getGameStorage(),[])}catch(e){}
   try{window.localStorage?.setItem('lanelab-force-onboarding','true')}catch(e){}
   state.games=[];
   state.recent=[];
