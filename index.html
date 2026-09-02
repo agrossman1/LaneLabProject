@@ -120,6 +120,7 @@ p{color:var(--muted);line-height:1.5}
   padding:7px;position:relative
 }
 .frame.current{outline:2px solid var(--accent)}
+.frame.editing{outline:3px solid var(--accent);box-shadow:0 0 0 3px rgba(124,156,255,.2),0 0 18px rgba(124,156,255,.28)}
 .fnum{font-size:10px;color:var(--muted);font-weight:700}
 .rolls{display:flex;gap:5px;justify-content:flex-end;font-weight:800;margin-top:6px;min-height:22px}
 .fscore{font-size:18px;font-weight:900;margin-top:8px}
@@ -2422,7 +2423,8 @@ function renderScoreboard(){
   board.innerHTML='';
   state.frames.forEach((f,i)=>{
     const div=document.createElement('div');
-    div.className='frame'+(i===state.currentFrame && !state.completed?' current':'');
+    const editing=state.pinTracking?.editing && state.pinTracking.frameIndex===i;
+    div.className='frame'+(i===state.currentFrame && !state.completed?' current':'')+(editing?' editing':'');
     div.title='Tap to edit this frame';
     div.onclick=()=>editGameFrame(i);
     const rolls=f.rolls.map((_,ri)=>`<span>${rollDisplay(i,ri)}</span>`).join('');
