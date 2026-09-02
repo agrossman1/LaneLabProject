@@ -1,0 +1,7 @@
+{
+  "playerName": "<img src=x onerror=alert(1)> & 'quoted'",
+  "ballName": "<script>alert('ball')</script> Hy-Road",
+  "role": "\"><svg onload=alert(1)>",
+  "importedHand": "<b>Right</b>",
+  "metadata": "<a href=\"javascript:alert(1)\">click</a>"
+}
