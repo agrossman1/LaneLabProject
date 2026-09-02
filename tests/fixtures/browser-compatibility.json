@@ -1,0 +1,5 @@
+{
+  "browsers": ["Chrome", "Safari/iOS", "Firefox", "Edge"],
+  "privateStorage": "Storage access may throw in private browsing; app must fall back safely.",
+  "viewports": ["desktop", "tablet", "mobile"]
+}
