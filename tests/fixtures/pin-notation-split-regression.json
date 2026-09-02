@@ -1,0 +1,12 @@
+{
+  "cases": [
+    {"name": "strike", "game": {"frames": [{"rolls": [10]}]}, "expected": ["X"]},
+    {"name": "spare", "game": {"frames": [{"rolls": [3, 7]}]}, "expected": ["3/"]},
+    {"name": "gutter", "game": {"frames": [{"rolls": [0, 0]}]}, "expected": ["--"]},
+    {"name": "split leave", "game": {"frames": [{"rolls": [2, 0]}], "pinData": [{"pinsLeftAfterFirst": [7, 10]}]}, "expected": ["②-"]},
+    {"name": "connected leave is not a split", "game": {"frames": [{"rolls": [2, 0]}], "pinData": [{"pinsLeftAfterFirst": [4, 5]}]}, "expected": ["2-"]},
+    {"name": "head pin present is not a split", "game": {"frames": [{"rolls": [2, 0]}], "pinData": [{"pinsLeftAfterFirst": [1, 7, 10]}]}, "expected": ["2-"]},
+    {"name": "impossible open roll is clamped", "game": {"frames": [{"rolls": [8, 5]}]}, "expected": ["8/"]},
+    {"name": "extra rolls after a non-tenth strike are hidden", "game": {"frames": [{"rolls": [10, 4, 5]}]}, "expected": ["X"]}
+  ]
+}
