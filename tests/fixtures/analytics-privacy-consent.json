@@ -1,0 +1,6 @@
+{
+  "consentStates": ["unknown", "granted", "denied", "withdrawn"],
+  "requiredControls": ["accept", "decline", "change preference", "delete telemetry"],
+  "prohibitedBeforeConsent": ["analytics.init", "track(", "sendBeacon(", "fetch("],
+  "retentionDays": 0
+}
