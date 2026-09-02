@@ -367,6 +367,7 @@ body.preview-mobile .scoreChoices{grid-template-columns:auto 1fr}
 .onboardingImport{display:block;position:relative;margin:8px auto 0;min-height:36px;padding:7px 12px;border:0;background:transparent;color:var(--muted);font-size:12px;font-weight:700;cursor:pointer}
 .filePickerInput{position:absolute;inset:0;width:100%;height:100%;opacity:0;cursor:pointer}
 .onboardingWelcome{text-align:center}.onboardingWelcome .onboardingLogo{width:min(72%,230px);height:auto;display:block;margin:0 auto 10px}.onboardingWelcome .onboardingArtwork{width:min(70%,260px);aspect-ratio:1;object-fit:cover;border-radius:22px;display:block;margin:4px auto 18px;box-shadow:0 14px 34px rgba(0,0,0,.35)}
+.onboardingTutorial h2{margin-top:8px}.onboardingDemo{display:flex;align-items:center;justify-content:center;gap:10px;min-height:92px;margin:16px 0;padding:16px;border:1px solid var(--line);border-radius:18px;background:var(--panel2)}.onboardingDemo .cta{width:auto;margin:0}.pinNotationDemo span,.pinNotationDemo b{width:38px;height:38px;border-radius:50%;display:grid;place-items:center;background:#f5f7ff;color:#16213a;font-weight:900}.pinNotationDemo b{background:var(--panel);color:var(--text);font-size:27px}.frameDemo{gap:6px}.frameDemo span{flex:1;padding:10px 6px;text-align:left;border:1px solid var(--line);border-radius:12px;color:var(--muted);font-size:11px}.frameDemo span b{display:block;color:var(--text);font-size:18px;margin-top:7px}.frameDemo span.selected{outline:3px solid var(--accent);outline-offset:1px}
 .onboardingLogoCombo{width:min(82%,280px);height:66px;margin:0 auto 10px;display:flex;align-items:center;justify-content:center;gap:10px}.onboardingLogoCombo .logoMark{width:58px;height:58px;object-fit:contain}.onboardingLogoCombo .logoWord{width:205px;max-height:58px;object-fit:contain}
 .onboardingMergedLogo{width:min(88%,330px);max-height:110px;object-fit:contain;display:block;margin:0 auto 16px}
 .historyScroll{max-height:360px;overflow-y:auto;padding-right:4px;overscroll-behavior:contain}
@@ -1208,9 +1209,33 @@ body.light-mode .ballMatchPreview img{
       <div class="onboardingBallActions"><button class="onboardingBack" onclick="onboardingBack()">Back</button><button class="onboardingSecondary" onclick="onboardingFinish()">Skip for now</button><button class="cta" onclick="onboardingAddBall()">Add Ball</button></div>
     </div>
     <div class="onboardingStep" data-step="4">
-      <h2>You’re ready.</h2><p>Record a few games and LaneLab will start finding patterns in your bowling.</p>
+      <h2>You’re ready.</h2><p>Before your first game, take a quick tour of the controls.</p>
       <div class="onboardingConcepts"><div class="card"><b>Score</b><div class="muted small">Track every game</div></div><div class="card"><b>Stats</b><div class="muted small">See what costs pins</div></div><div class="card"><b>Coach</b><div class="muted small">Know what to practice</div></div></div>
-      <button class="cta" onclick="onboardingFinish(true)">Start Bowling</button>
+      <div class="row"><button class="onboardingSecondary" onclick="onboardingStartTutorial()">Show me the controls</button><button class="cta" onclick="onboardingFinish(true)">Skip tutorial</button></div>
+    </div>
+    <div class="onboardingStep onboardingTutorial" data-step="5">
+      <div class="eyebrow">Control tour · 1 of 4</div><h2>Choose your hand and ball</h2>
+      <p>On the Score screen, select the hand and ball used for each throw. LaneLab keeps that metadata with the frame.</p>
+      <div class="onboardingDemo"><span class="pill">HAND</span><button class="roundChoice active">R</button><span class="pill">BALL</span><button class="cta secondary">Ascent</button></div>
+      <div class="row"><button class="onboardingBack" onclick="onboardingBack()">Back</button><button class="cta" onclick="onboardingNextTutorial()">Next</button></div>
+    </div>
+    <div class="onboardingStep onboardingTutorial" data-step="6">
+      <div class="eyebrow">Control tour · 2 of 4</div><h2>Track the pins</h2>
+      <p>Tap the pins knocked down. Use <b>X</b> for a strike, <b>/</b> for a spare, and <b>−</b> for a gutter or zero-pin delivery.</p>
+      <div class="onboardingDemo pinNotationDemo"><span>7</span><span>8</span><span>9</span><span>10</span><b>−</b></div>
+      <div class="row"><button class="onboardingBack" onclick="onboardingBack()">Back</button><button class="cta" onclick="onboardingNextTutorial()">Next</button></div>
+    </div>
+    <div class="onboardingStep onboardingTutorial" data-step="7">
+      <div class="eyebrow">Control tour · 3 of 4</div><h2>Edit any frame</h2>
+      <p>Tap a frame on the scorecard to edit it. The highlighted frame is the one you are changing; saving recalculates later totals.</p>
+      <div class="onboardingDemo frameDemo"><span>F1<br><b>X</b></span><span class="selected">F2<br><b>7 /</b></span><span>F3<br><b>9 −</b></span></div>
+      <div class="row"><button class="onboardingBack" onclick="onboardingBack()">Back</button><button class="cta" onclick="onboardingNextTutorial()">Next</button></div>
+    </div>
+    <div class="onboardingStep onboardingTutorial" data-step="8">
+      <div class="eyebrow">Control tour · 4 of 4</div><h2>Review your progress</h2>
+      <p>After saving, check Stats for trends, Arsenal for ball performance, and Coach for the biggest area to work on next.</p>
+      <div class="onboardingConcepts"><div class="card"><b>Stats</b><div class="muted small">Trends</div></div><div class="card"><b>Arsenal</b><div class="muted small">Ball rates</div></div><div class="card"><b>Coach</b><div class="muted small">Next focus</div></div></div>
+      <div class="row"><button class="onboardingBack" onclick="onboardingBack()">Back</button><button class="cta" onclick="onboardingFinish(true)">Start Bowling</button></div>
     </div>
   </div>
 </div>
@@ -1518,6 +1543,8 @@ function showOnboardingStep(step){
   document.getElementById('onboardingModal')?.classList.add('show');
 }
 function onboardingNext(){showOnboardingStep(2)}
+function onboardingStartTutorial(){showOnboardingStep(5)}
+function onboardingNextTutorial(){showOnboardingStep(Math.min(8,onboardingStep+1))}
 function parseCsvLine(line){
   const cells=[]; let cell='', quoted=false;
   for(let i=0;i<line.length;i++){
