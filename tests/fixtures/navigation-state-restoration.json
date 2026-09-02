@@ -1,0 +1,5 @@
+{
+  "screens": ["home", "score", "stats", "arsenal", "coach", "personalStats", "profile"],
+  "selectedFrame": 2,
+  "deepLinks": ["#home", "#score", "#stats", "#arsenal", "#coach"]
+}
