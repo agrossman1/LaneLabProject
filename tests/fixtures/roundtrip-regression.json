@@ -1,0 +1,20 @@
+{
+  "game": {
+    "id": "roundtrip-rich-game",
+    "date": "2026-08-31T18:00:00.000Z",
+    "score": 172,
+    "frames": ["X", "9/", "8-", "X", "7/", "X", "9-", "X", "8/", "X X 9"],
+    "hand": "Ambidextrous",
+    "ball": "Hy-Road, Ascent",
+    "strikeRate": 50,
+    "ballStrikeRates": {"Hy-Road": 50, "Ascent": 33},
+    "pinData": [
+      {"pinsLeftAfterFirst": [], "pinsKnockedDownSecond": [], "pinsLeftAfterSecond": []},
+      {"pinsLeftAfterFirst": [1], "pinsKnockedDownSecond": [1], "pinsLeftAfterSecond": []}
+    ],
+    "frameThrows": [
+      {"throws": [{"hand": "Right", "ball": "Hy-Road"}]},
+      {"throws": [{"hand": "Left", "ball": "Ascent"}, {"hand": "Left", "ball": "Ascent"}]}
+    ]
+  }
+}
