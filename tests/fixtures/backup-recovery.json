@@ -1,0 +1,6 @@
+{
+  "validBackup": {"schemaVersion":1,"games":[{"id":"keep","score":180,"date":"2026-09-01T12:00:00.000Z","frames":["9-"]}]},
+  "partialBackup": {"games":[{"id":"valid","score":200},{"id":"bad","score":"not-a-score"},null,"text"]},
+  "corruptedBackup": "{not valid json",
+  "expectedValidPartialRecords": 1
+}
