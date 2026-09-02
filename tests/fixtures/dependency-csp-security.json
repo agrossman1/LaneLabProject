@@ -1,0 +1,6 @@
+{
+  "allowedScriptHosts": ["self"],
+  "allowedImageProtocols": ["data:", "https:"],
+  "blockedSchemes": ["javascript:", "vbscript:", "file:"],
+  "cspDirectives": ["default-src", "script-src", "style-src", "img-src", "connect-src", "object-src", "base-uri"]
+}
