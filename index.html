@@ -708,7 +708,7 @@ body.light-mode .ballMatchPreview img{
   line-height:1.35;
 }
 
- .pinNotationDemo b{position:relative;top:-2px}
+ .pinNotationDemo b{position:relative;top:-2px}.scoreSyncDemo{display:flex;align-items:center;justify-content:center;gap:12px;margin:-6px 0 16px;color:var(--muted);font-size:20px}.scoreSyncFrame{padding:8px 14px;border:1px solid var(--line);border-radius:12px;background:#0e1628;text-align:left;font-size:10px;animation:scoreSyncPulse 3.2s ease-in-out infinite}.scoreSyncFrame b{display:block;color:var(--text);font-size:18px;margin-top:5px}.scoreSyncFrame em{display:block;color:var(--good);font-size:14px;font-style:normal;margin-top:3px}.scoreSyncPins{font-size:14px;color:var(--text);animation:scoreSyncPins 3.2s ease-in-out infinite}@keyframes scoreSyncPins{0%,25%{opacity:.5;transform:translateX(0)}40%,55%{opacity:1;transform:translateX(4px)}70%,100%{opacity:.5;transform:translateX(0)}}@keyframes scoreSyncPulse{0%,35%{box-shadow:0 0 0 rgba(87,214,164,0)}48%,62%{box-shadow:0 0 0 5px rgba(87,214,164,.22)}100%{box-shadow:0 0 0 rgba(87,214,164,0)}}
 </style>
 </head>
 <body>
@@ -1225,6 +1225,7 @@ body.light-mode .ballMatchPreview img{
       <div class="eyebrow">Control tour · 2 of 4</div><h2>Track the pins</h2>
       <p>Tap the pins knocked down. Use <b>X</b> for a strike, <b>/</b> for a spare, and <b>−</b> for a gutter or zero-pin delivery.</p>
       <div class="onboardingDemo pinNotationDemo"><span>7</span><span>8</span><span>9</span><span>10</span><b>−</b></div>
+      <div class="scoreSyncDemo"><span class="scoreSyncPins">Pins tapped</span><span>→</span><span class="scoreSyncFrame">F1 <b>7 /</b><em>17</em></span></div>
       <div class="row"><button class="onboardingBack" onclick="onboardingBack()">Back</button><button class="cta" onclick="onboardingNextTutorial()">Next</button></div>
     </div>
     <div class="onboardingStep onboardingTutorial" data-step="7">
