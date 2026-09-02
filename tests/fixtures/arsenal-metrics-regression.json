@@ -1,0 +1,31 @@
+{
+  "records": [
+    {
+      "id": "arsenal-metrics-1",
+      "score": 180,
+      "frames": ["X", "9/", "8-", "X", "7/", "X", "9-", "X", "8/", "X X 9"],
+      "ball": "Hy-Road",
+      "ballStrikeRates": {"Hy-Road": 50, "Ascent": 0},
+      "frameThrows": [
+        {"throws": [{"hand": "Right", "ball": "Hy-Road"}]},
+        {"throws": [{"hand": "Left", "ball": "Ascent"}]}
+      ]
+    },
+    {
+      "id": "arsenal-metrics-2",
+      "score": 160,
+      "frames": ["7/", "8-", "X", "9-", "6/", "X", "8-", "X", "7/", "9-"],
+      "ball": "Ascent",
+      "ballStrikeRates": {"Hy-Road": 100, "Ascent": 25},
+      "frameThrows": [
+        {"throws": [{"hand": "Right", "ball": "Hy-Road"}]},
+        {"throws": [{"hand": "Left", "ball": "Ascent"}]}
+      ]
+    }
+  ],
+  "expected": {
+    "Hy-Road": {"games": 2, "average": 170, "high": 180, "strikeRate": 75, "spareRate": 100},
+    "Ascent": {"games": 2, "average": 170, "high": 180, "strikeRate": 13, "spareRate": 50},
+    "multiBallGames": 2
+  }
+}

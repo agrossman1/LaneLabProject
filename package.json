@@ -7,6 +7,7 @@
     "test:roundtrip": "node tests/roundtrip-regression.test.js",
     "test:metadata": "node tests/per-throw-metadata-regression.test.js",
     "test:onboarding-reset": "node tests/onboarding-reset-regression.test.js",
-    "test": "npm run test:import && npm run test:scoring && npm run test:frame-editing && npm run test:roundtrip && npm run test:metadata && npm run test:onboarding-reset"
+    "test:arsenal-metrics": "node tests/arsenal-metrics-regression.test.js",
+    "test": "npm run test:import && npm run test:scoring && npm run test:frame-editing && npm run test:roundtrip && npm run test:metadata && npm run test:onboarding-reset && npm run test:arsenal-metrics"
   }
 }
