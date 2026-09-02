@@ -4,6 +4,7 @@
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
 <title>LaneLab — Bowling Improvement Tracker</title>
+<link rel="manifest" href="./manifest.webmanifest">
 <style>
 :root{
   --bg:#0b1020;
@@ -3341,6 +3342,11 @@ if(onboardingParams.has('reset')){
   params.delete('onboarding');
   const cleanQuery=params.toString();
   window.history.replaceState(null,'',`${window.location.pathname}${cleanQuery?`?${cleanQuery}`:''}${window.location.hash}`);
+}
+</script>
+<script>
+if('serviceWorker' in navigator){
+  window.addEventListener('load',()=>navigator.serviceWorker.register('./sw.js').catch(()=>{}));
 }
 </script>
 </body>
