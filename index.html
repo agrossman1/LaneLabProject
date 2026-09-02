@@ -2218,8 +2218,8 @@ function loadSavedTheme(){
 }
 
 function openProfile(){
-  renderProfile();
   go('profile');
+  try{renderProfile();}catch(error){console.warn('Profile refresh failed',error);}
 }
 function toggleSwitch(el){
   el.classList.toggle('on');
