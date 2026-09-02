@@ -1,0 +1,8 @@
+{
+  "games": [
+    {"id": "late", "date": "2026-09-01T23:59:00-07:00", "score": 180, "frames": ["9-"]},
+    {"id": "early", "date": "2026-09-02T00:01:00-07:00", "score": 200, "frames": ["X"]},
+    {"id": "next-day", "date": "2026-09-03T18:00:00-07:00", "score": 190, "frames": ["X"]}
+  ],
+  "invalidDate": {"id": "invalid", "date": "not-a-date", "score": 150}
+}
