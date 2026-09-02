@@ -2742,6 +2742,18 @@ function recordRoll(pins){
   const max=currentMaxPins();
   if(pins<0 || pins>max) return;
   const frameIndex=editingIndex===null?state.currentFrame:editingIndex;
+  // A strike ends frames 1–9 immediately. Clean up any legacy extra roll
+  // and advance rather than allowing a dash/second ball to be entered.
+  if(frameIndex<9 && state.frames[frameIndex].rolls[0]===10){
+    state.frames[frameIndex].rolls=[10];
+    if(Array.isArray(state.frames[frameIndex].throws)) state.frames[frameIndex].throws=state.frames[frameIndex].throws.slice(0,1);
+    state.editingFrame=null;
+    state.pinTracking=null;
+    state.completed=false;
+    state.currentFrame=Math.min(9,frameIndex+1);
+    renderAll();
+    return;
+  }
   if(pins===10){
     state.frames[frameIndex].rolls.push(pins);
     saveFrameThrow(state.frames[frameIndex],currentThrowMeta());
