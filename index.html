@@ -1672,7 +1672,8 @@ function replayOnboarding(){
 }
 function maybeStartOnboarding(){
   const storage=getGameStorage();
-  let force=new URLSearchParams(window.location.search).get('onboarding')==='1';
+  const resetParams=new URLSearchParams(window.location.search);
+  let force=resetParams.get('onboarding')==='1' && resetParams.has('reset');
   let complete=false;
   try{
     const storedForce=storage?.getItem('lanelab-force-onboarding')==='true';
@@ -3278,9 +3279,10 @@ maybeStartOnboarding();
 <script>
 // Keep reset onboarding visible even if another startup task fails after the
 // onboarding step has been selected.
-if(new URLSearchParams(window.location.search).get('onboarding')==='1'){
+const onboardingParams=new URLSearchParams(window.location.search);
+if(onboardingParams.get('onboarding')==='1' && onboardingParams.has('reset')){
   document.getElementById('onboardingModal')?.classList.add('show');
-  const params=new URLSearchParams(window.location.search);
+  const params=onboardingParams;
   params.delete('onboarding');
   const cleanQuery=params.toString();
   window.history.replaceState(null,'',`${window.location.pathname}${cleanQuery?`?${cleanQuery}`:''}${window.location.hash}`);
