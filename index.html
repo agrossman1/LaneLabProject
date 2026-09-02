@@ -2582,6 +2582,8 @@ function renderPinTracker(){
   if(!box || !t) return;
   box.classList.add('active');
   const leavePhase=t.phase==='leave';
+  const rollLabel=document.getElementById('rollLabel');
+  if(rollLabel) rollLabel.textContent=`Frame ${t.frameIndex+1} · Ball ${leavePhase?1:2}`;
   const selectable=leavePhase ? Array.from({length:10},(_,i)=>i+1) : t.standing;
   const selected=leavePhase ? t.leave : t.knocked;
   const selectedCount=selected.length;
