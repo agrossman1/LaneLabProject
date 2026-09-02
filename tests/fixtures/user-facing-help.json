@@ -1,0 +1,6 @@
+{
+  "topics": ["scoring", "pin notation", "imports", "exports", "deletion"],
+  "requiredExamples": ["strike X", "spare /", "gutter 0", "split circled pins", "CSV and JSON"],
+  "futureSurfaces": ["in-app help", "first-use hints", "accessible glossary"],
+  "futureOnly": true
+}
