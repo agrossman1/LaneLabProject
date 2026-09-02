@@ -3136,7 +3136,9 @@ function closeBallDetails(){
 function deleteSelectedBall(){
   const ball=arsenal.find(item=>item.id===selectedBallId);
   if(!ball) return;
-  if(!window.confirm(`Delete ${ball.name} from your arsenal? Saved games will be kept.`)) return;
+  // The in-app button is already an explicit confirmation. Avoid relying on
+  // window.confirm, which is suppressed by some mobile browsers and makes
+  // the delete control appear unresponsive.
   arsenal=LaneLabArsenal.save(getGameStorage(),arsenal.filter(item=>item.id!==ball.id));
   closeBallDetails();
   renderArsenal();
