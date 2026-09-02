@@ -1,6 +1,8 @@
 {
   "private": true,
   "scripts": {
-    "test:import": "node tests/import-regression.test.js"
+    "test:import": "node tests/import-regression.test.js",
+    "test:scoring": "node tests/scoring-regression.test.js",
+    "test": "npm run test:import && npm run test:scoring"
   }
 }
