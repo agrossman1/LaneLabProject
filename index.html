@@ -821,9 +821,13 @@ body.light-mode .ballMatchPreview img{
         </div>
 
         <input id="scorePhotoInput" type="file" accept="image/*" capture="environment" style="display:none" onchange="handleScorePhoto(event)">
+        <input id="scorePhotoLibraryInput" type="file" accept="image/*" style="display:none" onchange="handleScorePhoto(event)">
 
         <div id="realScanStatus" class="listItem" style="display:none;margin-top:12px" aria-live="polite"></div>
-        <button class="cta" onclick="document.getElementById('scorePhotoInput').click()">Choose / Take Photo</button>
+        <div class="row" style="margin-top:8px;align-items:stretch">
+          <button class="cta" style="margin-top:0" onclick="document.getElementById('scorePhotoInput').click()">📷 Take Photo</button>
+          <button class="cta secondary" style="margin-top:0" onclick="document.getElementById('scorePhotoLibraryInput').click()">🖼️ Choose from Library</button>
+        </div>
         <input id="csvHistoryInput" type="file" accept=".csv,.json,text/csv,application/json" hidden onchange="handleHistoryFileImport(event)">
         <button class="cta secondary" onclick="document.getElementById('csvHistoryInput').click()">Import Game History CSV / JSON</button>
       </div>
