@@ -1704,13 +1704,18 @@ function importJsonRecords(text){
   renderPersonalStats();
   return valid.length;
 }
+const MAX_IMPORT_FILE_BYTES=10*1024*1024;
+function importFileIsSupported(file){return Boolean(file?.name&&/\.(csv|json)$/i.test(file.name));}
 function importHistoryFile(file,text){
   const isJson=/\.json$/i.test(file?.name||'') || /^\s*[\[{]/.test(text);
   return isJson?importJsonRecords(text):importCsvRecords(text);
 }
 function handleHistoryFileImport(event){
   const file=event.target.files?.[0]; if(!file) return;
+  if((file.size)>MAX_IMPORT_FILE_BYTES){toast('That file is too large (10 MB maximum)');event.target.value='';return;}
+  if(!importFileIsSupported(file)){toast('Choose a CSV or JSON file');event.target.value='';return;}
   const reader=new FileReader();
+  reader.onerror=()=>toast('Could not read that file');
   reader.onload=()=>{
     const count=importHistoryFile(file,String(reader.result||''));
     toast(count?`${count} game${count===1?'':'s'} imported`:'No valid game records found in that file');
@@ -1719,7 +1724,10 @@ function handleHistoryFileImport(event){
 }
 function handleOnboardingHistoryFile(event){
   const file=event.target.files?.[0]; if(!file) return;
+  if((file.size)>MAX_IMPORT_FILE_BYTES){toast('That file is too large (10 MB maximum)');event.target.value='';return;}
+  if(!importFileIsSupported(file)){toast('Choose a CSV or JSON file');event.target.value='';return;}
   const reader=new FileReader();
+  reader.onerror=()=>toast('Could not read that file');
   reader.onload=()=>{
     const text=String(reader.result||'');
     const count=importHistoryFile(file,text);
