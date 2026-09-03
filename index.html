@@ -816,18 +816,13 @@ body.light-mode .ballMatchPreview img{
           <div>
             <div style="font-size:42px">📷</div>
             <b>Upload or take a scoreboard photo</b>
-            <div class="muted small" style="margin-top:6px">Photo uploads are preview-only until the real AI vision service is connected.</div>
+          <div class="muted small" style="margin-top:6px">Runs locally in your browser with free OCR. Nothing is uploaded.</div>
           </div>
         </div>
 
         <input id="scorePhotoInput" type="file" accept="image/*" capture="environment" style="display:none" onchange="handleScorePhoto(event)">
 
-        <div id="realScanStatus" class="listItem" style="display:none;margin-top:12px">
-          <b>Real AI scanning is not connected yet</b>
-          <div class="muted small" style="margin-top:4px">
-            Your photo is loaded, but LaneLab will not invent names or scores. The production version will send this image to a secure vision backend and return only what is actually detected.
-          </div>
-        </div>
+        <div id="realScanStatus" class="listItem" style="display:none;margin-top:12px" aria-live="polite"></div>
         <button class="cta" onclick="document.getElementById('scorePhotoInput').click()">Choose / Take Photo</button>
         <input id="csvHistoryInput" type="file" accept=".csv,.json,text/csv,application/json" hidden onchange="handleHistoryFileImport(event)">
         <button class="cta secondary" onclick="document.getElementById('csvHistoryInput').click()">Import Game History CSV / JSON</button>
@@ -1338,12 +1333,44 @@ const demoScanPlayers = [
   }
 ];
 let scannedPlayers = JSON.parse(JSON.stringify(demoScanPlayers));
+let tesseractLoadPromise;
+
+function loadLocalOcr(){
+  if(window.Tesseract) return Promise.resolve(window.Tesseract);
+  if(tesseractLoadPromise) return tesseractLoadPromise;
+  tesseractLoadPromise=new Promise((resolve,reject)=>{
+    const script=document.createElement('script');
+    script.src='https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js';
+    script.onload=()=>window.Tesseract?resolve(window.Tesseract):reject(new Error('OCR library unavailable'));
+    script.onerror=()=>reject(new Error('OCR library could not be loaded'));
+    document.head.appendChild(script);
+  });
+  return tesseractLoadPromise;
+}
+
+function notationTokensFromOcr(text){
+  // Scorecards commonly print frame marks as X, 9/, 8-, or two digits.
+  const normalized=String(text||'').replace(/[×✕]/g,'X').replace(/[—–_]/g,'-');
+  const tokens=normalized.match(/(?:\d\s*[\/\-]|\d\s*\d|X|\-\s*\d|\d)/gi)||[];
+  return tokens.map(token=>token.replace(/\s+/g,'').replace(/^0(?=\d)/,''))
+    .filter(token=>/^(?:X|[0-9](?:[0-9]|[\/\-])?|\-[0-9])$/.test(token)).slice(0,10);
+}
+
+function scoreFromNotationTokens(tokens){
+  // Conservative preview score: valid imported notation is still reviewed before save.
+  return tokens.reduce((sum,token)=>{
+    if(token==='X') return sum+10;
+    if(token.includes('/')) return sum+10;
+    const nums=token.match(/\d/g)||[];
+    return sum+(nums.reduce((a,n)=>a+Number(n),0));
+  },0);
+}
 
 function startPhotoImport(){
   go('scan');
 }
 
-function handleScorePhoto(event){
+async function handleScorePhoto(event){
   const file=event.target.files && event.target.files[0];
   if(!file) return;
 
@@ -1351,13 +1378,30 @@ function handleScorePhoto(event){
   const status=document.getElementById('realScanStatus');
 
   const reader=new FileReader();
-  reader.onload=function(e){
+  reader.onload=async function(e){
     preview.innerHTML=`<img src="${e.target.result}" alt="Uploaded scoreboard" style="max-width:100%;max-height:250px;border-radius:14px;object-fit:contain">`;
-    if(status) status.style.display='block';
+    if(status){status.style.display='block';status.innerHTML='<b>Reading scorecard locally…</b><div class="muted small" style="margin-top:4px">The image stays on this device. Review the result before saving.</div>';}
+    try{
+      const Tesseract=await loadLocalOcr();
+      const result=await Tesseract.recognize(e.target.result,'eng',{logger:message=>{
+        if(status&&message.status==='recognizing text') status.innerHTML=`<b>Reading scorecard locally… ${Math.round((message.progress||0)*100)}%</b><div class="muted small" style="margin-top:4px">The image stays on this device. Review the result before saving.</div>`;
+      }});
+      const tokens=notationTokensFromOcr(result.data?.text);
+      if(tokens.length){
+        scannedPlayers=[{name:'Imported scorecard',final:scoreFromNotationTokens(tokens),frames:[...tokens,...Array(10-tokens.length).fill('—')]}];
+        renderDetectedPlayers();
+        renderScanEditors();
+        go('scanResults');
+        toast('Scorecard read locally — review before saving');
+      }else if(status){
+        status.innerHTML='<b>No frame notation was recognized</b><div class="muted small" style="margin-top:4px">Try a sharper, straighter photo or use CSV/JSON import. Existing data was not changed.</div>';
+      }
+    }catch(error){
+      if(status) status.innerHTML='<b>Local OCR could not run</b><div class="muted small" style="margin-top:4px">Check your connection once to load the OCR model, then try again. Existing data was not changed.</div>';
+      toast('Photo loaded, but OCR could not run');
+    }
   };
   reader.readAsDataURL(file);
-
-  toast('Photo loaded — AI scan not connected yet');
 }
 
 function simulateScan(){
@@ -1437,6 +1481,7 @@ function saveImportedGames(){
     hand:document.getElementById('hand').value,
     ball:document.getElementById('ballSelect').value,
     date:gameDateValue(),
+    frames:Array.isArray(primary.frames)?primary.frames.slice(0,10):[],
     source:'scoreboard import'
   });
 
