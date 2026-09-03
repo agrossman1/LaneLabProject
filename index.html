@@ -1675,6 +1675,7 @@ function importCsvRecords(text){
 function importJsonRecords(text){
   let payload;
   try{payload=JSON.parse(text)}catch(error){return 0}
+  restoreImportedArsenal(payload);
   // Accept raw arrays, app exports, and wrapped records from older exports.
   const records=[];
   const collect=value=>{
@@ -1701,6 +1702,33 @@ function importJsonRecords(text){
   state.games=LaneLabStats.saveGameRecords(getGameStorage(),state.games);
   renderPersonalStats();
   return valid.length;
+}
+
+function restoreImportedArsenal(payload){
+  if(!payload || typeof payload!=='object') return;
+  const importedProfile=payload.profile||payload.player||{};
+  const importedRecords=[];
+  const collectRecords=value=>{
+    if(Array.isArray(value)){value.forEach(collectRecords);return}
+    if(!value||typeof value!=='object') return;
+    if(Number.isFinite(Number(value.score))) importedRecords.push(value);
+    ['games','records','state','data'].forEach(key=>{if(value[key]&&value[key]!==value) collectRecords(value[key])});
+  };
+  collectRecords(payload);
+  const derivedBalls=importedRecords.flatMap(record=>[
+    record.ball,
+    ...(Array.isArray(record.frameThrows)?record.frameThrows.flatMap(frame=>(frame?.throws||[]).map(item=>item.ball)):[])
+  ]).filter(value=>typeof value==='string'&&value.trim()&&value.trim()!=='"');
+  const importedBalls=payload.arsenal||payload.balls||importedProfile.balls||derivedBalls;
+  if(!Array.isArray(importedBalls)||!importedBalls.length) return;
+  const normalized=importedBalls.map(ball=>typeof ball==='string'?{name:ball}:ball).map(LaneLabArsenal.normalizeBall).filter(Boolean);
+  const unique=normalized.filter((ball,index,list)=>list.findIndex(item=>LaneLabArsenal.normalizeName(item.name)===LaneLabArsenal.normalizeName(ball.name))===index);
+  if(!unique.length) return;
+  arsenal=LaneLabArsenal.save(getGameStorage(),unique);
+  onboardingImportedBalls=true;
+  syncBallSelect();
+  renderArsenal();
+  renderScoreControls();
 }
 const MAX_IMPORT_FILE_BYTES=10*1024*1024;
 function importFileIsSupported(file){return Boolean(file?.name&&/\.(csv|json)$/i.test(file.name));}
@@ -1747,30 +1775,11 @@ function applyImportedOnboardingMetadata(text){
   if(name) document.getElementById('onboardingName').value=name;
   if(hand) document.getElementById('onboardingHand').value=handValue;
   if(['One-handed','Two-handed'].includes(style)) document.getElementById('onboardingStyle').value=style;
-  const importedRecords=[];
-  const collectRecords=value=>{
-    if(Array.isArray(value)){value.forEach(collectRecords);return}
-    if(!value||typeof value!=='object') return;
-    if(Number.isFinite(Number(value.score))) importedRecords.push(value);
-    ['games','records','state','data'].forEach(key=>{if(value[key]&&value[key]!==value) collectRecords(value[key])});
-  };
-  collectRecords(payload);
-  const derivedBalls=importedRecords.flatMap(record=>[
-    record.ball,
-    ...(Array.isArray(record.frameThrows)?record.frameThrows.flatMap(frame=>(frame?.throws||[]).map(item=>item.ball)):[])
-  ]).filter(value=>typeof value==='string'&&value.trim()&&value.trim()!=='"');
-  const importedBalls=payload?.arsenal||payload?.balls||importedProfile.balls||derivedBalls;
-  if(Array.isArray(importedBalls)&&importedBalls.length){
-    const normalized=importedBalls.map(ball=>typeof ball==='string'?{name:ball}:ball).map(LaneLabArsenal.normalizeBall).filter(Boolean);
-    const unique=normalized.filter((ball,index,list)=>list.findIndex(item=>LaneLabArsenal.normalizeName(item.name)===LaneLabArsenal.normalizeName(ball.name))===index);
-    if(unique.length){
-      arsenal=LaneLabArsenal.save(getGameStorage(),unique);
-      onboardingImportedBalls=true;
-      const first=unique[0];
-      document.getElementById('onboardingBallName').value=first.name;
-      document.getElementById('onboardingBallWeight').value=first.weight||'';
-      syncBallSelect(); renderArsenal();
-    }
+  restoreImportedArsenal(payload);
+  const first=arsenal[0];
+  if(first){
+    document.getElementById('onboardingBallName').value=first.name;
+    document.getElementById('onboardingBallWeight').value=first.weight||'';
   }
 }
 function onboardingBack(){showOnboardingStep(Math.max(1,onboardingStep-1))}
@@ -2445,7 +2454,7 @@ function profileSaved(){
   toast('Profile updated');
 }
 function exportAllGameData(){
-  const payload={schemaVersion:1,exportedAt:new Date().toISOString(),profile, games:state.games, recentScores:state.recent};
+  const payload={schemaVersion:1,exportedAt:new Date().toISOString(),profile, arsenal, games:state.games, recentScores:state.recent};
   const blob=new Blob([JSON.stringify(payload,null,2)],{type:'application/json'});
   const url=URL.createObjectURL(blob), link=document.createElement('a');
   link.href=url; link.download=`lanelab-game-data-${new Date().toISOString().slice(0,10)}.json`;
