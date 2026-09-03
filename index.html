@@ -1707,10 +1707,11 @@ function applyImportedOnboardingMetadata(text){
   const importedBalls=payload?.arsenal||payload?.balls||importedProfile.balls||derivedBalls;
   if(Array.isArray(importedBalls)&&importedBalls.length){
     const normalized=importedBalls.map(ball=>typeof ball==='string'?{name:ball}:ball).map(LaneLabArsenal.normalizeBall).filter(Boolean);
-    if(normalized.length){
-      arsenal=LaneLabArsenal.save(getGameStorage(),normalized);
+    const unique=normalized.filter((ball,index,list)=>list.findIndex(item=>LaneLabArsenal.normalizeName(item.name)===LaneLabArsenal.normalizeName(ball.name))===index);
+    if(unique.length){
+      arsenal=LaneLabArsenal.save(getGameStorage(),unique);
       onboardingImportedBalls=true;
-      const first=normalized[0];
+      const first=unique[0];
       document.getElementById('onboardingBallName').value=first.name;
       document.getElementById('onboardingBallWeight').value=first.weight||'';
       syncBallSelect(); renderArsenal();
@@ -1753,7 +1754,8 @@ function onboardingAddBall(){
   const match=findBallCatalogMatch(typedName);
   const name=match ? match.canonical : typedName;
   const duplicate=arsenal.some(ball=>LaneLabArsenal.normalizeName(ball.name)===LaneLabArsenal.normalizeName(name));
-  if(duplicate){
+  const importedDuplicate=onboardingImportedBalls&&arsenal.some(ball=>LaneLabArsenal.normalizeName(ball.name)===LaneLabArsenal.normalizeName(typedName));
+  if(duplicate||importedDuplicate){
     if(onboardingImportedBalls){onboardingImportedBalls=false;toast(`${name} was imported into your arsenal`);onboardingFinish();return}
     toast(`${name} is already in your arsenal`);return
   }
