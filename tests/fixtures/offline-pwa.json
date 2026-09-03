@@ -1,6 +1,6 @@
 {
   "manifest": "manifest.webmanifest",
   "serviceWorker": "sw.js",
-  "cacheName": "lanelab-shell-v5",
+  "cacheName": "lanelab-shell-v6",
   "cachedAssets": ["./", "./index.html", "./js/stats.js", "./js/profile.js", "./js/arsenal.js"]
 }

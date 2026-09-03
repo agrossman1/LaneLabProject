@@ -1756,7 +1756,7 @@ function onboardingAddBall(){
   const duplicate=arsenal.some(ball=>LaneLabArsenal.normalizeName(ball.name)===LaneLabArsenal.normalizeName(name));
   const importedDuplicate=onboardingImportedBalls&&arsenal.some(ball=>LaneLabArsenal.normalizeName(ball.name)===LaneLabArsenal.normalizeName(typedName));
   if(duplicate||importedDuplicate){
-    if(onboardingImportedBalls){onboardingImportedBalls=false;toast(`${name} was imported into your arsenal`);onboardingFinish();return}
+    if(onboardingImportedBalls){onboardingImportedBalls=false;const importedName=arsenal.find(ball=>LaneLabArsenal.normalizeName(ball.name)===LaneLabArsenal.normalizeName(typedName))?.name||name;toast(`${importedName} was imported into your arsenal`);onboardingFinish();return}
     toast(`${name} is already in your arsenal`);return
   }
 
