@@ -3298,7 +3298,17 @@ function renderScoreControls(){
   [0,1].forEach((index)=>{
     const button=document.getElementById(index===0?'ballOneChoice':'ballTwoChoice');
     const item=arsenal?.[index];
-    if(button){button.disabled=!item;button.title=item?item.name:'Add a second ball to your arsenal';button.classList.toggle('active',!!item&&ball===item.name);const label=button.querySelector('b');if(label) label.textContent=item?item.name:`Ball ${index+1}`;}
+    if(button){
+      const available=!!item;
+      button.disabled=!available;
+      button.title=available?item.name:(index===1?'Add a second ball to your arsenal':'Add a ball to your arsenal');
+      button.classList.toggle('active',available&&ball===item.name);
+      button.classList.toggle('unavailable',!available);
+      button.setAttribute('aria-label',available?`Ball ${index+1}: ${item.name}`:`Ball ${index+1} unavailable`);
+      // Keep an unavailable slot visually blank rather than presenting a misleading,
+      // clickable-looking Ball 2 choice.
+      button.innerHTML=available?`🎳<b>${escapeHtml(item.name)}</b>`:'';
+    }
   });
 }
 
