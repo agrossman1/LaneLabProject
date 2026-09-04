@@ -53,7 +53,9 @@ button{cursor:pointer}
   margin:0 auto;
   background:linear-gradient(180deg,rgba(255,255,255,.025),rgba(255,255,255,0));
   position:relative;
-  padding-bottom:92px;
+  /* Keep the final profile/settings controls clear of the fixed bottom nav,
+     including the larger safe-area inset on iOS devices. */
+  padding-bottom:140px;
 }
 header{
   padding:9px 18px 3px;
