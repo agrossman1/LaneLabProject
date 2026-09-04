@@ -3558,7 +3558,11 @@ function toast(msg){
   const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');
   clearTimeout(window.__toast);window.__toast=setTimeout(()=>t.classList.remove('show'),1600);
 }
-function renderAll(){renderScoreboard();renderKeypad();renderScoreControls();persistCurrentGame()}
+function renderAll(){
+  const title=document.getElementById('gameTitle');
+  if(title) title.textContent=`Game ${state.sessionGameNumber}`;
+  renderScoreboard();renderKeypad();renderScoreControls();persistCurrentGame();
+}
 loadSavedTheme();
 preloadBallCatalogImages();
 const gameDateInput=document.getElementById('gameDate');

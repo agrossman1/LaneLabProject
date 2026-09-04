@@ -35,5 +35,6 @@ assert.match(source, /const CURRENT_GAME_STORAGE_KEY='lanelab-current-game'/);
 assert.match(source, /function persistCurrentGame\(\)/);
 assert.match(source, /function restoreCurrentGame\(\)/);
 assert.match(source, /restoreCurrentGame\(\);/);
+assert.match(source, /title\.textContent=`Game \$\{state\.sessionGameNumber\}`/);
 
 console.log('Persistence/reload checks passed for saved records, scores, metadata, and refresh hydration.');
