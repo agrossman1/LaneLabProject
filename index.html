@@ -2842,7 +2842,15 @@ function syncPinDragUI(){
 function pinDragEnd(event){
   const drag=pinDragState;
   if(!drag || drag.pointerId!==event.pointerId) return;
-  if(drag.moved){pinSuppressClickUntil=Date.now()+350;renderPinTracker();}
+  if(drag.moved){
+    pinSuppressClickUntil=Date.now()+350;
+    renderPinTracker();
+  }else if(event.pointerType!=='mouse'){
+    // Some mobile browsers suppress the synthetic click after pointer capture.
+    // Commit a tap on pointer-up and ignore that possible duplicate click.
+    pinSuppressClickUntil=Date.now()+350;
+    toggleTrackedPin(drag.startPin);
+  }
   pinDragState=null;
 }
 
