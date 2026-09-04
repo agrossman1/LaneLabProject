@@ -12,6 +12,9 @@ assert.equal(fixture.selectedFrame, 2);
 assert.match(source, /function go\(id\)[\s\S]*?querySelectorAll\('\.screen'\)/);
 assert.match(source, /function go\(id\)[\s\S]*?dataset\.target===id/);
 assert.match(source, /window\.scrollTo\(\{top:0/);
+assert.match(source, /const CURRENT_SCREEN_STORAGE_KEY='lanelab-current-screen'/);
+assert.match(source, /function restoreLastScreen\(\)/);
+assert.match(source, /restoreLastScreen\(\);/);
 
 // Frame selection/edit state is kept in the central state object, so changing
 // screens or re-rendering cannot silently move the user to another frame.

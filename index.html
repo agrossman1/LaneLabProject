@@ -1538,6 +1538,7 @@ const state = {
   editingFrame:null
 };
 const CURRENT_GAME_STORAGE_KEY='lanelab-current-game';
+const CURRENT_SCREEN_STORAGE_KEY='lanelab-current-screen';
 function persistCurrentGame(){
   try{
     const storage=getGameStorage();
@@ -2586,6 +2587,7 @@ function go(id){
   }
   if(id==='personalStats') renderPersonalStats();
   if(id==='stats'){ renderChart(); renderSessionMetrics(); }
+  try{getGameStorage()?.setItem(CURRENT_SCREEN_STORAGE_KEY,id)}catch(e){}
   window.scrollTo({top:0,behavior:'smooth'});
 }
 
@@ -3563,6 +3565,13 @@ function renderAll(){
   if(title) title.textContent=`Game ${state.sessionGameNumber}`;
   renderScoreboard();renderKeypad();renderScoreControls();persistCurrentGame();
 }
+function restoreLastScreen(){
+  try{
+    const id=getGameStorage()?.getItem(CURRENT_SCREEN_STORAGE_KEY);
+    const allowed=['home','score','stats','arsenal','coach','profile','help','personalStats'];
+    if(id&&allowed.includes(id)) go(id);
+  }catch(e){}
+}
 loadSavedTheme();
 preloadBallCatalogImages();
 const gameDateInput=document.getElementById('gameDate');
@@ -3570,6 +3579,7 @@ if(gameDateInput) gameDateInput.value=localDateInputValue();
 restoreCurrentGame();
 renderAll();renderChart();renderRecent();renderGameBreakdown();renderProfile();renderSessionMetrics();
 syncAverageDisplays();syncGameSummaries();renderPersonalStats();renderArsenal();
+restoreLastScreen();
 maybeStartOnboarding();
 if ('serviceWorker' in navigator){
   navigator.serviceWorker.register('./sw.js').then(reg=>reg.update()).catch(() => {});
