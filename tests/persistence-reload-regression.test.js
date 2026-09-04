@@ -31,5 +31,9 @@ assert.deepEqual(LaneLabStats.loadScores(storageStub, []), scores);
 // Guard the app boot path so a refresh continues to hydrate persisted records.
 assert.match(source, /LaneLabStats\.loadGameRecords\(getGameStorage\(\),\[\]\)/);
 assert.match(source, /state\.games=LaneLabStats\.saveGameRecords\(getGameStorage\(\),state\.games\)/);
+assert.match(source, /const CURRENT_GAME_STORAGE_KEY='lanelab-current-game'/);
+assert.match(source, /function persistCurrentGame\(\)/);
+assert.match(source, /function restoreCurrentGame\(\)/);
+assert.match(source, /restoreCurrentGame\(\);/);
 
 console.log('Persistence/reload checks passed for saved records, scores, metadata, and refresh hydration.');

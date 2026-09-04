@@ -1537,6 +1537,44 @@ const state = {
   pinTracking:null,
   editingFrame:null
 };
+const CURRENT_GAME_STORAGE_KEY='lanelab-current-game';
+function persistCurrentGame(){
+  try{
+    const storage=getGameStorage();
+    if(!storage) return;
+    storage.setItem(CURRENT_GAME_STORAGE_KEY,JSON.stringify({
+      sessionDate:sessionDateKey,
+      sessionGameNumber:state.sessionGameNumber,
+      gameDate:document.getElementById('gameDate')?.value||'',
+      frames:state.frames,
+      currentFrame:state.currentFrame,
+      completed:state.completed,
+      pinTracking:state.pinTracking,
+      editingFrame:state.editingFrame
+    }));
+  }catch(e){}
+}
+function restoreCurrentGame(){
+  try{
+    const raw=getGameStorage()?.getItem(CURRENT_GAME_STORAGE_KEY);
+    if(!raw) return;
+    const draft=JSON.parse(raw);
+    if(draft.sessionDate!==sessionDateKey || Number(draft.sessionGameNumber)!==state.sessionGameNumber || !Array.isArray(draft.frames) || draft.frames.length!==10) return;
+    state.frames=draft.frames.map(frame=>({
+      rolls:Array.isArray(frame?.rolls)?frame.rolls.slice(0,3).map(Number).filter(Number.isFinite):[],
+      throws:Array.isArray(frame?.throws)?frame.throws.slice(0,3):[],
+      ...(Array.isArray(frame?.pinsLeftAfterFirst)?{pinsLeftAfterFirst:frame.pinsLeftAfterFirst.slice()}:{}),
+      ...(Array.isArray(frame?.pinsKnockedDownSecond)?{pinsKnockedDownSecond:frame.pinsKnockedDownSecond.slice()}:{}),
+      ...(Array.isArray(frame?.pinsLeftAfterSecond)?{pinsLeftAfterSecond:frame.pinsLeftAfterSecond.slice()}: {})
+    }));
+    state.currentFrame=Math.max(0,Math.min(9,Number(draft.currentFrame)||0));
+    state.completed=draft.completed===true;
+    state.editingFrame=Number.isInteger(draft.editingFrame)?draft.editingFrame:null;
+    state.pinTracking=draft.pinTracking&&typeof draft.pinTracking==='object' ? draft.pinTracking : null;
+    const dateInput=document.getElementById('gameDate');
+    if(dateInput && draft.gameDate) dateInput.value=draft.gameDate;
+  }catch(e){}
+}
 state.recent=LaneLabStats.saveScores(getGameStorage(),state.recent);
 state.games=LaneLabStats.saveGameRecords(getGameStorage(),state.games);
 let homeDataMode='me';
@@ -3520,11 +3558,12 @@ function toast(msg){
   const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');
   clearTimeout(window.__toast);window.__toast=setTimeout(()=>t.classList.remove('show'),1600);
 }
-function renderAll(){renderScoreboard();renderKeypad();renderScoreControls()}
+function renderAll(){renderScoreboard();renderKeypad();renderScoreControls();persistCurrentGame()}
 loadSavedTheme();
 preloadBallCatalogImages();
 const gameDateInput=document.getElementById('gameDate');
 if(gameDateInput) gameDateInput.value=localDateInputValue();
+restoreCurrentGame();
 renderAll();renderChart();renderRecent();renderGameBreakdown();renderProfile();renderSessionMetrics();
 syncAverageDisplays();syncGameSummaries();renderPersonalStats();renderArsenal();
 maybeStartOnboarding();
