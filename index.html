@@ -1295,6 +1295,7 @@ body.light-mode .ballMatchPreview img{
 <script src="./js/stats.js?v=20260911"></script>
 <script src="./js/profile.js"></script>
 <script src="./js/arsenal.js"></script>
+<script src="./src/features/profile.js"></script>
 <script src="./src/data/schema.js"></script>
 <script src="./src/data/storage.js"></script>
 <script src="./src/core/scoring.js"></script>
@@ -2457,7 +2458,8 @@ function togglePinTracking(el){
   toast(pinTrackingEnabled ? 'Exact pin tracking enabled' : 'Quick numeric scoring enabled');
 }
 function profileSaved(){
-  profile=LaneLabProfile.save(getGameStorage(),{
+  profile=LaneLabProfileFeature.saveFromForm({
+    storage:getGameStorage(), current:profile,
     name:document.getElementById('profileName').value,
     hand:document.getElementById('profileHand').value,
     style:document.getElementById('profileStyle').value,

@@ -33,7 +33,7 @@ for (const [name, key] of Object.entries(preferenceKeys)) {
   assert.equal(storageStub.getItem(key), fixture.preferences[name]);
 }
 
-assert.match(source, /function profileSaved\([\s\S]*?LaneLabProfile\.save\(getGameStorage\(\)/);
+assert.match(source, /LaneLabProfileFeature\.saveFromForm|LaneLabProfile\.save\(getGameStorage\(/);
 assert.match(source, /function toggleTheme\([\s\S]*?lanelab-theme/);
 assert.match(source, /function toggleSwitch\([\s\S]*?lanelab-hand-tracking/);
 assert.match(source, /function toggleSwitch\([\s\S]*?lanelab-ball-tracking/);
