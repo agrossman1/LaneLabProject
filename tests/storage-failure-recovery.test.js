@@ -25,9 +25,9 @@ assert.doesNotThrow(() => LaneLabStats.saveGameRecords(failingStorage, []));
 assert.doesNotThrow(() => LaneLabProfile.save(failingStorage, fixture.fallbackProfile));
 assert.doesNotThrow(() => LaneLabArsenal.save(failingStorage, fixture.fallbackBalls));
 
-assert.match(source, /function getGameStorage\(\)[\s\S]*?catch\(error\)\{return null\}/);
-assert.match(source, /function toggleTheme\([\s\S]*?catch\(e\)\{\}/);
-assert.match(source, /function loadSavedTheme\([\s\S]*?catch\(e\)\{\}/);
+assert.match(source, /function getGameStorage\(\)[\s\S]*?LaneLabStorage\.get/);
+assert.match(source, /function toggleTheme\([\s\S]*?LaneLabStorage\.write/);
+assert.match(source, /function loadSavedTheme\([\s\S]*?LaneLabStorage\.read/);
 assert.match(source, /function recordGameScore\([\s\S]*?LaneLabStats\.saveGameRecords\(getGameStorage\(\)/);
 
 console.log('Storage failure recovery checks passed for unavailable storage, quota errors, safe fallbacks, and no-crash persistence.');

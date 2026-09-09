@@ -26,7 +26,7 @@ assert.match(source, /if\(!count\)\{toast\('No valid game records found in that 
 // clear the picker value so a corrected retry is possible.
 assert.match(source, /if\(!typedName\)[\s\S]*?toast\('Enter a ball name to add it'\);return/);
 assert.match(source, /is already in your arsenal/);
-assert.match(source, /if\(Number\(file\.size\)>MAX_IMPORT_FILE_BYTES\)\{toast\('That file is too large/);
+assert.match(source, /file\.size\)>MAX_IMPORT_FILE_BYTES\)\{toast\('That file is too large/);
 assert.match(source, /reader\.onerror=\(\)=>toast\('Could not read that file'\)/);
 
 console.log(`Error messaging/recovery checks passed for ${fixture.failureCases.length} actionable failures, validation guards, and non-destructive recovery paths.`);

@@ -29,6 +29,6 @@ assert.match(source, /arsenal=LaneLabArsenal\.load\(getGameStorage\(\),arsenal\)
 // navigation or persistence paths.
 const normalCode = source.slice(1300, source.indexOf('function resetAllGameData('));
 assert.doesNotMatch(normalCode, /localStorage\.clear\(\)/);
-assert.match(source, /function resetAllGameData\([\s\S]*?localStorage\.clear\(\)/);
+assert.match(source, /function resetAllGameData\([\s\S]*?(?:LaneLabStorage\.clear\(getGameStorage\(\)\)|localStorage\.clear\(\))/);
 
 console.log('Concurrent-tab synchronization checks passed for stable-ID reconciliation, reload hydration, and unrelated-record protection.');

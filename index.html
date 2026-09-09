@@ -2401,18 +2401,14 @@ function toggleTheme(){
   if(toggle) toggle.classList.toggle('on', light);
   if(label) label.textContent = light ? 'Currently using light mode' : 'Currently using dark mode';
 
-  try{
-    localStorage.setItem('lanelab-theme', light ? 'light' : 'dark');
-  }catch(e){}
+  LaneLabStorage.write('lanelab-theme', light ? 'light' : 'dark', getGameStorage());
 
   toast(light ? 'Light mode enabled' : 'Dark mode enabled');
 }
 
 function loadSavedTheme(){
   let saved='dark';
-  try{
-    saved = localStorage.getItem('lanelab-theme') || 'dark';
-  }catch(e){}
+  saved = LaneLabStorage.read('lanelab-theme','dark',getGameStorage());
   const light = saved === 'light';
   document.body.classList.toggle('light-mode', light);
 
@@ -2526,12 +2522,12 @@ function exportGameDataCsv(){
 function resetAllGameData(){
   // Keep this action reliable on mobile browsers where native confirm dialogs
   // can be suppressed. The profile menu already labels the destructive scope.
-  try{window.localStorage.clear()}catch(e){}
+  LaneLabStorage.clear(getGameStorage());
   try{window.sessionStorage?.clear()}catch(e){}
   // An empty persisted arsenal prevents the built-in starter balls from being
   // rehydrated as defaults after the reset redirect.
   try{LaneLabArsenal.save(getGameStorage(),[])}catch(e){}
-  try{window.localStorage?.setItem('lanelab-force-onboarding','true')}catch(e){}
+  LaneLabStorage.write('lanelab-force-onboarding','true',getGameStorage());
   arsenal=[];
   state.frames=Array.from({length:10},()=>({rolls:[],throws:[]}));
   state.currentFrame=0;

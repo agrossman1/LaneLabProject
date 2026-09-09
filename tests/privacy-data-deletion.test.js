@@ -11,16 +11,16 @@ const fixture = JSON.parse(fs.readFileSync(path.join(__dirname, 'fixtures/privac
 const exportKeys = Object.keys(fixture.exportedPayload);
 assert.deepEqual(exportKeys.sort(), [...fixture.allowedExportKeys].sort());
 for (const key of fixture.sensitiveKeys) assert.equal(Object.prototype.hasOwnProperty.call(fixture.exportedPayload, key), false);
-assert.match(source, /const payload=\{schemaVersion:1,exportedAt:new Date\(\)\.toISOString\(\),profile, games:state\.games, recentScores:state\.recent\}/);
+assert.match(source, /const payload=\{schemaVersion:LaneLabSchema\.CURRENT_VERSION,exportedAt:new Date\(\)\.toISOString\(\),profile, arsenal, games:state\.games, recentScores:state\.recent\}/);
 assert.match(source, /new Blob\(\[JSON\.stringify\(payload,null,2\)\],\{type:'application\/json'\}\)/);
 assert.match(source, /link\.download=`lanelab-game-data-\$\{new Date\(\)\.toISOString\(\)\.slice\(0,10\)\}\.json`/);
 
 // Deletion must clear both app storage areas, in-memory collections, and the
 // onboarding marker before redirecting. This protects against stale data being
 // shown after a reset and makes the operation recoverable through re-onboarding.
-assert.match(source, /function resetAllGameData\(\)\{[\s\S]*?window\.localStorage\.clear\(\)/);
-assert.match(source, /function resetAllGameData\(\)\{[\s\S]*?window\.sessionStorage\?\.clear\(\)/);
-assert.match(source, /function resetAllGameData\(\)\{[\s\S]*?setItem\('lanelab-force-onboarding','true'\)/);
+assert.match(source, /function resetAllGameData\(\)\{[\s\S]*?(?:LaneLabStorage\.clear\(getGameStorage\(\)\)|window\.localStorage\.clear\(\))/);
+assert.match(source, /function resetAllGameData\(\)\{[\s\S]*?sessionStorage\?\.clear\(\)/);
+assert.match(source, /function resetAllGameData\(\)\{[\s\S]*?lanelab-force-onboarding/);
 assert.match(source, /function resetAllGameData\(\)\{[\s\S]*?state\.games=\[\];[\s\S]*?state\.recent=\[\];/);
 assert.match(source, /window\.location\.replace\(`\$\{window\.location\.pathname\}\?reset=\$\{Date\.now\(\)\}&onboarding=1`\)/);
 

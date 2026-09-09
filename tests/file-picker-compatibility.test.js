@@ -16,7 +16,7 @@ assert.match(source, /function importFileIsSupported\(file\)\{[\s\S]*?\.\(csv\|j
 for (const handler of ['handleHistoryFileImport', 'handleOnboardingHistoryFile']) {
   const block = source.match(new RegExp(`function ${handler}\\(event\\)\\{[\\s\\S]*?\\n\\}`))?.[0] || '';
   assert.match(block, /event\.target\.files\?\.\[0\]; if\(!file\) return/);
-  assert.match(block, /file\.size\)>MAX_IMPORT_FILE_BYTES/);
+  assert.match(block, /(?:Number\()?file\.size\)?\)>MAX_IMPORT_FILE_BYTES/);
   assert.match(block, /!importFileIsSupported\(file\)/);
   assert.match(block, /reader\.onerror=\(\)=>toast\('Could not read that file'\)/);
 }

@@ -15,5 +15,9 @@
     try { storage?.removeItem(key); return true; } catch (error) { return false; }
   }
 
-  root.LaneLabStorage = Object.freeze({ get, read, write, remove });
+  function clear(storage = get()) {
+    try { storage?.clear(); return true; } catch (error) { return false; }
+  }
+
+  root.LaneLabStorage = Object.freeze({ get, read, write, remove, clear });
 })(window);

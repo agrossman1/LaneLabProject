@@ -28,7 +28,7 @@ assert.equal(LaneLabStats.saveGameRecords(unavailableStorage, [{score: 160}]).le
 assert.match(source, /html,body,\.app\{touch-action:manipulation\}/);
 assert.match(source, /\.pinButton\{[^}]*touch-action:none/);
 assert.match(source, /-webkit-backdrop-filter:blur/);
-assert.match(source, /function getGameStorage\(\)[\s\S]*?try\{return window\.localStorage\}catch/);
+assert.match(source, /function getGameStorage\(\)[\s\S]*?LaneLabStorage\.get\(\)/);
 assert.match(source, /navigator\.vibrate\)/);
 assert.match(source, /window\.sessionStorage\?\.clear\(\)/);
 

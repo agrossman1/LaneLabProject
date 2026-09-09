@@ -17,7 +17,9 @@ const time12 = new Intl.DateTimeFormat('en-US', {hour:'2-digit', minute:'2-digit
 const time24 = new Intl.DateTimeFormat('en-GB', {hour:'2-digit', minute:'2-digit', hour12:false}).format(date);
 assert.notEqual(time12, time24, '12/24-hour displays should be selectable by locale/options');
 
-assert.match(source, /function formatGameDate\(value\)\{[\s\S]*?new Intl\.DateTimeFormat\(undefined,\{month:'short',day:'numeric',year:'numeric'\}\)/);
+assert.match(source, /function formatGameDate\(value\)\{[\s\S]*?LaneLabHistoryFeature\.formatDate\(value\)/);
+const historySource = fs.readFileSync(path.join(__dirname, '..', 'src', 'features', 'history.js'), 'utf8');
+assert.match(historySource, /function formatDate\(value\)[\s\S]*?new Intl\.DateTimeFormat\(undefined, \{month:'short', day:'numeric', year:'numeric'\}\)/);
 assert.match(source, /function formatChartDate\(value\)\{[\s\S]*?new Intl\.DateTimeFormat\(undefined,\{month:'short',day:'numeric'\}\)/);
 assert.match(source, /<input id="gameDate" type="date"/);
 assert.match(source, /new Date\(value\);[\s\S]*?Number\.isNaN\(date\.getTime\(\)\)/);

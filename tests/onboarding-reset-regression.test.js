@@ -21,7 +21,7 @@ assert.match(source, /function importJsonRecords\(text\)/);
 assert.match(source, /function applyImportedOnboardingMetadata\(text\)/);
 assert.match(source, /onboardingName.*value=name/);
 assert.match(source, /onboardingHand.*value=handValue/);
-assert.match(source, /const importedBalls=payload\?\.arsenal\|\|payload\?\.balls\|\|importedProfile\.balls\|\|derivedBalls/);
+assert.match(source, /const importedBalls=payload\.?arsenal\|\|payload\.?balls\|\|importedProfile\.balls\|\|derivedBalls/);
 
 const currentResetStart = source.indexOf('function resetGame(');
 const currentResetEnd = source.indexOf('function finalScore(', currentResetStart);
@@ -37,7 +37,7 @@ const fullResetStart = source.indexOf('function resetAllGameData(');
 const fullResetEnd = source.indexOf('function go(', fullResetStart);
 assert.ok(fullResetStart >= 0 && fullResetEnd > fullResetStart, 'Full-app reset is missing');
 const fullReset = source.slice(fullResetStart, fullResetEnd);
-assert.match(fullReset, /localStorage\.clear\(\)/);
+assert.match(fullReset, /LaneLabStorage\.clear\(getGameStorage\(\)\)|localStorage\.clear\(\)/);
 assert.match(fullReset, /sessionStorage\?\.clear\(\)/);
 assert.match(fullReset, /lanelab-force-onboarding/);
 assert.match(fullReset, /onboarding=1/);
