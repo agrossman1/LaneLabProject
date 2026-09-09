@@ -3,6 +3,8 @@ const fs = require('node:fs');
 const path = require('node:path');
 
 const source = fs.readFileSync(path.join(__dirname, '..', 'index.html'), 'utf8');
+const layout = fs.readFileSync(path.join(__dirname, '..', 'src', 'ui', 'layout.css'), 'utf8');
+const styles = `${source}\n${layout}`;
 const fixture = JSON.parse(fs.readFileSync(path.join(__dirname, 'fixtures/responsive-visual-regression.json'), 'utf8'));
 assert.deepEqual(fixture.viewports.map(view => view.name), ['desktop', 'tablet', 'mobile']);
 assert.deepEqual(fixture.viewports.map(view => view.width), [1440, 768, 390]);
@@ -13,10 +15,10 @@ for (const id of fixture.screens) assert.match(source, new RegExp(`id="${id}"`),
 
 // The app and navigation are width-constrained at every viewport; desktop/tablet
 // get a wider shell while mobile keeps the compact shell inside the viewport.
-assert.match(source, /\.app\{[\s\S]*?width:min\(100%,430px\)/);
-assert.match(source, /@media \(min-width:700px\)[\s\S]*?\.app\{width:min\(100%,820px\)/);
-assert.match(source, /\.nav\{[\s\S]*?width:min\(100%,430px\)/);
-assert.match(source, /@media \(min-width:700px\)[\s\S]*?\.nav\{width:min\(100%,820px\)/);
+assert.match(styles, /\.app\{[\s\S]*?width:min\(100%,430px\)/);
+assert.match(styles, /@media \(min-width:700px\)[\s\S]*?\.app\{width:min\(100%,820px\)/);
+assert.match(styles, /\.nav\{[\s\S]*?width:min\(100%,430px\)/);
+assert.match(styles, /@media \(min-width:700px\)[\s\S]*?\.nav\{width:min\(100%,820px\)/);
 
 // Mobile-specific controls must shrink/reflow rather than clip their labels.
 assert.match(source, /@media \(max-width:520px\)[\s\S]*?\.scoreChoices\{grid-template-columns:auto 1fr/);
@@ -28,6 +30,6 @@ assert.match(source, /\.onboardingCard\{[^}]*max-height:90vh;overflow:auto/);
 // overflow; screenshot baselines should remain stable after navigation.
 assert.match(source, /html,body,\.app\{touch-action:manipulation\}/);
 assert.match(source, /\.historyScroll\{[^}]*overflow-y:auto/);
-assert.match(source, /\.app\{[^}]*position:relative/);
+assert.match(styles, /\.app\{[^}]*position:relative/);
 
 console.log('Responsive visual checks passed for desktop, tablet, and mobile viewport contracts.');
