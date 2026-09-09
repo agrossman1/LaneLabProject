@@ -1295,6 +1295,7 @@ body.light-mode .ballMatchPreview img{
 <script src="./js/stats.js?v=20260911"></script>
 <script src="./js/profile.js"></script>
 <script src="./js/arsenal.js"></script>
+<script src="./src/features/arsenal.js"></script>
 <script src="./src/features/profile.js"></script>
 <script src="./src/features/history.js"></script>
 <script src="./src/data/schema.js"></script>
@@ -3333,14 +3334,14 @@ function renderArsenal(){
   if(!list || !comparison) return;
 
   list.innerHTML=arsenal.length ? arsenal.map(ball=>{
-    const stats=LaneLabArsenal.calculateStats(state.games,ball.name);
+    const stats=LaneLabArsenalFeature.statsFor(state.games,ball.name);
     return `<button draggable="true" ondragstart="startBallDrag(event,this.dataset.ballId)" ondragover="event.preventDefault()" ondrop="dropBallDrag(event,this.dataset.ballId)" onpointerdown="ballPointerStart(event,this.dataset.ballId)" onpointermove="ballPointerMove(event)" onpointerup="ballPointerEnd(event)" onpointercancel="ballPointerEnd(event)" class="listItem row ballListButton" data-ball-id="${escapeHtml(ball.id)}" onclick="ballClick(event,this.dataset.ballId)">
       <span class="row">${ballVisual(ball)}<span><b>${escapeHtml(ball.name)}</b><span class="muted small" style="display:block">${ball.weight} lb · ${escapeHtml(ball.role)}</span></span></span>
       <span class="center"><b>${stats.average??'—'}</b><span class="muted small" style="display:block">${stats.games} game${stats.games===1?'':'s'}</span></span>
     </button>`;
   }).join('') : '<div class="listItem center"><div style="font-size:34px">🎳</div><b>Your arsenal is empty</b><div class="muted small" style="margin-top:4px">Add a ball to start tracking equipment stats.</div></div>';
 
-  const withGames=arsenal.map(ball=>({ball,stats:LaneLabArsenal.calculateStats(state.games,ball.name)})).filter(item=>item.stats.games);
+  const withGames=arsenal.map(ball=>({ball,stats:LaneLabArsenalFeature.statsFor(state.games,ball.name)})).filter(item=>item.stats.games);
   comparison.innerHTML=withGames.length ? withGames.map(({ball,stats})=>`<div class="listItem">
     <div class="row"><span>${escapeHtml(ball.name)}</span><b>${stats.average} avg</b></div>
     <div class="bar"><span style="width:${Math.min(100,(stats.average/300)*100)}%"></span></div>
