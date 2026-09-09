@@ -6,6 +6,7 @@
 <title>LaneLab — Bowling Improvement Tracker</title>
 <link rel="manifest" href="./manifest.webmanifest">
 <link rel="stylesheet" href="./src/ui/components.css">
+<link rel="stylesheet" href="./src/ui/layout.css">
 <style>
 :root{
   --bg:#0b1020;
@@ -48,16 +49,6 @@ button,input,select{
   touch-action:manipulation;
 }
 button{cursor:pointer}
-.app{
-  width:min(100%,430px);
-  min-height:100vh;
-  margin:0 auto;
-  background:linear-gradient(180deg,rgba(255,255,255,.025),rgba(255,255,255,0));
-  position:relative;
-  /* Keep the final profile/settings controls clear of the fixed bottom nav,
-     including the larger safe-area inset on iOS devices. */
-  padding-bottom:calc(140px + env(safe-area-inset-bottom, 0px));
-}
 header{
   padding:9px 18px 3px;
   position:sticky;top:0;z-index:20;
@@ -75,10 +66,6 @@ header{
 }
 .avatarBtn{padding:0;appearance:none;box-shadow:none;transition:.18s transform,.18s background}
 .avatarBtn:hover{transform:scale(1.05);background:#223152}
-main{padding:4px 16px 22px}
-.screen{display:none;animation:fade .18s ease}
-.screen.active{display:block}
-@keyframes fade{from{opacity:.2;transform:translateY(4px)}to{opacity:1;transform:none}}
 .eyebrow{color:var(--muted);font-size:12px;text-transform:uppercase;letter-spacing:.13em;font-weight:700}
 h1{font-size:28px;letter-spacing:-.04em;margin:6px 0 6px}
 h2{font-size:18px;margin:0 0 14px}
@@ -207,17 +194,6 @@ select,input{
 .practice{display:flex;gap:9px;overflow:auto;padding-bottom:2px}
 .practiceCard{min-width:132px;padding:13px;border-radius:15px;background:var(--panel);border:1px solid var(--line)}
 .practiceCard b{font-size:22px}
-.nav{
-  position:fixed;bottom:0;left:50%;transform:translateX(-50%);
-  width:min(100%,430px);padding:9px 8px calc(9px + env(safe-area-inset-bottom, 0px));
-  display:grid;grid-template-columns:repeat(5,1fr);gap:4px;
-  background:rgba(9,14,27,.96);backdrop-filter:blur(18px);border-top:1px solid var(--line);z-index:50
-}
-.nav button{
-  background:none;border:0;color:var(--muted);padding:7px 2px;border-radius:12px;font-size:10px;font-weight:700
-}
-.nav button span{display:block;font-size:18px;margin-bottom:2px}
-.nav button.active{color:white;background:var(--panel2)}
 .tagGood{color:var(--good)}
 .tagWarn{color:var(--warn)}
 .modal{
@@ -246,7 +222,6 @@ body.preview-mobile .scoreChoices{grid-template-columns:auto 1fr}
   .app{width:min(100%,820px);min-height:calc(100vh - 44px);border:1px solid #22304d;border-radius:30px;overflow:hidden}
   header{padding-left:28px;padding-right:28px}
   main{padding-left:28px;padding-right:28px}
-  .nav{width:min(100%,820px);bottom:22px;border-radius:0 0 30px 30px}
   .grid{grid-template-columns:repeat(4,1fr)}
   .scoreboard{grid-template-columns:repeat(10,1fr);gap:7px}
   .modal .sheet{width:min(100%,520px);border-radius:24px}
@@ -641,9 +616,6 @@ body.light-mode .coach{
   background:
     radial-gradient(circle at 85% 0,rgba(31,159,112,.12),transparent 35%),
     linear-gradient(145deg,#ffffff,#eef4f8);
-}
-body.light-mode .nav{
-  background:rgba(250,252,255,.96);
 }
 body.light-mode .frame,
 body.light-mode select,
