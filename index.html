@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
 <title>LaneLab — Bowling Improvement Tracker</title>
 <link rel="manifest" href="./manifest.webmanifest">
+<link rel="stylesheet" href="./src/ui/components.css">
 <style>
 :root{
   --bg:#0b1020;
@@ -1322,6 +1323,8 @@ body.light-mode .ballMatchPreview img{
 <script src="./js/stats.js?v=20260911"></script>
 <script src="./js/profile.js"></script>
 <script src="./js/arsenal.js"></script>
+<script src="./src/data/schema.js"></script>
+<script src="./src/core/scoring.js"></script>
 <script>
 
 const demoScanPlayers = [
@@ -1362,12 +1365,7 @@ function notationTokensFromOcr(text){
 
 function scoreFromNotationTokens(tokens){
   // Conservative preview score: valid imported notation is still reviewed before save.
-  return tokens.reduce((sum,token)=>{
-    if(token==='X') return sum+10;
-    if(token.includes('/')) return sum+10;
-    const nums=token.match(/\d/g)||[];
-    return sum+(nums.reduce((a,n)=>a+Number(n),0));
-  },0);
+  return LaneLabScoring.previewScore(tokens);
 }
 
 function startPhotoImport(){
@@ -1716,6 +1714,7 @@ function importCsvRecords(text){
 function importJsonRecords(text){
   let payload;
   try{payload=JSON.parse(text)}catch(error){return 0}
+  payload=LaneLabSchema.migrate(payload);
   restoreImportedArsenal(payload);
   // Accept raw arrays, app exports, and wrapped records from older exports.
   const records=[];
@@ -2495,7 +2494,7 @@ function profileSaved(){
   toast('Profile updated');
 }
 function exportAllGameData(){
-  const payload={schemaVersion:1,exportedAt:new Date().toISOString(),profile, arsenal, games:state.games, recentScores:state.recent};
+  const payload={schemaVersion:LaneLabSchema.CURRENT_VERSION,exportedAt:new Date().toISOString(),profile, arsenal, games:state.games, recentScores:state.recent};
   const blob=new Blob([JSON.stringify(payload,null,2)],{type:'application/json'});
   const url=URL.createObjectURL(blob), link=document.createElement('a');
   link.href=url; link.download=`lanelab-game-data-${new Date().toISOString().slice(0,10)}.json`;

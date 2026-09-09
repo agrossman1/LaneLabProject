@@ -1,0 +1,17 @@
+/* Shared UI primitives. Keep these independent of page-specific layout so
+   the same tokens/components can be reused by a future native client. */
+.app-focus-ring:focus-visible,
+button:focus-visible,
+[role="button"]:focus-visible {
+  outline: 3px solid var(--accent, #7c9cff);
+  outline-offset: 3px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}

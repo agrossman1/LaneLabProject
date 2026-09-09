@@ -20,7 +20,7 @@ const storage = {value: JSON.stringify(fixture.versions), getItem() { return thi
 assert.equal(LaneLabStats.loadGameRecords(storage).length, fixture.versions.length);
 assert.equal(LaneLabStats.saveGameRecords(storage, normalized).length, fixture.versions.length);
 
-assert.match(source, /schemaVersion:1/);
+assert.match(source, /schemaVersion:LaneLabSchema\.CURRENT_VERSION/);
 assert.match(source, /Accept raw arrays, app exports, and wrapped records/);
 assert.match(source, /function importJsonRecords\(text\)[\s\S]*?\['games','records','state','data'\]/);
 assert.match(source, /function normalizeGameRecord|normalizeGameRecord\(/);
