@@ -11,9 +11,9 @@ const fixture = JSON.parse(fs.readFileSync(path.join(__dirname, 'fixtures/privac
 const exportKeys = Object.keys(fixture.exportedPayload);
 assert.deepEqual(exportKeys.sort(), [...fixture.allowedExportKeys].sort());
 for (const key of fixture.sensitiveKeys) assert.equal(Object.prototype.hasOwnProperty.call(fixture.exportedPayload, key), false);
-assert.match(source, /const payload=\{schemaVersion:LaneLabSchema\.CURRENT_VERSION,exportedAt:new Date\(\)\.toISOString\(\),profile, arsenal, games:state\.games, recentScores:state\.recent\}/);
-assert.match(source, /new Blob\(\[JSON\.stringify\(payload,null,2\)\],\{type:'application\/json'\}\)/);
-assert.match(source, /link\.download=`lanelab-game-data-\$\{new Date\(\)\.toISOString\(\)\.slice\(0,10\)\}\.json`/);
+assert.match(source, /LaneLabTransfer\.exportPayload\(\{schemaVersion:LaneLabSchema\.CURRENT_VERSION,[\s\S]*?games:state\.games,[\s\S]*?recentScores:state\.recent\}\)/);
+assert.match(fs.readFileSync(path.join(__dirname, '..', 'src', 'data', 'transfer.js'), 'utf8'), /new Blob\(\[JSON\.stringify\(payload, null, 2\)\], \{type:'application\/json'\}\)/);
+assert.match(source, /LaneLabTransfer\.downloadJson\(payload,`lanelab-game-data-\$\{new Date\(\)\.toISOString\(\)\.slice\(0,10\)\}\.json`\)/);
 
 // Deletion must clear both app storage areas, in-memory collections, and the
 // onboarding marker before redirecting. This protects against stale data being

@@ -13,8 +13,8 @@ const csvRow = ['id', '2026-09-02', 180, fixture.htmlSample].map(quote).join(','
 assert.match(csvRow, /"<b>Ball & ""One""<\/b>"/);
 assert.equal(["header", csvRow].join('\r\n').split('\r\n').length, 2);
 
-assert.match(source, /function exportAllGameData\(\)[\s\S]*?application\/json/);
-assert.match(source, /link\.download=`lanelab-game-data-\$\{new Date\(\)\.toISOString\(\)\.slice\(0,10\)\}\.json`/);
+assert.match(source, /function exportAllGameData\(\)[\s\S]*?LaneLabTransfer\.downloadJson/);
+assert.match(source, /LaneLabTransfer\.downloadJson\(payload,`lanelab-game-data-\$\{new Date\(\)\.toISOString\(\)\.slice\(0,10\)\}\.json`\)/);
 assert.match(source, /function exportGameDataCsv\(\)[\s\S]*?text\/csv;charset=utf-8/);
 assert.match(source, /link\.download=`lanelab-game-history-\$\{new Date\(\)\.toISOString\(\)\.slice\(0,10\)\}\.csv`/);
 assert.match(source, /\.join\('\\r\\n'\)/);

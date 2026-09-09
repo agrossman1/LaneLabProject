@@ -5,6 +5,8 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
 <title>LaneLab — Bowling Improvement Tracker</title>
 <link rel="manifest" href="./manifest.webmanifest">
+<link rel="icon" href="./assets/lanelab-icon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="./assets/lanelab-logo-mark.png">
 <link rel="stylesheet" href="./src/ui/components.css">
 <link rel="stylesheet" href="./src/ui/layout.css">
 <style>
@@ -1113,7 +1115,7 @@ body.light-mode .ballMatchPreview img{
       <details class="card"><summary><b>Editing a frame or game</b></summary><p>Select a frame on the scorecard to edit its throws. Save the edit to recalculate that frame and all later totals; cancel leaves the saved game unchanged.</p></details>
       <details class="card"><summary><b>Importing and exporting</b></summary><p>Use a CSV or JSON file from onboarding or Profile. JSON preserves the complete game structure; CSV is spreadsheet-friendly and includes frame, pin, hand, ball, and ball-rate columns.</p><p class="muted small">Invalid files are rejected without replacing existing games.</p></details>
       <details class="card"><summary><b>Deleting data safely</b></summary><p><b>Reset game</b> clears only the current game. <b>Reset entire app</b> clears LaneLab’s profile, arsenal, games, and session data, then opens onboarding again.</p><p class="muted small">Export your data first. Deletion cannot be undone without a backup.</p></details>
-      <div class="card"><h2>Need a reminder while scoring?</h2><p class="small">The score screen labels the current frame and ball, and the pin tracker explains what to tap. Return here anytime from Profile → Help &amp; how to use.</p></div>
+      <div class="card"><h2>Need a reminder while scoring?</h2><p class="small">The score screen labels the current frame and ball, and the pin tracker explains what to tap. Return here anytime from Profile → Help &amp; how to use.</p><p class="small"><a href="./privacy.html">Privacy policy</a> · <a href="./support.html">Support</a></p></div>
     </section>
 
     <section class="screen" id="personalStats">
@@ -2459,11 +2461,8 @@ function profileSaved(){
   toast('Profile updated');
 }
 function exportAllGameData(){
-  const payload={schemaVersion:LaneLabSchema.CURRENT_VERSION,exportedAt:new Date().toISOString(),profile, arsenal, games:state.games, recentScores:state.recent};
-  const blob=new Blob([JSON.stringify(payload,null,2)],{type:'application/json'});
-  const url=URL.createObjectURL(blob), link=document.createElement('a');
-  link.href=url; link.download=`lanelab-game-data-${new Date().toISOString().slice(0,10)}.json`;
-  document.body.appendChild(link); link.click(); link.remove(); URL.revokeObjectURL(url);
+  const payload=LaneLabTransfer.exportPayload({schemaVersion:LaneLabSchema.CURRENT_VERSION,exportedAt:new Date().toISOString(),profile, arsenal, games:state.games, recentScores:state.recent});
+  LaneLabTransfer.downloadJson(payload,`lanelab-game-data-${new Date().toISOString().slice(0,10)}.json`);
   toast(`${state.games.length} game${state.games.length===1?'':'s'} exported`);
 }
 function exportGameDataCsv(){
@@ -3535,12 +3534,12 @@ if(gameDateInput) gameDateInput.value=localDateInputValue();
 restoreCurrentGame();
 renderAll();renderChart();renderRecent();renderGameBreakdown();renderProfile();renderSessionMetrics();
 syncAverageDisplays();syncGameSummaries();renderPersonalStats();renderArsenal();
-restoreLastScreen();
-maybeStartOnboarding();
-if ('serviceWorker' in navigator){
-  navigator.serviceWorker.register('./sw.js').then(reg=>reg.update()).catch(() => {});
-}
+// Startup sequencing is provided by src/app.js so browser and native hosts
+// share the same hydration path.
 </script>
+<script src="./src/platform/device.js"></script>
+<script src="./src/data/transfer.js"></script>
+<script src="./src/app.js"></script>
 <script>
 // Keep reset onboarding visible even if another startup task fails after the
 // onboarding step has been selected.

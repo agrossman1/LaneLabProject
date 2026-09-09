@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-labelledby="title desc">
+  <title id="title">LaneLab</title><desc id="desc">Bowling ball and pins on a blue background</desc>
+  <rect width="512" height="512" rx="112" fill="#0b1020"/>
+  <circle cx="178" cy="308" r="112" fill="#273b74" stroke="#7c9cff" stroke-width="14"/>
+  <circle cx="143" cy="274" r="15" fill="#0b1020"/><circle cx="190" cy="248" r="15" fill="#0b1020"/><circle cx="218" cy="296" r="15" fill="#0b1020"/>
+  <g fill="#f5f7fb" stroke="#cbd6ff" stroke-width="5"><path d="M298 130h56l9 142c2 35-14 54-37 54s-39-19-37-54z"/><path d="M375 155h48l8 120c2 31-12 48-32 48s-34-17-32-48z"/><path d="M235 165h48l8 120c2 31-12 48-32 48s-34-17-32-48z"/></g>
+  <path d="M292 176h68M369 194h60M229 204h60" stroke="#ff4d5a" stroke-width="18" stroke-linecap="round"/>
+</svg>

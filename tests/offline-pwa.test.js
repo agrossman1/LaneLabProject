@@ -11,8 +11,9 @@ const fixture = JSON.parse(fs.readFileSync(path.join(__dirname, 'fixtures/offlin
 assert.equal(manifest.start_url, './');
 assert.equal(manifest.display, 'standalone');
 assert.match(source, /rel="manifest" href="\.\/manifest\.webmanifest"/);
-assert.match(source, /'serviceWorker' in navigator[\s\S]*?register\('\.\/sw\.js'\)/);
-assert.match(worker, /const CACHE_NAME = 'lanelab-shell-v8'/);
+assert.match(source, /src\/app\.js/);
+assert.match(fs.readFileSync(path.join(__dirname, '..', 'src', 'app.js'), 'utf8'), /serviceWorker\.register\('\.\/sw\.js'\)/);
+assert.match(worker, /const CACHE_NAME = 'lanelab-shell-v\d+'/);
 assert.match(worker, /cache\.addAll\(SHELL\)/);
 assert.match(worker, /self\.skipWaiting\(\)/);
 assert.match(worker, /self\.clients\.claim\(\)/);

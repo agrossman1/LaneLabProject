@@ -10,7 +10,7 @@ const fixture = JSON.parse(fs.readFileSync(path.join(__dirname, 'fixtures/depend
 for (const scheme of fixture.blockedSchemes) assert.equal(source.toLowerCase().includes(`${scheme}"`), false, `${scheme} URL must be blocked`);
 assert.doesNotMatch(source, /(?:src|href)\s*=\s*["']\s*javascript:/i);
 assert.doesNotMatch(source, /\b(?:eval|Function)\s*\(/);
-assert.match(source, /navigator\.serviceWorker\.register\('\.\/sw\.js'\)/);
+assert.match(fs.readFileSync(path.join(__dirname, '..', 'src', 'app.js'), 'utf8'), /navigator\.serviceWorker\.register\('\.\/sw\.js'\)/);
 
 // JavaScript dependencies are same-origin relative files, making them
 // compatible with a strict script-src 'self' policy and resilient to blocked

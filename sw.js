@@ -1,5 +1,5 @@
-const CACHE_NAME = 'lanelab-shell-v8';
-const SHELL = ['./', './index.html', './js/stats.js', './js/profile.js', './js/arsenal.js'];
+const CACHE_NAME = 'lanelab-shell-v9';
+const SHELL = ['./', './index.html', './privacy.html', './support.html', './manifest.webmanifest', './assets/lanelab-icon.svg', './assets/lanelab-splash.svg', './src/app.js', './src/platform/device.js', './src/data/storage.js', './src/data/transfer.js', './js/stats.js', './js/profile.js', './js/arsenal.js'];
 
 self.addEventListener('install', event => {
   event.waitUntil(caches.open(CACHE_NAME).then(cache => cache.addAll(SHELL)).then(() => self.skipWaiting()));

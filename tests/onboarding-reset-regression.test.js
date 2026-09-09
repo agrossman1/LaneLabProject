@@ -13,7 +13,8 @@ const onboarding = source.slice(onboardingStart, onboardingEnd);
 assert.match(onboarding, /resetParams\.has\('reset'\)/);
 assert.match(onboarding, /!hasExistingProfile && !savedGames\.length && !complete/);
 assert.match(onboarding, /laneLabOnboardingComplete/);
-assert.match(source, /function maybeStartOnboarding\(\)[\s\S]*?maybeStartOnboarding\(\);/);
+assert.match(source, /function maybeStartOnboarding\(/);
+assert.match(fs.readFileSync(path.join(__dirname, '..', 'src', 'app.js'), 'utf8'), /maybeStartOnboarding\?\.\(\)/);
 
 // Import remains wired to the onboarding file control and JSON parser.
 assert.match(source, /id="csvHistoryInput"[^>]*accept="\.csv,\.json/);

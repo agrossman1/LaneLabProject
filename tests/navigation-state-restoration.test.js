@@ -14,7 +14,7 @@ assert.match(source, /function go\(id\)[\s\S]*?dataset\.target===id/);
 assert.match(source, /window\.scrollTo\(\{top:0/);
 assert.match(source, /const CURRENT_SCREEN_STORAGE_KEY='lanelab-current-screen'/);
 assert.match(source, /function restoreLastScreen\(\)/);
-assert.match(source, /restoreLastScreen\(\);/);
+assert.match(fs.readFileSync(path.join(__dirname, '..', 'src', 'app.js'), 'utf8'), /restoreLastScreen\?\.\(\)/);
 
 // Frame selection/edit state is kept in the central state object, so changing
 // screens or re-rendering cannot silently move the user to another frame.
@@ -27,7 +27,7 @@ assert.match(source, /state\.editingFrame===i/);
 // Refresh hydration must run before the initial render and restore persisted
 // records without requiring a second navigation action.
 assert.match(source, /const initialGames=\[/);
-assert.match(source, /renderAll\(\);renderChart\(\);renderRecent\(\)/);
+assert.match(fs.readFileSync(path.join(__dirname, '..', 'src', 'app.js'), 'utf8'), /renderAll\?\.\(\)[\s\S]*renderChart\?\.\(\)[\s\S]*renderRecent\?\.\(\)/);
 assert.match(source, /LaneLabStats\.loadGameRecords/);
 
 console.log('Navigation/state checks passed for screen addressing, deep-link targets, refresh hydration, and selected-frame preservation.');

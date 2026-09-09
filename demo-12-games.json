@@ -1,0 +1,1266 @@
+{
+  "games": [
+    {
+      "id": "demo-01",
+      "date": "2026-08-01",
+      "score": 142,
+      "frames": [
+        "X",
+        "7/",
+        "9-",
+        "8/",
+        "X",
+        "X",
+        "81",
+        "9/",
+        "8-",
+        "X9/"
+      ],
+      "pinData": [
+        {
+          "pinsLeftAfterFirst": [],
+          "pinsKnockedDownSecond": [],
+          "pinsLeftAfterSecond": []
+        },
+        {
+          "pinsLeftAfterFirst": [
+            1,
+            2,
+            3
+          ],
+          "pinsKnockedDownSecond": [
+            1,
+            2,
+            3
+          ],
+          "pinsLeftAfterSecond": []
+        },
+        {
+          "pinsLeftAfterFirst": [
+            1
+          ],
+          "pinsKnockedDownSecond": [],
+          "pinsLeftAfterSecond": [
+            1
+          ]
+        },
+        {
+          "pinsLeftAfterFirst": [
+            1,
+            2
+          ],
+          "pinsKnockedDownSecond": [
+            1,
+            2
+          ],
+          "pinsLeftAfterSecond": []
+        },
+        {
+          "pinsLeftAfterFirst": [],
+          "pinsKnockedDownSecond": [],
+          "pinsLeftAfterSecond": []
+        },
+        {
+          "pinsLeftAfterFirst": [],
+          "pinsKnockedDownSecond": [],
+          "pinsLeftAfterSecond": []
+        },
+        {
+          "pinsLeftAfterFirst": [
+            1,
+            2
+          ],
+          "pinsKnockedDownSecond": [
+            1
+          ],
+          "pinsLeftAfterSecond": [
+            2
+          ]
+        },
+        {
+          "pinsLeftAfterFirst": [
+            1
+          ],
+          "pinsKnockedDownSecond": [
+            1
+          ],
+          "pinsLeftAfterSecond": []
+        },
+        {
+          "pinsLeftAfterFirst": [
+            1,
+            2
+          ],
+          "pinsKnockedDownSecond": [],
+          "pinsLeftAfterSecond": [
+            1,
+            2
+          ]
+        },
+        {
+          "pinsLeftAfterFirst": [],
+          "pinsKnockedDownSecond": [],
+          "pinsLeftAfterSecond": []
+        }
+      ],
+      "strikes": 4,
+      "spares": 4,
+      "spareOpportunities": 6,
+      "source": "demo"
+    },
+    {
+      "id": "demo-02",
+      "date": "2026-08-03",
+      "score": 158,
+      "frames": [
+        "9/",
+        "X",
+        "X",
+        "81",
+        "9/",
+        "X",
+        "72",
+        "X",
+        "9/",
+        "X8/"
+      ],
+      "pinData": [
+        {
+          "pinsLeftAfterFirst": [
+            1
+          ],
+          "pinsKnockedDownSecond": [
+            1
+          ],
+          "pinsLeftAfterSecond": []
+        },
+        {
+          "pinsLeftAfterFirst": [],
+          "pinsKnockedDownSecond": [],
+          "pinsLeftAfterSecond": []
+        },
+        {
+          "pinsLeftAfterFirst": [],
+          "pinsKnockedDownSecond": [],
+          "pinsLeftAfterSecond": []
+        },
+        {
+          "pinsLeftAfterFirst": [
+            1,
+            2
+          ],
+          "pinsKnockedDownSecond": [
+            1
+          ],
+          "pinsLeftAfterSecond": [
+            2
+          ]
+        },
+        {
+          "pinsLeftAfterFirst": [
+            1
+          ],
+          "pinsKnockedDownSecond": [
+            1
+          ],
+          "pinsLeftAfterSecond": []
+        },
+        {
+          "pinsLeftAfterFirst": [],
+          "pinsKnockedDownSecond": [],
+          "pinsLeftAfterSecond": []
+        },
+        {
+          "pinsLeftAfterFirst": [
+            1,
+            2,
+            3
+          ],
+          "pinsKnockedDownSecond": [
+            1,
+            2
+          ],
+          "pinsLeftAfterSecond": [
+            3
+          ]
+        },
+        {
+          "pinsLeftAfterFirst": [],
+          "pinsKnockedDownSecond": [],
+          "pinsLeftAfterSecond": []
+        },
+        {
+          "pinsLeftAfterFirst": [
+            1
+          ],
+          "pinsKnockedDownSecond": [
+            1
+          ],
+          "pinsLeftAfterSecond": []
+        },
+        {
+          "pinsLeftAfterFirst": [],
+          "pinsKnockedDownSecond": [],
+          "pinsLeftAfterSecond": []
+        }
+      ],
+      "strikes": 5,
+      "spares": 4,
+      "spareOpportunities": 5,
+      "source": "demo"
+    },
+    {
+      "id": "demo-03",
+      "date": "2026-08-05",
+      "score": 131,
+      "frames": [
+        "8/",
+        "72",
+        "X",
+        "9-",
+        "8/",
+        "X",
+        "81",
+        "9/",
+        "7-",
+        "X7-"
+      ],
+      "pinData": [
+        {
+          "pinsLeftAfterFirst": [
+            1,
+            2
+          ],
+          "pinsKnockedDownSecond": [
+            1,
+            2
+          ],
+          "pinsLeftAfterSecond": []
+        },
+        {
+          "pinsLeftAfterFirst": [
+            1,
+            2,
+            3
+          ],
+          "pinsKnockedDownSecond": [
+            1,
+            2
+          ],
+          "pinsLeftAfterSecond": [
+            3
+          ]
+        },
+        {
+          "pinsLeftAfterFirst": [],
+          "pinsKnockedDownSecond": [],
+          "pinsLeftAfterSecond": []
+        },
+        {
+          "pinsLeftAfterFirst": [
+            1
+          ],
+          "pinsKnockedDownSecond": [],
+          "pinsLeftAfterSecond": [
+            1
+          ]
+        },
+        {
+          "pinsLeftAfterFirst": [
+            1,
+            2
+          ],
+          "pinsKnockedDownSecond": [
+            1,
+            2
+          ],
+          "pinsLeftAfterSecond": []
+        },
+        {
+          "pinsLeftAfterFirst": [],
+          "pinsKnockedDownSecond": [],
+          "pinsLeftAfterSecond": []
+        },
+        {
+          "pinsLeftAfterFirst": [
+            1,
+            2
+          ],
+          "pinsKnockedDownSecond": [
+            1
+          ],
+          "pinsLeftAfterSecond": [
+            2
+          ]
+        },
+        {
+          "pinsLeftAfterFirst": [
+            1
+          ],
+          "pinsKnockedDownSecond": [
+            1
+          ],
+          "pinsLeftAfterSecond": []
+        },
+        {
+          "pinsLeftAfterFirst": [
+            1,
+            2,
+            3
+          ],
+          "pinsKnockedDownSecond": [],
+          "pinsLeftAfterSecond": [
+            1,
+            2,
+            3
+          ]
+        },
+        {
+          "pinsLeftAfterFirst": [],
+          "pinsKnockedDownSecond": [],
+          "pinsLeftAfterSecond": []
+        }
+      ],
+      "strikes": 3,
+      "spares": 3,
+      "spareOpportunities": 7,
+      "source": "demo"
+    },
+    {
+      "id": "demo-04",
+      "date": "2026-08-07",
+      "score": 176,
+      "frames": [
+        "X",
+        "X",
+        "9/",
+        "X",
+        "X",
+        "81",
+        "X",
+        "9/",
+        "X",
+        "X9-"
+      ],
+      "pinData": [
+        {
+          "pinsLeftAfterFirst": [],
+          "pinsKnockedDownSecond": [],
+          "pinsLeftAfterSecond": []
+        },
+        {
+          "pinsLeftAfterFirst": [],
+          "pinsKnockedDownSecond": [],
+          "pinsLeftAfterSecond": []
+        },
+        {
+          "pinsLeftAfterFirst": [
+            1
+          ],
+          "pinsKnockedDownSecond": [
+            1
+          ],
+          "pinsLeftAfterSecond": []
+        },
+        {
+          "pinsLeftAfterFirst": [],
+          "pinsKnockedDownSecond": [],
+          "pinsLeftAfterSecond": []
+        },
+        {
+          "pinsLeftAfterFirst": [],
+          "pinsKnockedDownSecond": [],
+          "pinsLeftAfterSecond": []
+        },
+        {
+          "pinsLeftAfterFirst": [
+            1,
+            2
+          ],
+          "pinsKnockedDownSecond": [
+            1
+          ],
+          "pinsLeftAfterSecond": [
+            2
+          ]
+        },
+        {
+          "pinsLeftAfterFirst": [],
+          "pinsKnockedDownSecond": [],
+          "pinsLeftAfterSecond": []
+        },
+        {
+          "pinsLeftAfterFirst": [
+            1
+          ],
+          "pinsKnockedDownSecond": [
+            1
+          ],
+          "pinsLeftAfterSecond": []
+        },
+        {
+          "pinsLeftAfterFirst": [],
+          "pinsKnockedDownSecond": [],
+          "pinsLeftAfterSecond": []
+        },
+        {
+          "pinsLeftAfterFirst": [],
+          "pinsKnockedDownSecond": [],
+          "pinsLeftAfterSecond": []
+        }
+      ],
+      "strikes": 7,
+      "spares": 2,
+      "spareOpportunities": 3,
+      "source": "demo"
+    },
+    {
+      "id": "demo-05",
+      "date": "2026-08-09",
+      "score": 119,
+      "frames": [
+        "71",
+        "8/",
+        "9-",
+        "X",
+        "62",
+        "8/",
+        "7-",
+        "X",
+        "81",
+        "9/"
+      ],
+      "pinData": [
+        {
+          "pinsLeftAfterFirst": [
+            1,
+            2,
+            3
+          ],
+          "pinsKnockedDownSecond": [
+            1
+          ],
+          "pinsLeftAfterSecond": [
+            2,
+            3
+          ]
+        },
+        {
+          "pinsLeftAfterFirst": [
+            1,
+            2
+          ],
+          "pinsKnockedDownSecond": [
+            1,
+            2
+          ],
+          "pinsLeftAfterSecond": []
+        },
+        {
+          "pinsLeftAfterFirst": [
+            1
+          ],
+          "pinsKnockedDownSecond": [],
+          "pinsLeftAfterSecond": [
+            1
+          ]
+        },
+        {
+          "pinsLeftAfterFirst": [],
+          "pinsKnockedDownSecond": [],
+          "pinsLeftAfterSecond": []
+        },
+        {
+          "pinsLeftAfterFirst": [
+            1,
+            2,
+            3,
+            4
+          ],
+          "pinsKnockedDownSecond": [
+            1,
+            2
+          ],
+          "pinsLeftAfterSecond": [
+            3,
+            4
+          ]
+        },
+        {
+          "pinsLeftAfterFirst": [
+            1,
+            2
+          ],
+          "pinsKnockedDownSecond": [
+            1,
+            2
+          ],
+          "pinsLeftAfterSecond": []
+        },
+        {
+          "pinsLeftAfterFirst": [
+            1,
+            2,
+            3
+          ],
+          "pinsKnockedDownSecond": [],
+          "pinsLeftAfterSecond": [
+            1,
+            2,
+            3
+          ]
+        },
+        {
+          "pinsLeftAfterFirst": [],
+          "pinsKnockedDownSecond": [],
+          "pinsLeftAfterSecond": []
+        },
+        {
+          "pinsLeftAfterFirst": [
+            1,
+            2
+          ],
+          "pinsKnockedDownSecond": [
+            1
+          ],
+          "pinsLeftAfterSecond": [
+            2
+          ]
+        },
+        {
+          "pinsLeftAfterFirst": [
+            1
+          ],
+          "pinsKnockedDownSecond": [
+            1
+          ],
+          "pinsLeftAfterSecond": []
+        }
+      ],
+      "strikes": 2,
+      "spares": 3,
+      "spareOpportunities": 8,
+      "source": "demo"
+    },
+    {
+      "id": "demo-06",
+      "date": "2026-08-11",
+      "score": 148,
+      "frames": [
+        "X",
+        "81",
+        "9/",
+        "X",
+        "72",
+        "X",
+        "X",
+        "63",
+        "9/",
+        "X8-"
+      ],
+      "pinData": [
+        {
+          "pinsLeftAfterFirst": [],
+          "pinsKnockedDownSecond": [],
+          "pinsLeftAfterSecond": []
+        },
+        {
+          "pinsLeftAfterFirst": [
+            1,
+            2
+          ],
+          "pinsKnockedDownSecond": [
+            1
+          ],
+          "pinsLeftAfterSecond": [
+            2
+          ]
+        },
+        {
+          "pinsLeftAfterFirst": [
+            1
+          ],
+          "pinsKnockedDownSecond": [
+            1
+          ],
+          "pinsLeftAfterSecond": []
+        },
+        {
+          "pinsLeftAfterFirst": [],
+          "pinsKnockedDownSecond": [],
+          "pinsLeftAfterSecond": []
+        },
+        {
+          "pinsLeftAfterFirst": [
+            1,
+            2,
+            3
+          ],
+          "pinsKnockedDownSecond": [
+            1,
+            2
+          ],
+          "pinsLeftAfterSecond": [
+            3
+          ]
+        },
+        {
+          "pinsLeftAfterFirst": [],
+          "pinsKnockedDownSecond": [],
+          "pinsLeftAfterSecond": []
+        },
+        {
+          "pinsLeftAfterFirst": [],
+          "pinsKnockedDownSecond": [],
+          "pinsLeftAfterSecond": []
+        },
+        {
+          "pinsLeftAfterFirst": [
+            1,
+            2,
+            3,
+            4
+          ],
+          "pinsKnockedDownSecond": [
+            1,
+            2,
+            3
+          ],
+          "pinsLeftAfterSecond": [
+            4
+          ]
+        },
+        {
+          "pinsLeftAfterFirst": [
+            1
+          ],
+          "pinsKnockedDownSecond": [
+            1
+          ],
+          "pinsLeftAfterSecond": []
+        },
+        {
+          "pinsLeftAfterFirst": [],
+          "pinsKnockedDownSecond": [],
+          "pinsLeftAfterSecond": []
+        }
+      ],
+      "strikes": 5,
+      "spares": 2,
+      "spareOpportunities": 5,
+      "source": "demo"
+    },
+    {
+      "id": "demo-07",
+      "date": "2026-08-13",
+      "score": 164,
+      "frames": [
+        "9/",
+        "X",
+        "X",
+        "X",
+        "81",
+        "9/",
+        "X",
+        "72",
+        "X",
+        "X9/"
+      ],
+      "pinData": [
+        {
+          "pinsLeftAfterFirst": [
+            1
+          ],
+          "pinsKnockedDownSecond": [
+            1
+          ],
+          "pinsLeftAfterSecond": []
+        },
+        {
+          "pinsLeftAfterFirst": [],
+          "pinsKnockedDownSecond": [],
+          "pinsLeftAfterSecond": []
+        },
+        {
+          "pinsLeftAfterFirst": [],
+          "pinsKnockedDownSecond": [],
+          "pinsLeftAfterSecond": []
+        },
+        {
+          "pinsLeftAfterFirst": [],
+          "pinsKnockedDownSecond": [],
+          "pinsLeftAfterSecond": []
+        },
+        {
+          "pinsLeftAfterFirst": [
+            1,
+            2
+          ],
+          "pinsKnockedDownSecond": [
+            1
+          ],
+          "pinsLeftAfterSecond": [
+            2
+          ]
+        },
+        {
+          "pinsLeftAfterFirst": [
+            1
+          ],
+          "pinsKnockedDownSecond": [
+            1
+          ],
+          "pinsLeftAfterSecond": []
+        },
+        {
+          "pinsLeftAfterFirst": [],
+          "pinsKnockedDownSecond": [],
+          "pinsLeftAfterSecond": []
+        },
+        {
+          "pinsLeftAfterFirst": [
+            1,
+            2,
+            3
+          ],
+          "pinsKnockedDownSecond": [
+            1,
+            2
+          ],
+          "pinsLeftAfterSecond": [
+            3
+          ]
+        },
+        {
+          "pinsLeftAfterFirst": [],
+          "pinsKnockedDownSecond": [],
+          "pinsLeftAfterSecond": []
+        },
+        {
+          "pinsLeftAfterFirst": [],
+          "pinsKnockedDownSecond": [],
+          "pinsLeftAfterSecond": []
+        }
+      ],
+      "strikes": 6,
+      "spares": 3,
+      "spareOpportunities": 4,
+      "source": "demo"
+    },
+    {
+      "id": "demo-08",
+      "date": "2026-08-15",
+      "score": 127,
+      "frames": [
+        "8-",
+        "9/",
+        "X",
+        "71",
+        "X",
+        "8/",
+        "9-",
+        "X",
+        "62",
+        "9/"
+      ],
+      "pinData": [
+        {
+          "pinsLeftAfterFirst": [
+            1,
+            2
+          ],
+          "pinsKnockedDownSecond": [],
+          "pinsLeftAfterSecond": [
+            1,
+            2
+          ]
+        },
+        {
+          "pinsLeftAfterFirst": [
+            1
+          ],
+          "pinsKnockedDownSecond": [
+            1
+          ],
+          "pinsLeftAfterSecond": []
+        },
+        {
+          "pinsLeftAfterFirst": [],
+          "pinsKnockedDownSecond": [],
+          "pinsLeftAfterSecond": []
+        },
+        {
+          "pinsLeftAfterFirst": [
+            1,
+            2,
+            3
+          ],
+          "pinsKnockedDownSecond": [
+            1
+          ],
+          "pinsLeftAfterSecond": [
+            2,
+            3
+          ]
+        },
+        {
+          "pinsLeftAfterFirst": [],
+          "pinsKnockedDownSecond": [],
+          "pinsLeftAfterSecond": []
+        },
+        {
+          "pinsLeftAfterFirst": [
+            1,
+            2
+          ],
+          "pinsKnockedDownSecond": [
+            1,
+            2
+          ],
+          "pinsLeftAfterSecond": []
+        },
+        {
+          "pinsLeftAfterFirst": [
+            1
+          ],
+          "pinsKnockedDownSecond": [],
+          "pinsLeftAfterSecond": [
+            1
+          ]
+        },
+        {
+          "pinsLeftAfterFirst": [],
+          "pinsKnockedDownSecond": [],
+          "pinsLeftAfterSecond": []
+        },
+        {
+          "pinsLeftAfterFirst": [
+            1,
+            2,
+            3,
+            4
+          ],
+          "pinsKnockedDownSecond": [
+            1,
+            2
+          ],
+          "pinsLeftAfterSecond": [
+            3,
+            4
+          ]
+        },
+        {
+          "pinsLeftAfterFirst": [
+            1
+          ],
+          "pinsKnockedDownSecond": [
+            1
+          ],
+          "pinsLeftAfterSecond": []
+        }
+      ],
+      "strikes": 3,
+      "spares": 3,
+      "spareOpportunities": 7,
+      "source": "demo"
+    },
+    {
+      "id": "demo-09",
+      "date": "2026-08-17",
+      "score": 183,
+      "frames": [
+        "X",
+        "X",
+        "X",
+        "9/",
+        "X",
+        "X",
+        "81",
+        "X",
+        "9/",
+        "X9/"
+      ],
+      "pinData": [
+        {
+          "pinsLeftAfterFirst": [],
+          "pinsKnockedDownSecond": [],
+          "pinsLeftAfterSecond": []
+        },
+        {
+          "pinsLeftAfterFirst": [],
+          "pinsKnockedDownSecond": [],
+          "pinsLeftAfterSecond": []
+        },
+        {
+          "pinsLeftAfterFirst": [],
+          "pinsKnockedDownSecond": [],
+          "pinsLeftAfterSecond": []
+        },
+        {
+          "pinsLeftAfterFirst": [
+            1
+          ],
+          "pinsKnockedDownSecond": [
+            1
+          ],
+          "pinsLeftAfterSecond": []
+        },
+        {
+          "pinsLeftAfterFirst": [],
+          "pinsKnockedDownSecond": [],
+          "pinsLeftAfterSecond": []
+        },
+        {
+          "pinsLeftAfterFirst": [],
+          "pinsKnockedDownSecond": [],
+          "pinsLeftAfterSecond": []
+        },
+        {
+          "pinsLeftAfterFirst": [
+            1,
+            2
+          ],
+          "pinsKnockedDownSecond": [
+            1
+          ],
+          "pinsLeftAfterSecond": [
+            2
+          ]
+        },
+        {
+          "pinsLeftAfterFirst": [],
+          "pinsKnockedDownSecond": [],
+          "pinsLeftAfterSecond": []
+        },
+        {
+          "pinsLeftAfterFirst": [
+            1
+          ],
+          "pinsKnockedDownSecond": [
+            1
+          ],
+          "pinsLeftAfterSecond": []
+        },
+        {
+          "pinsLeftAfterFirst": [],
+          "pinsKnockedDownSecond": [],
+          "pinsLeftAfterSecond": []
+        }
+      ],
+      "strikes": 7,
+      "spares": 3,
+      "spareOpportunities": 3,
+      "source": "demo"
+    },
+    {
+      "id": "demo-10",
+      "date": "2026-08-20",
+      "score": 136,
+      "frames": [
+        "72",
+        "X",
+        "8/",
+        "9-",
+        "X",
+        "71",
+        "9/",
+        "X",
+        "8-",
+        "9/"
+      ],
+      "pinData": [
+        {
+          "pinsLeftAfterFirst": [
+            1,
+            2,
+            3
+          ],
+          "pinsKnockedDownSecond": [
+            1,
+            2
+          ],
+          "pinsLeftAfterSecond": [
+            3
+          ]
+        },
+        {
+          "pinsLeftAfterFirst": [],
+          "pinsKnockedDownSecond": [],
+          "pinsLeftAfterSecond": []
+        },
+        {
+          "pinsLeftAfterFirst": [
+            1,
+            2
+          ],
+          "pinsKnockedDownSecond": [
+            1,
+            2
+          ],
+          "pinsLeftAfterSecond": []
+        },
+        {
+          "pinsLeftAfterFirst": [
+            1
+          ],
+          "pinsKnockedDownSecond": [],
+          "pinsLeftAfterSecond": [
+            1
+          ]
+        },
+        {
+          "pinsLeftAfterFirst": [],
+          "pinsKnockedDownSecond": [],
+          "pinsLeftAfterSecond": []
+        },
+        {
+          "pinsLeftAfterFirst": [
+            1,
+            2,
+            3
+          ],
+          "pinsKnockedDownSecond": [
+            1
+          ],
+          "pinsLeftAfterSecond": [
+            2,
+            3
+          ]
+        },
+        {
+          "pinsLeftAfterFirst": [
+            1
+          ],
+          "pinsKnockedDownSecond": [
+            1
+          ],
+          "pinsLeftAfterSecond": []
+        },
+        {
+          "pinsLeftAfterFirst": [],
+          "pinsKnockedDownSecond": [],
+          "pinsLeftAfterSecond": []
+        },
+        {
+          "pinsLeftAfterFirst": [
+            1,
+            2
+          ],
+          "pinsKnockedDownSecond": [],
+          "pinsLeftAfterSecond": [
+            1,
+            2
+          ]
+        },
+        {
+          "pinsLeftAfterFirst": [
+            1
+          ],
+          "pinsKnockedDownSecond": [
+            1
+          ],
+          "pinsLeftAfterSecond": []
+        }
+      ],
+      "strikes": 3,
+      "spares": 3,
+      "spareOpportunities": 7,
+      "source": "demo"
+    },
+    {
+      "id": "demo-11",
+      "date": "2026-08-23",
+      "score": 151,
+      "frames": [
+        "X",
+        "9/",
+        "81",
+        "X",
+        "X",
+        "72",
+        "9/",
+        "X",
+        "8/",
+        "X7-"
+      ],
+      "pinData": [
+        {
+          "pinsLeftAfterFirst": [],
+          "pinsKnockedDownSecond": [],
+          "pinsLeftAfterSecond": []
+        },
+        {
+          "pinsLeftAfterFirst": [
+            1
+          ],
+          "pinsKnockedDownSecond": [
+            1
+          ],
+          "pinsLeftAfterSecond": []
+        },
+        {
+          "pinsLeftAfterFirst": [
+            1,
+            2
+          ],
+          "pinsKnockedDownSecond": [
+            1
+          ],
+          "pinsLeftAfterSecond": [
+            2
+          ]
+        },
+        {
+          "pinsLeftAfterFirst": [],
+          "pinsKnockedDownSecond": [],
+          "pinsLeftAfterSecond": []
+        },
+        {
+          "pinsLeftAfterFirst": [],
+          "pinsKnockedDownSecond": [],
+          "pinsLeftAfterSecond": []
+        },
+        {
+          "pinsLeftAfterFirst": [
+            1,
+            2,
+            3
+          ],
+          "pinsKnockedDownSecond": [
+            1,
+            2
+          ],
+          "pinsLeftAfterSecond": [
+            3
+          ]
+        },
+        {
+          "pinsLeftAfterFirst": [
+            1
+          ],
+          "pinsKnockedDownSecond": [
+            1
+          ],
+          "pinsLeftAfterSecond": []
+        },
+        {
+          "pinsLeftAfterFirst": [],
+          "pinsKnockedDownSecond": [],
+          "pinsLeftAfterSecond": []
+        },
+        {
+          "pinsLeftAfterFirst": [
+            1,
+            2
+          ],
+          "pinsKnockedDownSecond": [
+            1,
+            2
+          ],
+          "pinsLeftAfterSecond": []
+        },
+        {
+          "pinsLeftAfterFirst": [],
+          "pinsKnockedDownSecond": [],
+          "pinsLeftAfterSecond": []
+        }
+      ],
+      "strikes": 5,
+      "spares": 3,
+      "spareOpportunities": 5,
+      "source": "demo"
+    },
+    {
+      "id": "demo-12",
+      "date": "2026-08-26",
+      "score": 169,
+      "frames": [
+        "X",
+        "X",
+        "7/",
+        "X",
+        "9/",
+        "X",
+        "X",
+        "81",
+        "X",
+        "X8/"
+      ],
+      "pinData": [
+        {
+          "pinsLeftAfterFirst": [],
+          "pinsKnockedDownSecond": [],
+          "pinsLeftAfterSecond": []
+        },
+        {
+          "pinsLeftAfterFirst": [],
+          "pinsKnockedDownSecond": [],
+          "pinsLeftAfterSecond": []
+        },
+        {
+          "pinsLeftAfterFirst": [
+            1,
+            2,
+            3
+          ],
+          "pinsKnockedDownSecond": [
+            1,
+            2,
+            3
+          ],
+          "pinsLeftAfterSecond": []
+        },
+        {
+          "pinsLeftAfterFirst": [],
+          "pinsKnockedDownSecond": [],
+          "pinsLeftAfterSecond": []
+        },
+        {
+          "pinsLeftAfterFirst": [
+            1
+          ],
+          "pinsKnockedDownSecond": [
+            1
+          ],
+          "pinsLeftAfterSecond": []
+        },
+        {
+          "pinsLeftAfterFirst": [],
+          "pinsKnockedDownSecond": [],
+          "pinsLeftAfterSecond": []
+        },
+        {
+          "pinsLeftAfterFirst": [],
+          "pinsKnockedDownSecond": [],
+          "pinsLeftAfterSecond": []
+        },
+        {
+          "pinsLeftAfterFirst": [
+            1,
+            2
+          ],
+          "pinsKnockedDownSecond": [
+            1
+          ],
+          "pinsLeftAfterSecond": [
+            2
+          ]
+        },
+        {
+          "pinsLeftAfterFirst": [],
+          "pinsKnockedDownSecond": [],
+          "pinsLeftAfterSecond": []
+        },
+        {
+          "pinsLeftAfterFirst": [],
+          "pinsKnockedDownSecond": [],
+          "pinsLeftAfterSecond": []
+        }
+      ],
+      "strikes": 7,
+      "spares": 3,
+      "spareOpportunities": 3,
+      "source": "demo"
+    }
+  ]
+}

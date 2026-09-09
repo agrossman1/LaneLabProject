@@ -28,3 +28,23 @@ invented one.
 Personal Stats includes date filters, a personal high, and milestone medals at
 100, 150, 200, 250, and 300. Arsenal ball details calculate only from saved
 games where that ball was selected.
+## Native app preparation
+
+LaneLab can be packaged for iOS and Android with Capacitor while keeping the
+GitHub Pages build unchanged. The current configuration uses the repository
+root (`index.html`) as the web directory and assigns the app ID
+`com.lanelab.app`. `assets/lanelab-icon.svg` and `assets/lanelab-splash.svg`
+are the source artwork for native icon/splash resource generation.
+
+```bash
+npm install
+npm run cap:add:android   # requires Android Studio/SDK; run once
+npm run cap:add:ios       # requires macOS and Xcode; run once
+npm run cap:sync
+npm run cap:open:android
+npm run cap:open:ios
+```
+
+Keep native platform folders out of feature logic. Browser behavior remains
+the source of truth; native plugins should be added behind `src/platform/`
+adapters when a device-only feature is introduced.
