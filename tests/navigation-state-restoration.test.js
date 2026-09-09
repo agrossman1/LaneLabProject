@@ -14,6 +14,7 @@ assert.match(source, /function go\(id\)[\s\S]*?dataset\.target===id/);
 assert.match(source, /window\.scrollTo\(\{top:0/);
 assert.match(source, /const CURRENT_SCREEN_STORAGE_KEY='lanelab-current-screen'/);
 assert.match(source, /function restoreLastScreen\(\)/);
+assert.match(source, /if\(id==='score'\)[\s\S]*?syncBallSelect\(\);[\s\S]*?renderScoreControls\(\)/);
 assert.match(fs.readFileSync(path.join(__dirname, '..', 'src', 'app.js'), 'utf8'), /restoreLastScreen\?\.\(\)/);
 
 // Frame selection/edit state is kept in the central state object, so changing

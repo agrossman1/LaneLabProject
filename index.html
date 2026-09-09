@@ -52,7 +52,7 @@ button,input,select{
 }
 button{cursor:pointer}
 header{
-  padding:9px 18px 3px;
+  padding:calc(9px + env(safe-area-inset-top, 0px)) 18px 3px;
   position:sticky;top:0;z-index:20;
   backdrop-filter:blur(18px);
   background:linear-gradient(180deg,rgba(11,16,32,.96),rgba(11,16,32,.72));
@@ -2548,6 +2548,13 @@ function go(id){
     arsenal=LaneLabArsenal.load(getGameStorage(),arsenal);
     renderArsenal();
   }
+  if(id==='score'){
+    // Rehydrate the catalog when returning to Score so Arsenal additions are
+    // reflected immediately, even after a modal or another screen changed it.
+    arsenal=LaneLabArsenal.load(getGameStorage(),arsenal);
+    syncBallSelect();
+    renderScoreControls();
+  }
   if(id==='personalStats') renderPersonalStats();
   if(id==='stats'){ renderChart(); renderSessionMetrics(); }
   try{getGameStorage()?.setItem(CURRENT_SCREEN_STORAGE_KEY,id)}catch(e){}
@@ -3502,6 +3509,10 @@ function addBall(){
     image:match?.image || null
   });
   arsenal=LaneLabArsenal.save(getGameStorage(),[...arsenal,ball]);
+  // Keep the Score controls in lockstep with Arsenal immediately. Without
+  // this refresh, newly added balls only appeared after a full reload.
+  syncBallSelect();
+  renderScoreControls();
   renderArsenal();
 
   if(nameInput) nameInput.value='';

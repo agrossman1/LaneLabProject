@@ -27,6 +27,7 @@ for (const handler of ['function onboardingAddBall(', 'function addBall(', 'func
 }
 assert.match(source, /function onboardingAddBall\([\s\S]*?LaneLabArsenal\.save\(getGameStorage\(\)/);
 assert.match(source, /function addBall\([\s\S]*?LaneLabArsenal\.save\(getGameStorage\(\)/);
+assert.match(source, /function addBall\([\s\S]*?syncBallSelect\(\);[\s\S]*?renderScoreControls\(\)/);
 assert.match(source, /function deleteSelectedBall\([\s\S]*?LaneLabArsenal\.save\(getGameStorage\(/);
 assert.match(source, /deleteSelectedBall\(\)/);
 

@@ -8,6 +8,9 @@
   }
 
   function init() {
+    // Capacitor Android can render the WebView edge-to-edge. Add a native
+    // marker so the header gets a small status-bar clearance there only.
+    if (root.Capacitor?.isNativePlatform?.()) root.document.documentElement.classList.add('native-shell');
     root.loadSavedTheme?.();
     root.preloadBallCatalogImages?.();
     const gameDateInput = root.document.getElementById('gameDate');

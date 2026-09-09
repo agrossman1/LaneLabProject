@@ -24,4 +24,9 @@ assert.match(source, /html,body,\.app\{touch-action:manipulation\}/);
 assert.match(source, /button,input,select\{[\s\S]*?touch-action:manipulation/);
 assert.match(source, /\.pinButton\{[^}]*touch-action:none/);
 
+// Native WebViews must keep the sticky header below the system status bar.
+const layout = fs.readFileSync(path.join(__dirname, '..', 'src/ui/layout.css'), 'utf8');
+assert.match(layout, /header\{padding-top:calc\(9px \+ env\(safe-area-inset-top, 0px\)\)\}/);
+assert.match(layout, /\.native-shell header\{padding-top:calc\(17px \+ env\(safe-area-inset-top, 0px\)\)\}/);
+
 console.log('Mobile layout checks passed for pin rack, zero-pin placement, ball controls, and touch behavior.');
