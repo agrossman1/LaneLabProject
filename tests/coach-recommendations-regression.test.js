@@ -24,6 +24,6 @@ assert.match(source, /const candidates=\[/);
 for (const metric of ["key:'score'", "key:'strike'", "key:'spare'", "key:'open'"]) {
   assert.ok(source.includes(metric), `Coach candidate ${metric} is missing`);
 }
-assert.match(source, /const worst=candidates\.sort/);
+assert.match(source, /LaneLabCoachFeature\.selectLargestNegativeChange|const worst=candidates\.sort/);
 
 console.log(`Coach recommendation checks passed for ${fixture.cases.length} negative-change cases.`);

@@ -1296,6 +1296,7 @@ body.light-mode .ballMatchPreview img{
 <script src="./js/profile.js"></script>
 <script src="./js/arsenal.js"></script>
 <script src="./src/features/arsenal.js"></script>
+<script src="./src/features/coach.js"></script>
 <script src="./src/features/profile.js"></script>
 <script src="./src/features/history.js"></script>
 <script src="./src/data/schema.js"></script>
@@ -1933,7 +1934,9 @@ function generateCoachRecommendation(current,previous){
       {key:'spare',now:current.spareRate,then:previous.spareRate,bad:d=>d<0,severity:d=>Math.abs(d)/100},
       {key:'open',now:current.openPerGame,then:previous.openPerGame,bad:d=>d>0,severity:d=>Math.abs(d)/Math.max(1,Math.abs(previous.openPerGame||1))}
     ].map(item=>({...item,delta:item.now!==null&&item.now!==undefined&&item.then!==null&&item.then!==undefined?item.now-item.then:0})).filter(item=>item.bad(item.delta));
-    const worst=candidates.sort((a,b)=>b.severity(b.delta)-a.severity(a.delta))[0];
+    const worst=typeof LaneLabCoachFeature!=='undefined'
+      ? LaneLabCoachFeature.selectLargestNegativeChange(candidates)
+      : candidates.sort((a,b)=>b.severity(b.delta)-a.severity(a.delta))[0];
     if(worst){
       if(worst.key==='score') return {title:'Rebuild your scoring pace',label:'Average score',value:Math.round(current.average),trend:worst.delta,why:'Your average score dropped the most versus the previous session, so this is the clearest place to regain momentum.',explanation:`Your average moved from ${Math.round(previous.average)} to ${Math.round(current.average)}. Focus on completing frames cleanly and turning misses into spares.`,drillTitle:'Scoring reset',drillValue:'Play 1 game with a clean-frame focus',drillGoal:'Goal: finish every frame with a mark',opportunity:'Room to recover lost pins'};
       if(worst.key==='strike') return {title:'Create more first-ball strikes',label:'Strike rate',value:Math.round(current.strikeRate)+'%',trend:worst.delta,why:'Strike rate fell more than your other tracked measures, so first-ball execution is the biggest change to address.',explanation:`Your strike rate moved from ${Math.round(previous.strikeRate)}% to ${Math.round(current.strikeRate)}%. Rebuild your first-ball target and repeatable launch.`,drillTitle:'First-ball strike drill',drillValue:'10 focused first-ball shots',drillGoal:'Goal: improve your strike rhythm',opportunity:'Room to recover scoring momentum'};
