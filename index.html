@@ -3244,7 +3244,9 @@ const DEFAULT_ARSENAL=[
   {id:'ascent',name:'Ascent',weight:15,role:'Benchmark',image:ballImageCatalog[0].image},
   {id:'hy-road',name:'Hy-Road',weight:15,role:'Control',image:ballImageCatalog[1].image}
 ];
-let arsenal=LaneLabArsenal.load(getGameStorage(),DEFAULT_ARSENAL);
+// A new or reset onboarding session starts with an empty arsenal. Starter
+// balls must never be synthesized when no persisted catalog exists.
+let arsenal=LaneLabArsenal.load(getGameStorage(),[]);
 let selectedBallId=null;
 let matchedBallCatalogItem = null;
 

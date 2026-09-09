@@ -43,6 +43,7 @@ assert.match(fullReset, /sessionStorage\?\.clear\(\)/);
 assert.match(fullReset, /lanelab-force-onboarding/);
 assert.match(fullReset, /onboarding=1/);
 assert.match(fullReset, /arsenal=\[\]/);
+assert.match(source, /let arsenal=LaneLabArsenal\.load\(getGameStorage\(\),\[\]\)/);
 assert.match(fullReset, /state\.frames=Array\.from\(\{length:10\}/);
 assert.match(fullReset, /state\.pinTracking=null/);
 assert.match(fullReset, /state\.editingFrame=null/);

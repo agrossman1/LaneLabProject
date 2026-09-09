@@ -2,10 +2,13 @@ const assert = require('node:assert/strict');
 const fs = require('node:fs');
 const path = require('node:path');
 const root = path.join(__dirname, '..');
-const config = fs.readFileSync(path.join(root, 'capacitor.config.ts'), 'utf8');
+const config = fs.readFileSync(path.join(root, 'capacitor.config.js'), 'utf8');
 const pkg = JSON.parse(fs.readFileSync(path.join(root, 'package.json'), 'utf8'));
 assert.match(config, /appId:\s*'com\.lanelab\.app'/);
-assert.match(config, /webDir:\s*'\.'/);
+assert.match(config, /webDir:\s*'www'/);
+assert.equal(fs.existsSync(path.join(root, 'scripts/prepare-web-assets.mjs')), true);
+assert.equal(fs.existsSync(path.join(root, 'scripts/node-userinfo-shim.cjs')), true);
+assert.equal(fs.existsSync(path.join(root, 'www/.gitkeep')), true);
 assert.ok(pkg.dependencies?.['@capacitor/core']);
 assert.ok(pkg.devDependencies?.['@capacitor/cli'] || pkg.dependencies?.['@capacitor/cli']);
 for (const file of ['src/app.js','src/platform/device.js','src/data/transfer.js','assets/lanelab-icon.svg','assets/lanelab-splash.svg','privacy.html','support.html']) {
