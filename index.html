@@ -1324,7 +1324,9 @@ body.light-mode .ballMatchPreview img{
 <script src="./js/profile.js"></script>
 <script src="./js/arsenal.js"></script>
 <script src="./src/data/schema.js"></script>
+<script src="./src/data/storage.js"></script>
 <script src="./src/core/scoring.js"></script>
+<script src="./src/features/index.js"></script>
 <script>
 
 const demoScanPlayers = [
@@ -1492,7 +1494,7 @@ function saveImportedGames(){
 }
 
 function getGameStorage(){
-  try{return window.localStorage}catch(error){return null}
+  return LaneLabStorage.get();
 }
 
 function localDateInputValue(date=new Date()){
@@ -2591,6 +2593,7 @@ function go(id){
 }
 
 function isFrameComplete(i){
+  if(typeof LaneLabScoring!=='undefined') return LaneLabScoring.isFrameComplete(state.frames,i);
   const r=state.frames[i].rolls;
   if(i<9) return r.length===1 && r[0]===10 || r.length>=2;
   if(r.length<2) return false;
@@ -2605,25 +2608,16 @@ function allRollsAfter(frameIndex){
 }
 
 function frameCumulativeScores(){
-  const out=[];
-  let cumulative=0;
+  if(typeof LaneLabScoring!=='undefined') return LaneLabScoring.cumulativeScores(state.frames);
+  const out=[]; let cumulative=0;
   for(let i=0;i<10;i++){
-    const r=state.frames[i].rolls;
-    let score=null;
+    const r=state.frames[i].rolls; let score=null;
     if(i<9){
-      if(r[0]===10){
-        const bonus=allRollsAfter(i);
-        if(bonus.length>=2) score=10+bonus[0]+bonus[1];
-      }else if(r.length>=2 && r[0]+r[1]===10){
-        const bonus=allRollsAfter(i);
-        if(bonus.length>=1) score=10+bonus[0];
-      }else if(r.length>=2){
-        score=r[0]+r[1];
-      }
-    }else{
-      if(isFrameComplete(9)) score=r.reduce((a,b)=>a+b,0);
-    }
-    if(score===null){out.push(null)}else{cumulative+=score;out.push(cumulative)}
+      if(r[0]===10){const bonus=allRollsAfter(i);if(bonus.length>=2) score=10+bonus[0]+bonus[1];}
+      else if(r.length>=2&&r[0]+r[1]===10){const bonus=allRollsAfter(i);if(bonus.length>=1) score=10+bonus[0];}
+      else if(r.length>=2) score=r[0]+r[1];
+    }else if(isFrameComplete(9)) score=r.reduce((a,b)=>a+b,0);
+    if(score===null) out.push(null); else {cumulative+=score;out.push(cumulative)}
   }
   return out;
 }
