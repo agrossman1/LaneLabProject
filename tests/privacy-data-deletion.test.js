@@ -22,6 +22,8 @@ assert.match(source, /function resetAllGameData\(\)\{[\s\S]*?(?:LaneLabStorage\.
 assert.match(source, /function resetAllGameData\(\)\{[\s\S]*?sessionStorage\?\.clear\(\)/);
 assert.match(source, /function resetAllGameData\(\)\{[\s\S]*?lanelab-force-onboarding/);
 assert.match(source, /function resetAllGameData\(\)\{[\s\S]*?state\.games=\[\];[\s\S]*?state\.recent=\[\];/);
+assert.match(source, /function resetAllGameData\(\)[\s\S]*?window\.confirm\([^)]*Reset the entire LaneLab app/);
+assert.match(source, /function resetAllGameData\(\)[\s\S]*?window\.confirm\([^)]*Final check/);
 assert.match(source, /window\.location\.replace\(`\$\{window\.location\.pathname\}\?reset=\$\{Date\.now\(\)\}&onboarding=1`\)/);
 
 // The destructive action is only wired to the explicitly labelled menu item;

@@ -2519,8 +2519,10 @@ function exportGameDataCsv(){
   toast(`${state.games.length} game${state.games.length===1?'':'s'} exported as CSV`);
 }
 function resetAllGameData(){
-  // Keep this action reliable on mobile browsers where native confirm dialogs
-  // can be suppressed. The profile menu already labels the destructive scope.
+  // Require two explicit confirmations before this irreversible action. The
+  // second prompt makes an accidental tap much less likely to erase data.
+  if(!window.confirm('Reset the entire LaneLab app? This clears your profile, games, Arsenal, stats, and coach data.')) return;
+  if(!window.confirm('Final check: permanently erase all LaneLab data?')) return;
   LaneLabStorage.clear(getGameStorage());
   try{window.sessionStorage?.clear()}catch(e){}
   // An empty persisted arsenal prevents the built-in starter balls from being
