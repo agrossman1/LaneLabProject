@@ -1296,6 +1296,7 @@ body.light-mode .ballMatchPreview img{
 <script src="./js/profile.js"></script>
 <script src="./js/arsenal.js"></script>
 <script src="./src/features/profile.js"></script>
+<script src="./src/features/history.js"></script>
 <script src="./src/data/schema.js"></script>
 <script src="./src/data/storage.js"></script>
 <script src="./src/core/scoring.js"></script>
@@ -2111,23 +2112,11 @@ function syncGameSummaries(){
 }
 
 function formatGameDate(value){
-  if(!value) return 'Date unavailable';
-  const date=new Date(value);
-  if(Number.isNaN(date.getTime())) return 'Date unavailable';
-  return new Intl.DateTimeFormat(undefined,{month:'short',day:'numeric',year:'numeric'}).format(date);
+  return LaneLabHistoryFeature.formatDate(value);
 }
 
 function getFilteredHistory(){
-  const games=historyRange==='all' ? state.games.slice() : (()=>{
-    const days=Number(historyRange);
-    const cutoff=Date.now()-(days*24*60*60*1000);
-    return state.games.filter(game=>game.date && new Date(game.date).getTime()>=cutoff);
-  })();
-  return games.sort((a,b)=>{
-    const aTime=a.date ? new Date(a.date).getTime() : 0;
-    const bTime=b.date ? new Date(b.date).getTime() : 0;
-    return (bTime-aTime) || (state.games.indexOf(b)-state.games.indexOf(a));
-  });
+  return LaneLabHistoryFeature.filterGames(state.games,historyRange);
 }
 
 function setHistoryRange(range){
