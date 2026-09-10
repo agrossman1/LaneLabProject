@@ -7,6 +7,16 @@
     root.navigator.serviceWorker.register('./sw.js').then(reg => reg.update()).catch(() => {});
   }
 
+  function restoreResetOnboarding() {
+    const params = new URLSearchParams(root.location.search);
+    if (!params.has('reset')) return;
+    root.document.getElementById('onboardingModal')?.classList.add('show');
+    params.delete('reset');
+    params.delete('onboarding');
+    const cleanQuery = params.toString();
+    root.history.replaceState(null, '', `${root.location.pathname}${cleanQuery ? `?${cleanQuery}` : ''}${root.location.hash}`);
+  }
+
   function init() {
     // Capacitor Android can render the WebView edge-to-edge. Add a native
     // marker so the header gets a small status-bar clearance there only.
@@ -22,6 +32,7 @@
     root.syncAverageDisplays?.(); root.syncGameSummaries?.();
     root.renderPersonalStats?.(); root.renderArsenal?.();
     root.restoreLastScreen?.(); root.maybeStartOnboarding?.();
+    restoreResetOnboarding();
     registerServiceWorker();
   }
 

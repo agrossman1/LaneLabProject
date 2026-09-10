@@ -2,6 +2,53 @@
 
 Browser prototype for LaneLab Bowling Tracker.
 
+## Release verification
+
+From the project root, run:
+
+```bash
+npm run release:check
+```
+
+This runs the complete regression suite, prepares and synchronizes Capacitor assets, and verifies the Android debug Gradle build. If Gradle reports that Java is missing, set `JAVA_HOME` to Android Studio's bundled JDK and run the command again.
+
+## Repeatable development workflow
+
+Use this sequence for every change:
+
+1. **Edit** the browser source and feature modules in the project root.
+2. **Test** the change locally. On Windows PowerShell, use `npm.cmd` if script execution blocks `npm`:
+   ```powershell
+   npm.cmd test
+   ```
+3. **Synchronize Capacitor** so the latest web source is copied into Android:
+   ```powershell
+   npm.cmd run cap:sync
+   ```
+4. **Open Android Studio** with:
+   ```powershell
+   npm.cmd run cap:open:android
+   ```
+5. **Build and run** the `app` configuration on an emulator or physical Android device. Check the changed behavior on-device.
+6. **Commit and push** only after the tests and device check pass:
+   ```powershell
+   git status
+   git add .
+   git commit -m "Describe the change"
+   git push origin main
+   ```
+
+For a complete pre-release check, use `npm.cmd run release:check`; it runs the
+test suite, Capacitor sync, and an Android debug build in one command.
+
+## Android release signing
+
+Release signing is configured locally through `android/keystore.properties`. Copy
+`android/keystore.properties.example`, fill in the values, and keep both that
+file and the keystore outside Git. Back up the keystore and passwords securely;
+the same signing key is required for future updates. Without the local signing
+file, debug builds still work and release builds remain unsigned.
+
 ## GitHub Pages
 This folder is ready to publish with GitHub Pages.
 

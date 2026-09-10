@@ -4,6 +4,7 @@ const path = require('node:path');
 const LaneLabStats = require('../js/stats.js');
 
 const source = fs.readFileSync(path.join(__dirname, '..', 'index.html'), 'utf8');
+const appBootstrap = fs.readFileSync(path.join(__dirname, '..', 'src', 'app.js'), 'utf8');
 const fixture = JSON.parse(fs.readFileSync(path.join(__dirname, 'fixtures/persistence-reload-regression.json'), 'utf8'));
 const storage = new Map();
 const storageStub = {
@@ -34,7 +35,7 @@ assert.match(source, /state\.games=LaneLabStats\.saveGameRecords\(getGameStorage
 assert.match(source, /const CURRENT_GAME_STORAGE_KEY='lanelab-current-game'/);
 assert.match(source, /function persistCurrentGame\(\)/);
 assert.match(source, /function restoreCurrentGame\(\)/);
-assert.match(source, /restoreCurrentGame\(\);/);
+assert.match(appBootstrap, /restoreCurrentGame\?\.\(\)/, 'shared app bootstrap must restore the current game');
 assert.match(source, /title\.textContent=`Game \$\{state\.sessionGameNumber\}`/);
 
 console.log('Persistence/reload checks passed for saved records, scores, metadata, and refresh hydration.');

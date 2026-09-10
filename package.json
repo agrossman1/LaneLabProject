@@ -13,6 +13,10 @@
     "cap:copy": "npx cap copy",
     "test:cap-sync": "node tests/capacitor-prebuild.test.js",
     "cap:verify": "npx cap sync && npm run test:cap-sync && npm run test:release-smoke",
+    "release:check": "node scripts/release-check.mjs",
+    "check:metadata": "node scripts/validate-app-metadata.mjs",
+    "test:production-assets": "node tests/production-assets.test.js",
+    "pretest": "npm run test:production-assets",
     "test:import": "node tests/import-regression.test.js",
     "test:scoring": "node tests/scoring-regression.test.js",
     "test:frame-editing": "node tests/frame-editing-regression.test.js",
@@ -60,7 +64,7 @@
     "test:analytics-consent": "node tests/analytics-privacy-consent.test.js",
     "test:user-help": "node tests/user-facing-help.test.js",
     "test:privacy-deletion": "node tests/privacy-data-deletion.test.js",
-    "test": "npm run test:import && npm run test:scoring && npm run test:frame-editing && npm run test:roundtrip && npm run test:metadata && npm run test:onboarding-reset && npm run test:arsenal-metrics && npm run test:mobile-layout && npm run test:pin-notation && npm run test:history-editing && npm run test:persistence && npm run test:arsenal-crud && npm run test:coach && npm run test:migration && npm run test:accessibility && npm run test:csv-export && npm run test:e2e-smoke && npm run test:profile-persistence && npm run test:data-integrity && npm run test:responsive-visual && npm run test:game-rules && npm run test:undo-cancel && npm run test:concurrent-tabs && npm run test:storage-recovery && npm run test:date-sessions && npm run test:large-dataset && npm run test:security-input && npm run test:browser-compatibility && npm run test:touch-gestures && npm run test:print-share-export && npm run test:empty-states && npm run test:navigation-state && npm run test:accessibility-audit && npm run test:release-smoke && npm run test:score-oracle && npm run test:offline-pwa && npm run test:backup-recovery && npm run test:schema-upgrade && npm run test:privacy-deletion && npm run test:file-picker && npm run test:memory-stability && npm run test:localization-date && npm run test:dependency-csp && npm run test:error-recovery && npm run test:user-help"
+    "test": "npm run check:metadata && npm run test:import && npm run test:scoring && npm run test:frame-editing && npm run test:roundtrip && npm run test:metadata && npm run test:onboarding-reset && npm run test:arsenal-metrics && npm run test:mobile-layout && npm run test:pin-notation && npm run test:history-editing && npm run test:persistence && npm run test:arsenal-crud && npm run test:coach && npm run test:migration && npm run test:accessibility && npm run test:csv-export && npm run test:e2e-smoke && npm run test:profile-persistence && npm run test:data-integrity && npm run test:responsive-visual && npm run test:game-rules && npm run test:undo-cancel && npm run test:concurrent-tabs && npm run test:storage-recovery && npm run test:date-sessions && npm run test:large-dataset && npm run test:security-input && npm run test:browser-compatibility && npm run test:touch-gestures && npm run test:print-share-export && npm run test:empty-states && npm run test:navigation-state && npm run test:accessibility-audit && npm run test:release-smoke && npm run test:score-oracle && npm run test:offline-pwa && npm run test:backup-recovery && npm run test:schema-upgrade && npm run test:privacy-deletion && npm run test:file-picker && npm run test:memory-stability && npm run test:localization-date && npm run test:dependency-csp && npm run test:error-recovery && npm run test:user-help"
   },
   "dependencies": {
     "@capacitor/android": "^8.5.1",
