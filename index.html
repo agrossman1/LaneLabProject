@@ -3629,8 +3629,7 @@ function restoreLastScreen(){
     const id=getGameStorage()?.getItem(CURRENT_SCREEN_STORAGE_KEY);
     // Detail screens depend on transient selection data. After a reload,
     // return to their tracker instead of opening an empty detail template.
-    if(id==='pinLayDetailScreen') return go('pinLayStats');
-    if(id==='splitDetailScreen') return go('splitStats');
+    if(id==='pinLayDetailScreen' || id==='splitDetailScreen') return go('stats');
     const allowed=['home','score','stats','pinLayStats','pinLayDetailScreen','splitStats','splitDetailScreen','arsenal','coach','profile','help','personalStats'];
     if(id&&allowed.includes(id)) go(id);
   }catch(e){}
