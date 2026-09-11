@@ -188,6 +188,7 @@ select,input{
 .advancedCharts{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}.advancedChart{padding:12px;border-radius:16px;background:var(--panel);border:1px solid var(--line)}.advancedChart h3{font-size:12px;margin:0;color:var(--muted)}.advancedChartValue{font-size:23px;font-weight:900;margin:3px 0 4px}.advancedChartPlot{display:block;width:100%;height:96px;overflow:visible}.advancedChartGrid{stroke:var(--line);stroke-width:1;stroke-dasharray:2 3}.advancedChartAxis{stroke:#687998;stroke-width:1}.advancedChartLine{fill:none;stroke:var(--accent);stroke-width:2.5;stroke-linecap:round;stroke-linejoin:round}.advancedChartLine.good{stroke:var(--good)}.advancedChartLine.warn{stroke:var(--warn)}.advancedChartPoint{fill:var(--panel);stroke:var(--accent);stroke-width:1.5}.advancedChartPoint.good{stroke:var(--good)}.advancedChartPoint.warn{stroke:var(--warn)}.advancedChartLabel{fill:var(--muted);font-size:8px;font-weight:700}.advancedChartsControls{width:auto;min-width:120px;margin:0;padding:7px 9px;font-size:12px}
 @media(max-width:520px){.advancedCharts{grid-template-columns:1fr}}
 .pinLayDetailHero{display:grid;grid-template-columns:145px 1fr;align-items:center;gap:14px}.pinLayDetailHero .pinLayDots{transform:scale(1.15);margin:12px auto}.pinLayDetailMetrics{display:grid;grid-template-columns:1fr 1fr;gap:8px}.pinLayDetailMetric{padding:10px;border-radius:14px;background:var(--panel2);text-align:center}.pinLayDetailMetric b{display:block;font-size:20px}.pinLayDetailMetric small{color:var(--muted);font-size:10px}
+.pinLayDetailHero>div:first-child{display:flex;align-items:center;justify-content:center;min-width:0}
 .pinLayFrameHighlight{border:2px solid var(--accent);box-shadow:0 0 0 3px rgba(124,156,255,.2)}.pinLayFrameDiagram{margin-top:8px;display:flex;justify-content:center}.pinLayFrameDiagram .pinLayDots{transform:scale(.72);transform-origin:top center;margin:3px 0 -22px}
 .ballIcon{
   width:48px;height:48px;border-radius:50%;
@@ -2188,6 +2189,7 @@ function renderPinLayStats(){
 }
 function openPinLayStats(){renderPinLayStats();go('pinLayStats');}
 function openPinLayDetail(key){
+  try{getGameStorage()?.setItem('lanelab-pin-detail-key',key)}catch(e){}
   const items=window.__pinLayDetailData?.[key]||[],title=document.getElementById('pinLayDetailTitle'),list=document.getElementById('pinLayDetailList');
   if(!title||!list) return;
   title.textContent=`${key} leave`;
@@ -2206,7 +2208,7 @@ function renderSplitStats(){
   const grid=document.getElementById('splitGrid');if(!grid)return;grid.innerHTML=splits.length?splits.map(item=>`<button type="button" class="pinLayCard" onclick="openSplitDetail('${escapeHtml(item.key)}')"><div class="pinLayCardTop"><span class="pinLayName">${escapeHtml(item.key)}</span><span class="pinLayRate">${item.attempts?Math.round(item.makes/item.attempts*100):0}%</span></div><div class="pinLayVisual" aria-label="Split ${escapeHtml(item.key)}">${pinLayDiagram(item.pins)}</div><div class="pinLayMeta">${item.attempts} attempt${item.attempts===1?'':'s'}</div></button>`).join(''):'<div class="pinLayEmpty" style="grid-column:1/-1">No split leaves yet.</div>';
 }
 function openSplitStats(){renderSplitStats();go('splitStats');}
-function openSplitDetail(key){const items=window.__splitDetailData?.[key]||[],title=document.getElementById('splitDetailTitle'),list=document.getElementById('splitDetailList');if(!title||!list)return;title.textContent=`${key} split`;document.getElementById('splitDetailAttempts').textContent=items.length;document.getElementById('splitDetailMade').textContent=items.filter(item=>item.converted).length;document.getElementById('splitDetailDiagram').innerHTML=`<div class="pinLayVisual" aria-label="Split ${escapeHtml(key)}">${pinLayDiagram(key.split('-').map(Number))}</div>`;list.innerHTML=items.map(item=>`<button type="button" class="pinLayGame" onclick="openGameDetail(event,'${escapeHtml(item.id)}','${escapeHtml(key)}',${item.frame})"><span><b>Game ${item.gameNumber}</b><span class="muted small" style="display:block">${escapeHtml(formatGameDate(item.date))} · Frame ${item.frame}</span></span><span class="pill">${item.converted?'Made':'Missed'} · ${item.score}</span></button>`).join('');go('splitDetailScreen');}
+function openSplitDetail(key){try{getGameStorage()?.setItem('lanelab-split-detail-key',key)}catch(e){}const items=window.__splitDetailData?.[key]||[],title=document.getElementById('splitDetailTitle'),list=document.getElementById('splitDetailList');if(!title||!list)return;title.textContent=`${key} split`;document.getElementById('splitDetailAttempts').textContent=items.length;document.getElementById('splitDetailMade').textContent=items.filter(item=>item.converted).length;document.getElementById('splitDetailDiagram').innerHTML=`<div class="pinLayVisual" aria-label="Split ${escapeHtml(key)}">${pinLayDiagram(key.split('-').map(Number))}</div>`;list.innerHTML=items.map(item=>`<button type="button" class="pinLayGame" onclick="openGameDetail(event,'${escapeHtml(item.id)}','${escapeHtml(key)}',${item.frame})"><span><b>Game ${item.gameNumber}</b><span class="muted small" style="display:block">${escapeHtml(formatGameDate(item.date))} · Frame ${item.frame}</span></span><span class="pill">${item.converted?'Made':'Missed'} · ${item.score}</span></button>`).join('');go('splitDetailScreen');}
 function renderHistoryMetrics(games=state.games){
   const analysis=LaneLabStats.summarizeGames(games);
   const openFrames=document.getElementById('openFrames');
@@ -3720,9 +3722,19 @@ function renderAll(){
 function restoreLastScreen(){
   try{
     const id=getGameStorage()?.getItem(CURRENT_SCREEN_STORAGE_KEY);
-    // Detail screens depend on transient selection data. After a reload,
-    // return to their tracker instead of opening an empty detail template.
-    if(id==='pinLayDetailScreen' || id==='splitDetailScreen') return go('stats');
+    const storage=getGameStorage();
+    // Rebuild the selected detail data before restoring a detail screen.
+    // This keeps refreshes on the exact lay/split the user was viewing.
+    if(id==='pinLayDetailScreen'){
+      const key=storage?.getItem('lanelab-pin-detail-key');
+      if(key){renderPinLayStats(); return openPinLayDetail(key);}
+      return go('pinLayStats');
+    }
+    if(id==='splitDetailScreen'){
+      const key=storage?.getItem('lanelab-split-detail-key');
+      if(key){renderSplitStats(); return openSplitDetail(key);}
+      return go('splitStats');
+    }
     const allowed=['home','score','stats','pinLayStats','pinLayDetailScreen','splitStats','splitDetailScreen','arsenal','coach','profile','help','personalStats'];
     if(id&&allowed.includes(id)) go(id);
   }catch(e){}
