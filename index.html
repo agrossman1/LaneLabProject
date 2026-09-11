@@ -183,10 +183,10 @@ select,input{
 .pinLayHeader{margin-bottom:4px}.pinLayIntro{margin-top:0}.pinLayGrid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}.pinLayCard{padding:10px 7px;border-radius:16px;background:linear-gradient(160deg,#17243a,#10182b);border:1px solid var(--line);min-width:0;color:var(--text);text-align:center;cursor:pointer}.pinLayCard:hover,.pinLayCard:focus-visible{border-color:var(--accent);outline:2px solid rgba(124,156,255,.35);outline-offset:1px}.pinLayCardTop{display:flex;align-items:center;justify-content:space-between;gap:4px}.pinLayName{font-weight:900;letter-spacing:-.02em;font-size:12px}.pinLayRate{font-size:10px;font-weight:800;color:var(--accent)}.pinLayDots{display:grid;grid-template-columns:repeat(7,15px);grid-template-rows:repeat(4,15px);gap:2px 1px;justify-content:center;margin:10px auto 7px}.pinLayDot{width:15px;height:15px;border-radius:50%;background:#263550;border:1px solid #405273;box-shadow:0 2px 5px rgba(0,0,0,.22)}.pinLayDot:nth-child(1){grid-column:4;grid-row:4}.pinLayDot:nth-child(2){grid-column:3;grid-row:3}.pinLayDot:nth-child(3){grid-column:5;grid-row:3}.pinLayDot:nth-child(4){grid-column:2;grid-row:2}.pinLayDot:nth-child(5){grid-column:4;grid-row:2}.pinLayDot:nth-child(6){grid-column:6;grid-row:2}.pinLayDot:nth-child(7){grid-column:1;grid-row:1}.pinLayDot:nth-child(8){grid-column:3;grid-row:1}.pinLayDot:nth-child(9){grid-column:5;grid-row:1}.pinLayDot:nth-child(10){grid-column:7;grid-row:1}.pinLayDot.left{background:var(--accent);border-color:var(--accent);box-shadow:0 0 10px rgba(124,156,255,.55)}.pinLayMeta{font-size:10px;color:var(--muted);text-align:center}.pinLayDetail{margin-top:12px}.pinLayGame{display:flex;align-items:center;justify-content:space-between;width:100%;text-align:left;background:var(--panel);color:var(--text);border:1px solid var(--line);border-radius:14px;padding:11px 12px}.pinLayGame:hover,.pinLayGame:focus-visible{border-color:var(--accent)}.pinLayEmpty{padding:26px 14px;text-align:center;border:1px dashed var(--line);border-radius:18px;color:var(--muted)}
 @media(max-width:430px){.pinLayGrid{grid-template-columns:repeat(3,minmax(0,1fr));gap:6px}.pinLayCard{padding:9px 3px}.pinLayDots{transform:scale(.86);transform-origin:center;margin:7px auto 3px}.pinLayMeta{text-align:center}}
 .pinLayDots{display:grid!important;grid-template-columns:repeat(7,15px)!important;grid-template-rows:repeat(4,15px)!important}
-.pinLaySvg{display:block;width:116px;height:82px;margin:5px auto}.pinLaySvg circle{fill:#263550;stroke:#405273;stroke-width:1.2}.pinLaySvg circle.left{fill:var(--accent);stroke:var(--accent);filter:drop-shadow(0 0 3px rgba(124,156,255,.7))}
+.pinLaySvg{display:block;width:116px;height:82px;margin:5px auto}.pinLaySvg circle{fill:#263550;stroke:#405273;stroke-width:1.2}.pinLaySvg circle.left{fill:var(--accent);stroke:var(--accent);filter:drop-shadow(0 0 3px rgba(124,156,255,.7))}.pinLayVisual{display:flex;align-items:center;justify-content:center;width:100%;min-width:0;overflow:visible}
 .statsModeToggle{display:grid;grid-template-columns:1fr 1fr;gap:6px;padding:4px;background:var(--panel);border:1px solid var(--line);border-radius:15px;margin:14px 0}.statsModeToggle button{border:0;border-radius:11px;background:transparent;color:var(--muted);padding:10px 8px;font-weight:800;font-size:13px}.statsModeToggle button.active{background:var(--accent);color:#fff;box-shadow:0 5px 14px rgba(124,156,255,.25)}
-.advancedCharts{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}.advancedChart{padding:12px;border-radius:16px;background:var(--panel);border:1px solid var(--line)}.advancedChart h3{font-size:12px;margin:0;color:var(--muted)}.advancedChartValue{font-size:23px;font-weight:900;margin:3px 0 8px}.advancedChartBars{height:42px;display:flex;align-items:end;gap:3px}.advancedChartBar{flex:1;min-height:3px;border-radius:4px 4px 2px 2px;background:linear-gradient(180deg,var(--accent),#415eb6)}.advancedChartBar.good{background:linear-gradient(180deg,var(--good),#198b71)}.advancedChartBar.warn{background:linear-gradient(180deg,var(--warn),#b77b25)}.advancedChartsControls{width:auto;min-width:120px;margin:0;padding:7px 9px;font-size:12px}
-@media(max-width:520px){.advancedCharts{grid-template-columns:1fr}.advancedChartBars{height:36px}}
+.advancedCharts{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}.advancedChart{padding:12px;border-radius:16px;background:var(--panel);border:1px solid var(--line)}.advancedChart h3{font-size:12px;margin:0;color:var(--muted)}.advancedChartValue{font-size:23px;font-weight:900;margin:3px 0 4px}.advancedChartPlot{display:block;width:100%;height:96px;overflow:visible}.advancedChartGrid{stroke:var(--line);stroke-width:1;stroke-dasharray:2 3}.advancedChartAxis{stroke:#687998;stroke-width:1}.advancedChartLine{fill:none;stroke:var(--accent);stroke-width:2.5;stroke-linecap:round;stroke-linejoin:round}.advancedChartLine.good{stroke:var(--good)}.advancedChartLine.warn{stroke:var(--warn)}.advancedChartPoint{fill:var(--panel);stroke:var(--accent);stroke-width:1.5}.advancedChartPoint.good{stroke:var(--good)}.advancedChartPoint.warn{stroke:var(--warn)}.advancedChartLabel{fill:var(--muted);font-size:8px;font-weight:700}.advancedChartsControls{width:auto;min-width:120px;margin:0;padding:7px 9px;font-size:12px}
+@media(max-width:520px){.advancedCharts{grid-template-columns:1fr}}
 .pinLayDetailHero{display:grid;grid-template-columns:145px 1fr;align-items:center;gap:14px}.pinLayDetailHero .pinLayDots{transform:scale(1.15);margin:12px auto}.pinLayDetailMetrics{display:grid;grid-template-columns:1fr 1fr;gap:8px}.pinLayDetailMetric{padding:10px;border-radius:14px;background:var(--panel2);text-align:center}.pinLayDetailMetric b{display:block;font-size:20px}.pinLayDetailMetric small{color:var(--muted);font-size:10px}
 .pinLayFrameHighlight{border:2px solid var(--accent);box-shadow:0 0 0 3px rgba(124,156,255,.2)}.pinLayFrameDiagram{margin-top:8px;display:flex;justify-content:center}.pinLayFrameDiagram .pinLayDots{transform:scale(.72);transform-origin:top center;margin:3px 0 -22px}
 .ballIcon{
@@ -511,6 +511,12 @@ body.preview-mobile .scoreChoices{grid-template-columns:auto 1fr}
 }
 .importBtn span{display:flex;align-items:center;justify-content:center;gap:8px;font-size:24px;margin-bottom:6px}
 .importBtn span img{width:34px;height:34px;object-fit:contain;border-radius:6px}
+.trackingModeCard{max-width:520px;margin:0 auto 16px;padding:14px 16px;border:1px solid var(--line);border-radius:16px;background:var(--panel2)}
+.trackingModeTitle{font-size:12px;font-weight:850;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin-bottom:9px}
+.trackingModeChoices{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.trackingModeChoices button{border:1px solid var(--line);background:var(--panel);color:var(--muted);border-radius:12px;padding:10px 8px;font-weight:800}
+.trackingModeChoices button.active{background:var(--accent);border-color:var(--accent);color:#081126}
+.trackingModeDescription{margin:9px 0 0;color:var(--muted);font-size:12px;line-height:1.4}
 .scanPreview{
   min-height:180px;
   border:1px dashed #405277;
@@ -922,6 +928,15 @@ body.light-mode .ballMatchPreview img{
           <span><b>Pin Lay Tracker</b><small>See every leave you’ve recorded, at a glance</small></span>
           <span class="pinLayLaunchIcon" aria-hidden="true">◉</span>
         </button>
+      </div>
+
+      <div class="trackingModeCard" aria-label="Tracking mode">
+        <div class="trackingModeTitle">Choose tracking mode</div>
+        <div class="trackingModeChoices" role="tablist" aria-label="Tracking mode">
+          <button type="button" id="simpleTrackingBtn" role="tab" aria-selected="false" onclick="setTrackingMode('simple')">Simple tracking</button>
+          <button type="button" id="advancedTrackingBtn" role="tab" aria-selected="true" onclick="setTrackingMode('advanced')">Advanced tracking</button>
+        </div>
+        <p class="trackingModeDescription" id="trackingModeDescription">Track hand, ball, and exact pin leaves along with every score.</p>
       </div>
       <div class="card" data-stats-mode="advanced">
         <div class="row"><h2>Common split leaves &amp; conversion</h2></div>
@@ -1938,10 +1953,18 @@ let pinTrackingEnabled=true;
 try{pinTrackingEnabled=getGameStorage()?.getItem('lanelab-pin-tracking')!=='off'}catch(e){}
 let handTrackingEnabled=true;
 let ballTrackingEnabled=true;
+let trackingMode='advanced';
 try{
   handTrackingEnabled=getGameStorage()?.getItem('lanelab-hand-tracking')!=='off';
   ballTrackingEnabled=getGameStorage()?.getItem('lanelab-ball-tracking')!=='off';
+  trackingMode=getGameStorage()?.getItem('lanelab-tracking-mode')==='simple'?'simple':'advanced';
 }catch(e){}
+
+if(trackingMode==='simple'){
+  handTrackingEnabled=false;
+  ballTrackingEnabled=false;
+  pinTrackingEnabled=false;
+}
 
 function syncAverageDisplays(){
   const homeGames=getHomeGames();
@@ -2126,6 +2149,7 @@ function renderProfile(){
   document.getElementById('pinTrackingToggle')?.classList.toggle('on',pinTrackingEnabled);
   document.getElementById('handToggle')?.classList.toggle('on',handTrackingEnabled);
   document.getElementById('ballToggle')?.classList.toggle('on',ballTrackingEnabled);
+  syncTrackingModeUI();
   syncScoreTrackingFields();
   syncAverageDisplays();
 }
@@ -2160,7 +2184,7 @@ function renderPinLayStats(){
   const conversion=document.getElementById('pinLayConversion'); if(conversion) conversion.textContent=total?`${Math.round(makes/total*100)}% converted`:'No data yet';
   const message=document.getElementById('pinLaySummary'); if(message) message.textContent=total?`${summary.leaves.length} unique leave${summary.leaves.length===1?'':'s'} from ${summary.games} saved game${summary.games===1?'':'s'}.`:'Save games with exact pin tracking to build your leave library.';
   const grid=document.getElementById('pinLayGrid'); if(!grid) return;
-  grid.innerHTML=summary.leaves.length?summary.leaves.map(item=>{const rate=item.attempts?Math.round(item.makes/item.attempts*100):0;return `<button type="button" class="pinLayCard" onclick="openPinLayDetail('${escapeHtml(item.key)}')"><div class="pinLayCardTop"><span class="pinLayName">${escapeHtml(item.key)}</span><span class="pinLayRate">${rate}%</span></div><div class="pinLayDots" aria-label="Pins ${escapeHtml(item.key)} left">${pinLayDiagram(item.pins)}</div><div class="pinLayMeta">${item.attempts} attempt${item.attempts===1?'':'s'}</div></button>`}).join(''):'<div class="pinLayEmpty" style="grid-column:1/-1">No exact pin lays yet.<br><span class="small">Turn on “Track exact pin leaves” while scoring, then save a game.</span></div>';
+  grid.innerHTML=summary.leaves.length?summary.leaves.map(item=>{const rate=item.attempts?Math.round(item.makes/item.attempts*100):0;return `<button type="button" class="pinLayCard" onclick="openPinLayDetail('${escapeHtml(item.key)}')"><div class="pinLayCardTop"><span class="pinLayName">${escapeHtml(item.key)}</span><span class="pinLayRate">${rate}%</span></div><div class="pinLayVisual" aria-label="Pins ${escapeHtml(item.key)} left">${pinLayDiagram(item.pins)}</div><div class="pinLayMeta">${item.attempts} attempt${item.attempts===1?'':'s'}</div></button>`}).join(''):'<div class="pinLayEmpty" style="grid-column:1/-1">No exact pin lays yet.<br><span class="small">Turn on “Track exact pin leaves” while scoring, then save a game.</span></div>';
 }
 function openPinLayStats(){renderPinLayStats();go('pinLayStats');}
 function openPinLayDetail(key){
@@ -2168,7 +2192,7 @@ function openPinLayDetail(key){
   if(!title||!list) return;
   title.textContent=`${key} leave`;
   const attempts=document.getElementById('pinLayDetailAttempts'),made=document.getElementById('pinLayDetailMade'),diagram=document.getElementById('pinLayDetailDiagram');
-  if(attempts) attempts.textContent=items.length; if(made) made.textContent=items.filter(item=>item.converted).length; if(diagram) diagram.innerHTML=`<div class="pinLayDots" aria-label="Pins ${escapeHtml(key)} left">${pinLayDiagram(key.split('-').map(Number))}</div>`;
+  if(attempts) attempts.textContent=items.length; if(made) made.textContent=items.filter(item=>item.converted).length; if(diagram) diagram.innerHTML=`<div class="pinLayVisual" aria-label="Pins ${escapeHtml(key)} left">${pinLayDiagram(key.split('-').map(Number))}</div>`;
   list.innerHTML=items.length?items.map(item=>`<button type="button" class="pinLayGame" onclick="openGameDetail(event,'${escapeHtml(item.id)}','${escapeHtml(key)}',${item.frame})"><span><b>Game ${item.gameNumber}</b><span class="muted small" style="display:block">${escapeHtml(formatGameDate(item.date))} · Frame ${item.frame}</span></span><span class="pill">${item.converted?'Made':'Missed'} · ${item.score}</span></button>`).join(''):'<div class="pinLayEmpty">No saved attempts for this lay.</div>';
   go('pinLayDetailScreen');
 }
@@ -2179,10 +2203,10 @@ function renderSplitStats(){
   const total=splits.reduce((sum,item)=>sum+item.attempts,0),makes=splits.reduce((sum,item)=>sum+item.makes,0),common=document.getElementById('commonSplitsStats');
   if(common) common.innerHTML=splits.length?splits.slice(0,3).map(item=>`<div class="listItem"><div class="row"><span>${escapeHtml(item.key)}</span><b>${item.attempts?Math.round(item.makes/item.attempts*100):0}%</b></div><div class="muted small">${item.makes} / ${item.attempts} converted</div></div>`).join(''):'<div class="listItem"><div class="row"><span>Split leaves</span><b>—</b></div><div class="muted small">No split lays recorded yet.</div></div>';
   const totalEl=document.getElementById('splitTotal');if(totalEl)totalEl.textContent=total||'—';const conv=document.getElementById('splitConversion');if(conv)conv.textContent=total?`${Math.round(makes/total*100)}% converted`:'No data yet';const msg=document.getElementById('splitSummary');if(msg)msg.textContent=total?`${splits.length} unique split${splits.length===1?'':'s'} from ${summary.games} saved game${summary.games===1?'':'s'}.`:'Save games with exact pin tracking to build your split library.';
-  const grid=document.getElementById('splitGrid');if(!grid)return;grid.innerHTML=splits.length?splits.map(item=>`<button type="button" class="pinLayCard" onclick="openSplitDetail('${escapeHtml(item.key)}')"><div class="pinLayCardTop"><span class="pinLayName">${escapeHtml(item.key)}</span><span class="pinLayRate">${item.attempts?Math.round(item.makes/item.attempts*100):0}%</span></div><div class="pinLayDots" aria-label="Split ${escapeHtml(item.key)}">${pinLayDiagram(item.pins)}</div><div class="pinLayMeta">${item.attempts} attempt${item.attempts===1?'':'s'}</div></button>`).join(''):'<div class="pinLayEmpty" style="grid-column:1/-1">No split leaves yet.</div>';
+  const grid=document.getElementById('splitGrid');if(!grid)return;grid.innerHTML=splits.length?splits.map(item=>`<button type="button" class="pinLayCard" onclick="openSplitDetail('${escapeHtml(item.key)}')"><div class="pinLayCardTop"><span class="pinLayName">${escapeHtml(item.key)}</span><span class="pinLayRate">${item.attempts?Math.round(item.makes/item.attempts*100):0}%</span></div><div class="pinLayVisual" aria-label="Split ${escapeHtml(item.key)}">${pinLayDiagram(item.pins)}</div><div class="pinLayMeta">${item.attempts} attempt${item.attempts===1?'':'s'}</div></button>`).join(''):'<div class="pinLayEmpty" style="grid-column:1/-1">No split leaves yet.</div>';
 }
 function openSplitStats(){renderSplitStats();go('splitStats');}
-function openSplitDetail(key){const items=window.__splitDetailData?.[key]||[],title=document.getElementById('splitDetailTitle'),list=document.getElementById('splitDetailList');if(!title||!list)return;title.textContent=`${key} split`;document.getElementById('splitDetailAttempts').textContent=items.length;document.getElementById('splitDetailMade').textContent=items.filter(item=>item.converted).length;document.getElementById('splitDetailDiagram').innerHTML=`<div class="pinLayDots" aria-label="Split ${escapeHtml(key)}">${pinLayDiagram(key.split('-').map(Number))}</div>`;list.innerHTML=items.map(item=>`<button type="button" class="pinLayGame" onclick="openGameDetail(event,'${escapeHtml(item.id)}','${escapeHtml(key)}',${item.frame})"><span><b>Game ${item.gameNumber}</b><span class="muted small" style="display:block">${escapeHtml(formatGameDate(item.date))} · Frame ${item.frame}</span></span><span class="pill">${item.converted?'Made':'Missed'} · ${item.score}</span></button>`).join('');go('splitDetailScreen');}
+function openSplitDetail(key){const items=window.__splitDetailData?.[key]||[],title=document.getElementById('splitDetailTitle'),list=document.getElementById('splitDetailList');if(!title||!list)return;title.textContent=`${key} split`;document.getElementById('splitDetailAttempts').textContent=items.length;document.getElementById('splitDetailMade').textContent=items.filter(item=>item.converted).length;document.getElementById('splitDetailDiagram').innerHTML=`<div class="pinLayVisual" aria-label="Split ${escapeHtml(key)}">${pinLayDiagram(key.split('-').map(Number))}</div>`;list.innerHTML=items.map(item=>`<button type="button" class="pinLayGame" onclick="openGameDetail(event,'${escapeHtml(item.id)}','${escapeHtml(key)}',${item.frame})"><span><b>Game ${item.gameNumber}</b><span class="muted small" style="display:block">${escapeHtml(formatGameDate(item.date))} · Frame ${item.frame}</span></span><span class="pill">${item.converted?'Made':'Missed'} · ${item.score}</span></button>`).join('');go('splitDetailScreen');}
 function renderHistoryMetrics(games=state.games){
   const analysis=LaneLabStats.summarizeGames(games);
   const openFrames=document.getElementById('openFrames');
@@ -2536,6 +2560,42 @@ function toggleSwitch(el){
 function syncScoreTrackingFields(){
   document.getElementById('handField')?.classList.toggle('hidden',!handTrackingEnabled);
   document.getElementById('ballField')?.classList.toggle('hidden',!ballTrackingEnabled);
+  document.querySelector('.scoreChoices')?.classList.toggle('hidden',trackingMode==='simple');
+  document.getElementById('pinTracker')?.classList.toggle('hidden',!pinTrackingEnabled);
+}
+function syncTrackingModeUI(){
+  const simple=trackingMode==='simple';
+  const simpleButton=document.getElementById('simpleTrackingBtn');
+  const advancedButton=document.getElementById('advancedTrackingBtn');
+  simpleButton?.classList.toggle('active',simple);
+  advancedButton?.classList.toggle('active',!simple);
+  simpleButton?.setAttribute('aria-selected',String(simple));
+  advancedButton?.setAttribute('aria-selected',String(!simple));
+  const description=document.getElementById('trackingModeDescription');
+  if(description) description.textContent=simple
+    ? 'Score only. Hand, ball, and exact pin-leave tracking are turned off for quick entry.'
+    : 'Track hand, ball, and exact pin leaves along with every score.';
+}
+function setTrackingMode(mode){
+  trackingMode=mode==='simple'?'simple':'advanced';
+  try{getGameStorage()?.setItem('lanelab-tracking-mode',trackingMode)}catch(e){}
+  if(trackingMode==='simple'){
+    handTrackingEnabled=false;
+    ballTrackingEnabled=false;
+    pinTrackingEnabled=false;
+    state.pinTracking=null;
+  }else{
+    try{
+      const storage=getGameStorage();
+      handTrackingEnabled=storage?.getItem('lanelab-hand-tracking')!=='off';
+      ballTrackingEnabled=storage?.getItem('lanelab-ball-tracking')!=='off';
+      pinTrackingEnabled=storage?.getItem('lanelab-pin-tracking')!=='off';
+    }catch(e){handTrackingEnabled=ballTrackingEnabled=pinTrackingEnabled=true;}
+  }
+  syncTrackingModeUI();
+  syncScoreTrackingFields();
+  renderScoreControls();
+  toast(trackingMode==='simple'?'Simple tracking enabled':'Advanced tracking enabled');
 }
 function togglePinTracking(el){
   el.classList.toggle('on');
@@ -2650,6 +2710,8 @@ function go(id){
     // reflected immediately, even after a modal or another screen changed it.
     arsenal=LaneLabArsenal.load(getGameStorage(),arsenal);
     syncBallSelect();
+    syncTrackingModeUI();
+    syncScoreTrackingFields();
     renderScoreControls();
   }
   if(id==='personalStats') renderPersonalStats();
@@ -2671,7 +2733,16 @@ function renderAdvancedCharts(){
   const box=document.getElementById('advancedCharts'); if(!box) return;
   const range=document.getElementById('advancedRange')?.value||'10',games=getActiveGames(),selected=range==='all'?games:games.slice(-10);
   const metrics=[['Strike %','strikeRate','',100],['Spare %','spareRate','good',100],['Open frames / game','openPerGame','warn',10]];
-  box.innerHTML=metrics.map(([label,key,klass,max])=>{const values=selected.map(game=>{const value=LaneLabStats.summarizeGames([game])[key];return Number.isFinite(value)?value:0}),latest=values.at(-1),bars=values.map(value=>`<span class="advancedChartBar ${klass}" style="height:${Math.max(6,Math.min(100,value/max*100))}%" title="${value.toFixed(1)}"></span>`).join('');return `<div class="advancedChart"><h3>${label}</h3><div class="advancedChartValue">${values.length?latest.toFixed(1):'—'}${key==='openPerGame'?'':'%'}</div><div class="advancedChartBars">${bars||'<span class="muted small">No data</span>'}</div></div>`}).join('');
+  box.innerHTML=metrics.map(([label,key,klass,max])=>{
+    const values=selected.map(game=>{const value=LaneLabStats.summarizeGames([game])[key];return Number.isFinite(value)?value:0});
+    const latest=values.at(-1), chartMax=key==='openPerGame'?Math.max(1,Math.ceil(Math.max(...values,0))):max;
+    const left=28,right=232,top=10,bottom=78,width=right-left,height=bottom-top;
+    const points=values.map((value,index)=>{const x=values.length===1?(left+right)/2:left+(index/(values.length-1))*width;const y=bottom-(Math.max(0,Math.min(chartMax,value))/chartMax)*height;return [x,y,value]});
+    const line=points.map(([x,y])=>`${x.toFixed(1)},${y.toFixed(1)}`).join(' ');
+    const dots=points.map(([x,y,value],index)=>`<circle class="advancedChartPoint ${klass}" cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="2.5"><title>Game ${index+1}: ${value.toFixed(1)}${key==='openPerGame'?'':'%'}</title></circle>`).join('');
+    const yMid=(top+bottom)/2;
+    return `<div class="advancedChart"><h3>${label}</h3><div class="advancedChartValue">${values.length?latest.toFixed(1):'—'}${key==='openPerGame'?'':'%'}</div><svg class="advancedChartPlot" viewBox="0 0 260 100" role="img" aria-label="${label} trend line chart"><line class="advancedChartGrid" x1="${left}" y1="${top}" x2="${right}" y2="${top}"/><line class="advancedChartGrid" x1="${left}" y1="${yMid}" x2="${right}" y2="${yMid}"/><line class="advancedChartGrid" x1="${left}" y1="${bottom}" x2="${right}" y2="${bottom}"/><line class="advancedChartAxis" x1="${left}" y1="${top}" x2="${left}" y2="${bottom}"/><line class="advancedChartAxis" x1="${left}" y1="${bottom}" x2="${right}" y2="${bottom}"/><text class="advancedChartLabel" x="2" y="${top+3}">${chartMax}${key==='openPerGame'?'':'%'}</text><text class="advancedChartLabel" x="12" y="${yMid+3}">${(chartMax/2).toFixed(0)}${key==='openPerGame'?'':'%'}</text><text class="advancedChartLabel" x="18" y="${bottom+3}">0</text><text class="advancedChartLabel" x="${left}" y="96">${values.length?'1':'—'}</text><text class="advancedChartLabel" x="${right-8}" y="96">${values.length?values.length:'—'}</text><polyline class="advancedChartLine ${klass}" points="${line}"/>${dots}</svg><div class="muted small" style="text-align:center">Game number</div></div>`;
+  }).join('');
 }
 
 function isFrameComplete(i){
