@@ -929,7 +929,12 @@ body.light-mode .ballMatchPreview img{
         <div class="row"><div><div class="muted small">Tracked pin leaves</div><div class="personalHigh" id="pinLayTotal">—</div></div><div class="pill" id="pinLayConversion">—</div></div>
         <div class="delta" id="pinLaySummary">Save games with exact pin tracking to build your leave library.</div>
       </div>
-      <div class="card"><div class="row"><h2 class="pinLayHeader">Your leave library</h2><span class="muted small">tap a lay</span></div><p class="small pinLayIntro">Blue pins are left after ball one. Tap any lay to see every attempt and the game/frame it came from.</p><div id="pinLayGrid" class="pinLayGrid"></div><div id="pinLayDetail" class="pinLayDetail hidden"></div></div>
+      <div class="card"><div class="row"><h2 class="pinLayHeader">Your leave library</h2><span class="muted small">tap a lay</span></div><p class="small pinLayIntro">Blue pins are left after ball one. Tap any lay to see every attempt and the game/frame it came from.</p><div id="pinLayGrid" class="pinLayGrid"></div></div>
+    </section>
+
+    <section class="screen" id="pinLayDetailScreen">
+      <div class="row"><div><div class="eyebrow">Pin Lay Tracker</div><h1 style="margin-bottom:0" id="pinLayDetailTitle">Leave details.</h1></div><button class="profileBack" onclick="go('pinLayStats')">Back</button></div>
+      <div class="card"><p class="small" style="margin-top:0">Every time this lay appeared in your saved games.</p><div class="list" id="pinLayDetailList"></div></div>
     </section>
 
     <section class="screen" id="arsenal">
@@ -2131,11 +2136,11 @@ function renderPinLayStats(){
 }
 function openPinLayStats(){renderPinLayStats();go('pinLayStats');}
 function openPinLayDetail(key){
-  const detail=document.getElementById('pinLayDetail'),items=window.__pinLayDetailData?.[key]||[];
-  if(!detail) return;
-  detail.classList.remove('hidden');
-  detail.innerHTML=`<div class="row"><h3 style="margin:0">${escapeHtml(key)} · attempts</h3><button class="profileBack" onclick="document.getElementById('pinLayDetail').classList.add('hidden')">Close</button></div><div class="list" style="margin-top:10px">${items.map(item=>`<button type="button" class="pinLayGame" onclick="openGameDetail(event,'${escapeHtml(item.id)}')"><span><b>Game ${item.gameNumber}</b><span class="muted small" style="display:block">${escapeHtml(formatGameDate(item.date))} · Frame ${item.frame}</span></span><span class="pill">${item.converted?'Made':'Missed'} · ${item.score}</span></button>`).join('')}</div>`;
-  detail.scrollIntoView({behavior:'smooth',block:'nearest'});
+  const items=window.__pinLayDetailData?.[key]||[],title=document.getElementById('pinLayDetailTitle'),list=document.getElementById('pinLayDetailList');
+  if(!title||!list) return;
+  title.textContent=`${key} leave`;
+  list.innerHTML=items.length?items.map(item=>`<button type="button" class="pinLayGame" onclick="openGameDetail(event,'${escapeHtml(item.id)}')"><span><b>Game ${item.gameNumber}</b><span class="muted small" style="display:block">${escapeHtml(formatGameDate(item.date))} · Frame ${item.frame}</span></span><span class="pill">${item.converted?'Made':'Missed'} · ${item.score}</span></button>`).join(''):'<div class="pinLayEmpty">No saved attempts for this lay.</div>';
+  go('pinLayDetailScreen');
 }
 function renderHistoryMetrics(games=state.games){
   const analysis=LaneLabStats.summarizeGames(games);
@@ -3585,7 +3590,7 @@ function renderAll(){
 function restoreLastScreen(){
   try{
     const id=getGameStorage()?.getItem(CURRENT_SCREEN_STORAGE_KEY);
-    const allowed=['home','score','stats','pinLayStats','arsenal','coach','profile','help','personalStats'];
+    const allowed=['home','score','stats','pinLayStats','pinLayDetailScreen','arsenal','coach','profile','help','personalStats'];
     if(id&&allowed.includes(id)) go(id);
   }catch(e){}
 }
