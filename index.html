@@ -2167,7 +2167,7 @@ function renderSplitStats(){
   window.__splitDetailData={};
   getActiveGames().forEach((game,gameIndex)=>(Array.isArray(game.pinData)?game.pinData:[]).forEach((frame,frameIndex)=>{const pins=Array.isArray(frame?.pinsLeftAfterFirst)?frame.pinsLeftAfterFirst.map(Number).filter(pin=>pin>=1&&pin<=10).sort((a,b)=>a-b):[];if(!pins.length||pins.length===10||!pinLeaveIsSplit(pins))return;const key=pins.join('-');(window.__splitDetailData[key]||=[]).push({id:game.id,date:game.date,score:game.score,gameNumber:gameIndex+1,frame:frameIndex+1,converted:Array.isArray(frame?.pinsLeftAfterSecond)&&frame.pinsLeftAfterSecond.length===0});}));
   const total=splits.reduce((sum,item)=>sum+item.attempts,0),makes=splits.reduce((sum,item)=>sum+item.makes,0),common=document.getElementById('commonSplitsStats');
-  if(common) common.innerHTML=splits.length?splits.slice(0,3).map(item=>`<div class="row"><span>${escapeHtml(item.key)} <small class="muted">(${item.attempts} attempt${item.attempts===1?'':'s'})</small></span><b>${item.attempts?Math.round(item.makes/item.attempts*100):0}%</b></div>`).join(''):'<div class="row"><span>Split leaves</span><b>—</b></div><div class="muted small">No split lays recorded yet.</div>';
+  if(common) common.innerHTML=splits.length?splits.slice(0,3).map(item=>`<div class="row"><span>${item.pins.length} pin${item.pins.length===1?'':'s'} left <small class="muted">(${escapeHtml(item.key)})</small></span><b>${item.attempts}</b></div><div class="muted small" style="margin:-6px 0 4px">${item.attempts?Math.round(item.makes/item.attempts*100):0}% converted</div>`).join(''):'<div class="row"><span>Split leaves</span><b>—</b></div><div class="muted small">No split lays recorded yet.</div>';
   const totalEl=document.getElementById('splitTotal');if(totalEl)totalEl.textContent=total||'—';const conv=document.getElementById('splitConversion');if(conv)conv.textContent=total?`${Math.round(makes/total*100)}% converted`:'No data yet';const msg=document.getElementById('splitSummary');if(msg)msg.textContent=total?`${splits.length} unique split${splits.length===1?'':'s'} from ${summary.games} saved game${summary.games===1?'':'s'}.`:'Save games with exact pin tracking to build your split library.';
   const grid=document.getElementById('splitGrid');if(!grid)return;grid.innerHTML=splits.length?splits.map(item=>`<button type="button" class="pinLayCard" onclick="openSplitDetail('${escapeHtml(item.key)}')"><div class="pinLayCardTop"><span class="pinLayName">${escapeHtml(item.key)}</span><span class="pinLayRate">${item.attempts?Math.round(item.makes/item.attempts*100):0}%</span></div><div class="pinLayDots" aria-label="Split ${escapeHtml(item.key)}">${pinLayDiagram(item.pins)}</div><div class="pinLayMeta">${item.attempts} attempt${item.attempts===1?'':'s'}</div></button>`).join(''):'<div class="pinLayEmpty" style="grid-column:1/-1">No split leaves yet.</div>';
 }
@@ -2248,23 +2248,23 @@ function pinLeaveIsSplit(pins){
   const positions={2:[-0.5,1],3:[0.5,1],4:[-1,2],5:[0,2],6:[1,2],7:[-1.5,3],8:[-0.5,3],9:[0.5,3],10:[1.5,3]};
   const standing=pins.map(Number).filter(pin=>positions[pin]);
   if(standing.length<2) return false;
-  // A split is a head-pin-down leave whose standing pins form two or more
-  // disconnected groups. Nearby diagonal/vertical pins belong to one group;
-  // a gap between groups is what makes the leave a split.
-  const connected=new Set([standing[0]]);
-  let changed=true;
-  while(changed){
-    changed=false;
-    standing.forEach(pin=>{
-      if(connected.has(pin)) return;
-      const [x,y]=positions[pin];
-      for(const other of connected){
-        const [ox,oy]=positions[other];
-        if(Math.abs(x-ox)<=1.01 && Math.abs(y-oy)<=1.01){connected.add(pin);changed=true;break;}
-      }
-    });
+  // USBC definition: the head pin is down and a pin position is down
+  // between two standing pins (or immediately ahead of a difficult pair).
+  // Test every standing pair for a missing pin position lying on the line
+  // between them. This catches 7-9, 3-10, 4-6, 7-10, etc., while keeping
+  // adjacent non-splits such as 4-5 and 6-10 out of the split tracker.
+  for(let i=0;i<standing.length;i++) for(let j=i+1;j<standing.length;j++){
+    const a=positions[standing[i]],b=positions[standing[j]],dx=b[0]-a[0],dy=b[1]-a[1];
+    for(const [pin,[x,y]] of Object.entries(positions)){
+      if(standing.includes(Number(pin))) continue;
+      const t=(Math.abs(dx)>=Math.abs(dy)?(x-a[0])/(dx||1):(y-a[1])/(dy||1));
+      if(t>0.15&&t<0.85&&Math.abs(a[0]+t*dx-x)<0.12&&Math.abs(a[1]+t*dy-y)<0.12) return true;
+    }
   }
-  return connected.size<standing.length;
+  // The rules also call out the 5-6 leave: pin 3 is immediately ahead of
+  // the pair. Keep this explicit so 5-6 is recognized without labeling
+  // ordinary adjacent leaves (for example 4-5) as splits.
+  return standing.includes(5)&&standing.includes(6)&&!standing.includes(3);
 }
 function gameFrameNotation(game){
   const objectToken=(frame,index)=>{
