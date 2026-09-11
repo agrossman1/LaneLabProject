@@ -184,6 +184,9 @@ select,input{
 @media(max-width:430px){.pinLayGrid{grid-template-columns:repeat(3,minmax(0,1fr));gap:6px}.pinLayCard{padding:9px 3px}.pinLayDots{transform:scale(.86);transform-origin:center;margin:7px auto 3px}.pinLayMeta{text-align:center}}
 .pinLayDots{display:grid!important;grid-template-columns:repeat(7,15px)!important;grid-template-rows:repeat(4,15px)!important}
 .pinLaySvg{display:block;width:116px;height:82px;margin:5px auto}.pinLaySvg circle{fill:#263550;stroke:#405273;stroke-width:1.2}.pinLaySvg circle.left{fill:var(--accent);stroke:var(--accent);filter:drop-shadow(0 0 3px rgba(124,156,255,.7))}
+.statsModeToggle{display:grid;grid-template-columns:1fr 1fr;gap:6px;padding:4px;background:var(--panel);border:1px solid var(--line);border-radius:15px;margin:14px 0}.statsModeToggle button{border:0;border-radius:11px;background:transparent;color:var(--muted);padding:10px 8px;font-weight:800;font-size:13px}.statsModeToggle button.active{background:var(--accent);color:#fff;box-shadow:0 5px 14px rgba(124,156,255,.25)}
+.advancedCharts{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}.advancedChart{padding:12px;border-radius:16px;background:var(--panel);border:1px solid var(--line)}.advancedChart h3{font-size:12px;margin:0;color:var(--muted)}.advancedChartValue{font-size:23px;font-weight:900;margin:3px 0 8px}.advancedChartBars{height:42px;display:flex;align-items:end;gap:3px}.advancedChartBar{flex:1;min-height:3px;border-radius:4px 4px 2px 2px;background:linear-gradient(180deg,var(--accent),#415eb6)}.advancedChartBar.good{background:linear-gradient(180deg,var(--good),#198b71)}.advancedChartBar.warn{background:linear-gradient(180deg,var(--warn),#b77b25)}.advancedChartsControls{width:auto;min-width:120px;margin:0;padding:7px 9px;font-size:12px}
+@media(max-width:520px){.advancedCharts{grid-template-columns:1fr}.advancedChartBars{height:36px}}
 .pinLayDetailHero{display:grid;grid-template-columns:145px 1fr;align-items:center;gap:14px}.pinLayDetailHero .pinLayDots{transform:scale(1.15);margin:12px auto}.pinLayDetailMetrics{display:grid;grid-template-columns:1fr 1fr;gap:8px}.pinLayDetailMetric{padding:10px;border-radius:14px;background:var(--panel2);text-align:center}.pinLayDetailMetric b{display:block;font-size:20px}.pinLayDetailMetric small{color:var(--muted);font-size:10px}
 .pinLayFrameHighlight{border:2px solid var(--accent);box-shadow:0 0 0 3px rgba(124,156,255,.2)}.pinLayFrameDiagram{margin-top:8px;display:flex;justify-content:center}.pinLayFrameDiagram .pinLayDots{transform:scale(.72);transform-origin:top center;margin:3px 0 -22px}
 .ballIcon{
@@ -869,8 +872,11 @@ body.light-mode .ballMatchPreview img{
     <section class="screen" id="stats">
       <div class="eyebrow">Performance</div>
       <h1>Stats that explain the score.</h1>
+      <div class="statsModeToggle" role="tablist" aria-label="Stats view"><button type="button" class="active" id="standardStatsBtn" role="tab" aria-selected="true" onclick="setStatsMode('standard')">Standard Stats</button><button type="button" id="advancedStatsBtn" role="tab" aria-selected="false" onclick="setStatsMode('advanced')">Advanced Stats</button></div>
 
-      <div class="card">
+      <div class="card" data-stats-mode="advanced"><div class="row"><div><h2 style="margin-bottom:3px">Performance trends</h2><span class="muted small">Track how your game is changing</span></div><select id="advancedRange" class="advancedChartsControls" onchange="renderAdvancedCharts()"><option value="10">Last 10</option><option value="all">All time</option></select></div><div id="advancedCharts" class="advancedCharts" style="margin-top:14px"></div></div>
+
+      <div class="card" data-stats-mode="standard">
         <div class="row">
           <h2 id="trendTitle">Game scores</h2>
           <span class="tagGood small" id="trendBadge">Raw scores</span>
@@ -897,16 +903,16 @@ body.light-mode .ballMatchPreview img{
         </div>
       </div>
 
-      <div class="card">
+      <div class="card" data-stats-mode="standard">
         <div class="row"><h2>Session metrics</h2><span class="muted small">vs previous session</span></div>
         <div class="grid" id="sessionMetrics"></div>
       </div>
 
-      <div class="grid">
+      <div class="grid" data-stats-mode="standard">
         <div class="stat"><small>Single-pin leaves</small><b id="singlePinCount">—</b><span class="muted small" id="singlePinMeta">calculated from frame history</span></div>
       </div>
 
-      <div class="card">
+      <div class="card" data-stats-mode="advanced">
         <h2>Common leaves & conversion</h2>
         <p class="small" style="margin-top:0">See the leaves that cost you most often and how well you convert them.</p>
         <div class="list">
@@ -917,14 +923,14 @@ body.light-mode .ballMatchPreview img{
           <span class="pinLayLaunchIcon" aria-hidden="true">◉</span>
         </button>
       </div>
-      <div class="card">
+      <div class="card" data-stats-mode="advanced">
         <div class="row"><h2>Common split leaves &amp; conversion</h2></div>
         <p class="small" style="margin-top:0">See the splits that cost you most often and how well you convert them.</p>
         <div class="list"><div class="listItem" id="commonSplitsStats"><div class="row"><span>Calculating…</span><b>—</b></div></div></div>
         <button class="pinLayLaunch" onclick="openSplitStats()" aria-label="Open split lay tracker"><span><b>Split Lay Tracker</b><small>Break down every split attempt</small></span><span class="pinLayLaunchIcon" aria-hidden="true">◇</span></button>
       </div>
 
-      <div class="card">
+      <div class="card" data-stats-mode="standard">
         <h2>Game-by-game</h2>
         <div class="list" id="gameBreakdown"></div>
         <p class="small" id="gameBreakdownMessage">Your recorded games will appear here.</p>
@@ -2193,6 +2199,7 @@ function renderHistoryMetrics(games=state.games){
     leaves.innerHTML=ranked.length?ranked.map(([pins,count])=>`<div class="row"><span>${pins.split('-').length} pin${pins.split('-').length===1?'':'s'} left <small class="muted">(${pins})</small></span><b>${count}</b></div>`).join(''):'<div class="row"><span>Exact leaves</span><b>—</b></div><div class="muted small">Pin-level leave tracking will appear for games recorded with exact pin tracking.</div>';
   }
   renderSplitStats();
+  renderAdvancedCharts();
   return analysis;
 }
 function syncGameSummaries(){
@@ -2646,11 +2653,25 @@ function go(id){
     renderScoreControls();
   }
   if(id==='personalStats') renderPersonalStats();
-  if(id==='stats'){ renderChart(); renderSessionMetrics(); }
+  if(id==='stats'){ renderChart(); renderSessionMetrics(); renderAdvancedCharts(); setStatsMode('standard'); }
   if(id==='pinLayStats') renderPinLayStats();
   if(id==='splitStats') renderSplitStats();
   try{getGameStorage()?.setItem(CURRENT_SCREEN_STORAGE_KEY,id)}catch(e){}
   window.scrollTo({top:0,behavior:'smooth'});
+}
+function setStatsMode(mode){
+  const selected=mode==='advanced'?'advanced':'standard';
+  document.querySelectorAll('[data-stats-mode]').forEach(item=>item.classList.toggle('hidden',item.dataset.statsMode!==selected));
+  document.getElementById('standardStatsBtn')?.classList.toggle('active',selected==='standard');
+  document.getElementById('advancedStatsBtn')?.classList.toggle('active',selected==='advanced');
+  document.getElementById('standardStatsBtn')?.setAttribute('aria-selected',selected==='standard');
+  document.getElementById('advancedStatsBtn')?.setAttribute('aria-selected',selected==='advanced');
+}
+function renderAdvancedCharts(){
+  const box=document.getElementById('advancedCharts'); if(!box) return;
+  const range=document.getElementById('advancedRange')?.value||'10',games=getActiveGames(),selected=range==='all'?games:games.slice(-10);
+  const metrics=[['Strike %','strikeRate','',100],['Spare %','spareRate','good',100],['Open frames / game','openPerGame','warn',10]];
+  box.innerHTML=metrics.map(([label,key,klass,max])=>{const values=selected.map(game=>{const value=LaneLabStats.summarizeGames([game])[key];return Number.isFinite(value)?value:0}),latest=values.at(-1),bars=values.map(value=>`<span class="advancedChartBar ${klass}" style="height:${Math.max(6,Math.min(100,value/max*100))}%" title="${value.toFixed(1)}"></span>`).join('');return `<div class="advancedChart"><h3>${label}</h3><div class="advancedChartValue">${values.length?latest.toFixed(1):'—'}${key==='openPerGame'?'':'%'}</div><div class="advancedChartBars">${bars||'<span class="muted small">No data</span>'}</div></div>`}).join('');
 }
 
 function isFrameComplete(i){
