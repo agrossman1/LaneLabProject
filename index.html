@@ -178,6 +178,10 @@ select,input{
 .listItem{
   padding:13px 14px;border-radius:16px;background:var(--panel);border:1px solid var(--line)
 }
+.pinLayLaunch{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-top:12px;padding:14px 16px;border:1px solid rgba(87,214,164,.34);border-radius:18px;background:linear-gradient(135deg,rgba(87,214,164,.13),rgba(124,156,255,.1));color:var(--text);text-align:left;width:100%}
+.pinLayLaunch b{display:block;font-size:15px}.pinLayLaunch small{display:block;color:var(--muted);margin-top:3px}.pinLayLaunchIcon{width:42px;height:42px;border-radius:14px;display:grid;place-items:center;background:rgba(87,214,164,.18);color:var(--good);font-size:23px;flex:0 0 auto}
+.pinLayHeader{margin-bottom:4px}.pinLayIntro{margin-top:0}.pinLayGrid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}.pinLayCard{padding:13px;border-radius:18px;background:linear-gradient(160deg,#17243a,#10182b);border:1px solid var(--line);min-width:0}.pinLayCardTop{display:flex;align-items:center;justify-content:space-between;gap:8px}.pinLayName{font-weight:900;letter-spacing:-.02em}.pinLayRate{font-size:12px;font-weight:800;color:var(--good)}.pinLayDots{position:relative;height:100px;margin:10px auto 7px;max-width:132px}.pinLayDot{position:absolute;width:18px;height:18px;border-radius:50%;background:#263550;border:1px solid #405273;transform:translate(-50%,-50%);box-shadow:0 2px 5px rgba(0,0,0,.22)}.pinLayDot.left{background:var(--good);border-color:var(--good);box-shadow:0 0 12px rgba(87,214,164,.5)}.pinLayMeta{font-size:11px;color:var(--muted);text-align:center}.pinLayEmpty{padding:26px 14px;text-align:center;border:1px dashed var(--line);border-radius:18px;color:var(--muted)}
+@media(max-width:430px){.pinLayGrid{grid-template-columns:1fr}.pinLayCard{display:grid;grid-template-columns:110px 1fr;column-gap:12px;align-items:center}.pinLayCardTop{grid-column:1/-1}.pinLayDots{margin:8px auto}.pinLayMeta{text-align:left}}
 .ballIcon{
   width:48px;height:48px;border-radius:50%;
   background:radial-gradient(circle at 35% 32%,#6d83c9 0 5%,transparent 6%),
@@ -903,6 +907,10 @@ body.light-mode .ballMatchPreview img{
         <div class="list">
           <div class="listItem" id="commonLeavesStats"><div class="row"><span>Calculating…</span><b>—</b></div></div>
         </div>
+        <button class="pinLayLaunch" onclick="openPinLayStats()" aria-label="Open pin lay tracker">
+          <span><b>Pin Lay Tracker</b><small>See every leave you’ve recorded, at a glance</small></span>
+          <span class="pinLayLaunchIcon" aria-hidden="true">◉</span>
+        </button>
       </div>
 
       <div class="card">
@@ -910,6 +918,18 @@ body.light-mode .ballMatchPreview img{
         <div class="list" id="gameBreakdown"></div>
         <p class="small" id="gameBreakdownMessage">Your recorded games will appear here.</p>
       </div>
+    </section>
+
+    <section class="screen" id="pinLayStats">
+      <div class="row">
+        <div><div class="eyebrow">Stats · Pin intelligence</div><h1 style="margin-bottom:0">Pin Lay Tracker.</h1></div>
+        <button class="profileBack" onclick="go('stats')">Back</button>
+      </div>
+      <div class="card hero">
+        <div class="row"><div><div class="muted small">Tracked pin leaves</div><div class="personalHigh" id="pinLayTotal">—</div></div><div class="pill" id="pinLayConversion">—</div></div>
+        <div class="delta" id="pinLaySummary">Save games with exact pin tracking to build your leave library.</div>
+      </div>
+      <div class="card"><div class="row"><h2 class="pinLayHeader">Your leave library</h2><span class="muted small">most frequent first</span></div><p class="small pinLayIntro">Each diagram shows the pins left after ball one. The green pins are the ones in that lay.</p><div id="pinLayGrid" class="pinLayGrid"></div></div>
     </section>
 
     <section class="screen" id="arsenal">
@@ -2089,6 +2109,21 @@ function frameAnalysis(games){
   }));
   return {frames:frames.length,open,single,leaves};
 }
+function pinLayDiagram(pins){
+  const positions=[[50,10],[35,30],[65,30],[20,50],[50,50],[80,50],[10,70],[35,70],[65,70],[90,70]];
+  return positions.map(([x,y],index)=>`<span class="pinLayDot${pins.includes(index+1)?' left':''}" style="left:${x}%;top:${y}%" title="Pin ${index+1}"></span>`).join('');
+}
+function renderPinLayStats(){
+  const summary=LaneLabStats.summarizeGames(getActiveGames());
+  const total=summary.leaves.reduce((sum,item)=>sum+item.attempts,0);
+  const makes=summary.leaves.reduce((sum,item)=>sum+item.makes,0);
+  const totalEl=document.getElementById('pinLayTotal'); if(totalEl) totalEl.textContent=total||'—';
+  const conversion=document.getElementById('pinLayConversion'); if(conversion) conversion.textContent=total?`${Math.round(makes/total*100)}% converted`:'No data yet';
+  const message=document.getElementById('pinLaySummary'); if(message) message.textContent=total?`${summary.leaves.length} unique leave${summary.leaves.length===1?'':'s'} from ${summary.games} saved game${summary.games===1?'':'s'}.`:'Save games with exact pin tracking to build your leave library.';
+  const grid=document.getElementById('pinLayGrid'); if(!grid) return;
+  grid.innerHTML=summary.leaves.length?summary.leaves.map(item=>{const rate=item.attempts?Math.round(item.makes/item.attempts*100):0;return `<article class="pinLayCard"><div class="pinLayCardTop"><span class="pinLayName">${escapeHtml(item.key)}</span><span class="pinLayRate">${rate}%</span></div><div class="pinLayDots" aria-label="Pins ${escapeHtml(item.key)} left">${pinLayDiagram(item.pins)}</div><div class="pinLayMeta">${item.attempts} attempt${item.attempts===1?'':'s'} · ${item.makes} made</div></article>`}).join(''):'<div class="pinLayEmpty" style="grid-column:1/-1">No exact pin lays yet.<br><span class="small">Turn on “Track exact pin leaves” while scoring, then save a game.</span></div>';
+}
+function openPinLayStats(){renderPinLayStats();go('pinLayStats');}
 function renderHistoryMetrics(games=state.games){
   const analysis=LaneLabStats.summarizeGames(games);
   const openFrames=document.getElementById('openFrames');
@@ -2557,6 +2592,7 @@ function go(id){
   }
   if(id==='personalStats') renderPersonalStats();
   if(id==='stats'){ renderChart(); renderSessionMetrics(); }
+  if(id==='pinLayStats') renderPinLayStats();
   try{getGameStorage()?.setItem(CURRENT_SCREEN_STORAGE_KEY,id)}catch(e){}
   window.scrollTo({top:0,behavior:'smooth'});
 }
@@ -3536,7 +3572,7 @@ function renderAll(){
 function restoreLastScreen(){
   try{
     const id=getGameStorage()?.getItem(CURRENT_SCREEN_STORAGE_KEY);
-    const allowed=['home','score','stats','arsenal','coach','profile','help','personalStats'];
+    const allowed=['home','score','stats','pinLayStats','arsenal','coach','profile','help','personalStats'];
     if(id&&allowed.includes(id)) go(id);
   }catch(e){}
 }
