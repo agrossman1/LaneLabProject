@@ -106,6 +106,7 @@
         return sum + (Array.isArray(game.pinData) ? game.pinData.filter(frame => Array.isArray(frame?.pinsLeftAfterFirst) && Array.isArray(frame?.pinsLeftAfterSecond) && frame.pinsLeftAfterSecond.length > 0).length : 0);
       }, 0) / list.length : null,
       strikeRate: frameCount ? strikes / frameCount * 100 : null, spareRate: spareChances ? spares / spareChances * 100 : null,
+      spareOpportunities: spareChances, spares,
       singleAttempts: singles.length, singleMakes: singles.filter(item => item.converted).length,
       singlePct: singles.length ? singles.filter(item => item.converted).length / singles.length * 100 : null,
       leaves: [...leaveMap.values()].sort((a, b) => b.attempts - a.attempts || b.last - a.last)
