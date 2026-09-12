@@ -1133,18 +1133,7 @@ body.light-mode .ballMatchPreview img{
 
       <div class="card">
         <h2>Preferences</h2>
-        <div class="toggleRow">
-          <div><b>Track hand used</b><div class="muted small">Compare left vs right performance</div></div>
-          <button class="switch on" id="handToggle" onclick="toggleSwitch(this)" aria-label="Toggle hand tracking"></button>
-        </div>
-        <div class="toggleRow">
-          <div><b>Track ball used</b><div class="muted small">Measure performance by ball</div></div>
-          <button class="switch on" id="ballToggle" onclick="toggleSwitch(this)" aria-label="Toggle ball tracking"></button>
-        </div>
-        <div class="toggleRow">
-          <div><b>Track exact pin leaves</b><div class="muted small">Show pin diagrams after first-ball results</div></div>
-          <button class="switch on" id="pinTrackingToggle" onclick="togglePinTracking(this)" aria-label="Toggle exact pin leave tracking"></button>
-        </div>
+        <p class="small" style="margin-top:0">Choose Simple or Advanced tracking on the Score screen when you record a game.</p>
         <div class="toggleRow">
           <div>
             <b>Light mode</b>
@@ -2194,7 +2183,7 @@ function renderPinLayStats(){
   const conversion=document.getElementById('pinLayConversion'); if(conversion) conversion.textContent=total?`${Math.round(makes/total*100)}% converted`:'No data yet';
   const message=document.getElementById('pinLaySummary'); if(message) message.textContent=total?`${summary.leaves.length} unique leave${summary.leaves.length===1?'':'s'} from ${summary.games} saved game${summary.games===1?'':'s'}.`:'Save games with exact pin tracking to build your leave library.';
   const grid=document.getElementById('pinLayGrid'); if(!grid) return;
-  grid.innerHTML=summary.leaves.length?summary.leaves.map(item=>{const rate=item.attempts?Math.round(item.makes/item.attempts*100):0;return `<button type="button" class="pinLayCard" onclick="openPinLayDetail('${escapeHtml(item.key)}')"><div class="pinLayCardTop"><span class="pinLayName">${escapeHtml(item.key)}</span><span class="pinLayRate">${rate}%</span></div><div class="pinLayVisual" aria-label="Pins ${escapeHtml(item.key)} left">${pinLayDiagram(item.pins)}</div><div class="pinLayMeta">${item.attempts} attempt${item.attempts===1?'':'s'}</div></button>`}).join(''):'<div class="pinLayEmpty" style="grid-column:1/-1">No exact pin lays yet.<br><span class="small">Turn on “Track exact pin leaves” while scoring, then save a game.</span></div>';
+  grid.innerHTML=summary.leaves.length?summary.leaves.map(item=>{const rate=item.attempts?Math.round(item.makes/item.attempts*100):0;return `<button type="button" class="pinLayCard" onclick="openPinLayDetail('${escapeHtml(item.key)}')"><div class="pinLayCardTop"><span class="pinLayName">${escapeHtml(item.key)}</span><span class="pinLayRate">${rate}%</span></div><div class="pinLayVisual" aria-label="Pins ${escapeHtml(item.key)} left">${pinLayDiagram(item.pins)}</div><div class="pinLayMeta">${item.attempts} attempt${item.attempts===1?'':'s'}</div></button>`}).join(''):'<div class="pinLayEmpty" style="grid-column:1/-1">No exact pin lays yet.<br><span class="small">Use Advanced tracking while scoring, then save a game.</span></div>';
 }
 function openPinLayStats(){renderPinLayStats();go('pinLayStats');}
 function openPinLayDetail(key){
