@@ -186,6 +186,7 @@ select,input{
 .pinLaySvg{display:block;width:116px;height:82px;margin:5px auto}.pinLaySvg circle{fill:#263550;stroke:#405273;stroke-width:1.2}.pinLaySvg circle.left{fill:var(--accent);stroke:var(--accent);filter:drop-shadow(0 0 3px rgba(124,156,255,.7))}.pinLayVisual{display:flex;align-items:center;justify-content:center;width:100%;min-width:0;overflow:visible}.commonLeaveItem{display:grid;grid-template-columns:86px 1fr;align-items:center;gap:8px}.commonLeaveDiagram .pinLaySvg{width:82px;height:58px;margin:0}.commonLeaveInfo{min-width:0}
 .statsModeToggle{display:grid;grid-template-columns:1fr 1fr;gap:6px;padding:4px;background:var(--panel);border:1px solid var(--line);border-radius:15px;margin:14px 0}.statsModeToggle button{border:0;border-radius:11px;background:transparent;color:var(--muted);padding:10px 8px;font-weight:800;font-size:13px}.statsModeToggle button.active{background:var(--accent);color:#fff;box-shadow:0 5px 14px rgba(124,156,255,.25)}
 .advancedCharts{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}.advancedChart{padding:12px;border-radius:16px;background:var(--panel);border:1px solid var(--line)}.advancedChart h3{font-size:12px;margin:0;color:var(--muted)}.advancedChartValue{font-size:23px;font-weight:900;margin:3px 0 4px}.advancedChartPlot{display:block;width:100%;height:96px;overflow:visible}.advancedChartGrid{stroke:var(--line);stroke-width:1;stroke-dasharray:2 3}.advancedChartAxis{stroke:#687998;stroke-width:1}.advancedChartLine{fill:none;stroke:var(--accent);stroke-width:2.5;stroke-linecap:round;stroke-linejoin:round}.advancedChartLine.good{stroke:var(--good)}.advancedChartLine.warn{stroke:var(--warn)}.advancedChartPoint{fill:var(--panel);stroke:var(--accent);stroke-width:1.5}.advancedChartPoint.good{stroke:var(--good)}.advancedChartPoint.warn{stroke:var(--warn)}.advancedChartLabel{fill:var(--muted);font-size:8px;font-weight:700}.advancedChartsControls{width:auto;min-width:120px;margin:0;padding:7px 9px;font-size:12px}
+.advancedBreakdowns{display:grid;gap:12px}.advancedBreakdown{padding:13px;border:1px solid var(--line);border-radius:16px;background:var(--panel)}.advancedBreakdown h3{margin:0 0 4px;font-size:15px}.advancedBreakdown .sub{color:var(--muted);font-size:12px;margin-bottom:10px}.breakdownRows{display:grid;gap:7px}.breakdownRow{display:grid;grid-template-columns:1fr auto;gap:10px;align-items:center;font-size:13px}.breakdownRow b{font-size:14px}.breakdownTrack{height:7px;background:var(--panel2);border-radius:99px;overflow:hidden;margin-top:4px}.breakdownTrack i{display:block;height:100%;background:var(--accent);border-radius:99px}.heatmapWrap{display:grid;grid-template-columns:108px 1fr;gap:14px;align-items:center}.heatmapSvg{width:108px;height:78px}.heatmapSvg circle{fill:#334565;stroke:#52688f;stroke-width:1.2}.heatmapSvg circle.hot{fill:var(--accent);stroke:#b8c8ff}.frameBars{display:grid;grid-template-columns:repeat(10,1fr);gap:5px;align-items:end;height:102px}.frameBar{display:flex;flex-direction:column;align-items:center;justify-content:end;height:100%;gap:4px}.frameBar i{display:block;width:100%;max-width:18px;background:var(--accent);border-radius:5px 5px 2px 2px;min-height:3px}.frameBar span{font-size:10px;color:var(--muted)}.compareGrid{display:grid;grid-template-columns:1fr 1fr;gap:8px}.compareGroup{padding:9px;border-radius:12px;background:var(--panel2)}.compareGroup strong{display:block;font-size:12px;margin-bottom:4px}.compareGroup span{display:block;color:var(--muted);font-size:11px}.compareGroup b{font-size:18px}@media(max-width:520px){.heatmapWrap{grid-template-columns:1fr}.heatmapSvg{margin:auto}.compareGrid{grid-template-columns:1fr}}
 @media(max-width:520px){.advancedCharts{grid-template-columns:1fr}}
 .pinLayDetailHero{display:grid;grid-template-columns:145px 1fr;align-items:center;gap:14px}.pinLayDetailHero .pinLayDots{transform:scale(1.15);margin:12px auto}.pinLayDetailMetrics{display:grid;grid-template-columns:1fr 1fr;gap:8px}.pinLayDetailMetric{padding:10px;border-radius:14px;background:var(--panel2);text-align:center}.pinLayDetailMetric b{display:block;font-size:20px}.pinLayDetailMetric small{color:var(--muted);font-size:10px}
 .pinLayDetailHero>div:first-child{display:flex;align-items:center;justify-content:center;min-width:0}
@@ -894,6 +895,8 @@ body.light-mode .ballMatchPreview img{
       <div class="card" data-stats-mode="advanced"><div class="row"><div><h2 style="margin-bottom:3px">Performance trends</h2><span class="muted small">Track how your game is changing</span></div><select id="advancedRange" class="advancedChartsControls" onchange="renderAdvancedCharts()"><option value="10">Last 10</option><option value="all">All time</option></select></div><div id="advancedCharts" class="advancedCharts" style="margin-top:14px"></div></div>
 
       <div class="card" data-stats-mode="advanced"><div class="row"><h2>Advanced metrics</h2><span class="muted small">Calculated from saved games</span></div><div class="grid" id="advancedMetrics"></div></div>
+
+      <div class="card" data-stats-mode="advanced"><div class="row"><div><h2>Advanced breakdowns</h2><span class="muted small">More detail from your tracked games</span></div></div><div id="advancedBreakdowns" class="advancedBreakdowns"></div></div>
 
       <div class="card" data-stats-mode="standard">
         <div class="row">
@@ -2225,7 +2228,7 @@ function renderHistoryMetrics(games=state.games){
     leaves.innerHTML=ranked.length?ranked.map(([pins,count])=>commonLeaveMarkup(`${pins.split('-').length} pin${pins.split('-').length===1?'':'s'} left (${pins})`,pins.split('-').map(Number),null,count)).join(''):'<div class="row"><span>Exact leaves</span><b>—</b></div><div class="muted small">Pin-level leave tracking will appear for games recorded with exact pin tracking.</div>';
   }
   renderSplitStats();
-  renderAdvancedCharts(); renderAdvancedMetrics();
+  renderAdvancedCharts(); renderAdvancedMetrics(); renderAdvancedBreakdowns();
   return analysis;
 }
 function syncGameSummaries(){
@@ -2717,7 +2720,7 @@ function go(id){
     renderScoreControls();
   }
   if(id==='personalStats') renderPersonalStats();
-  if(id==='stats'){ renderChart(); renderSessionMetrics(); renderAdvancedCharts(); renderAdvancedMetrics(); setStatsMode(statsMode); }
+  if(id==='stats'){ renderChart(); renderSessionMetrics(); renderAdvancedCharts(); renderAdvancedMetrics(); renderAdvancedBreakdowns(); setStatsMode(statsMode); }
   if(id==='pinLayStats') renderPinLayStats();
   if(id==='splitStats') renderSplitStats();
   try{getGameStorage()?.setItem(CURRENT_SCREEN_STORAGE_KEY,id)}catch(e){}
@@ -2766,6 +2769,42 @@ function renderAdvancedMetrics(){
   const summary=LaneLabStats.summarizeGames(games),splitAttempts=summary.leaves.filter(item=>pinLeaveIsSplit(item.pins)).reduce((sum,item)=>sum+item.attempts,0),totalLeaves=summary.leaves.reduce((sum,item)=>sum+item.attempts,0);
   const values=[['First-ball pinfall',firstBall.length?(firstBall.reduce((a,b)=>a+b,0)/firstBall.length).toFixed(1):'—','pins / frame'],['Mark percentage',`${Math.round(marks/frames.length*100)}%`,'strikes + spares / game'],['Clean games',`${Math.round(clean/games.length*100)}%`,` ${clean} of ${games.length} games`],['Split frequency',totalLeaves?`${Math.round(splitAttempts/totalLeaves*100)}%`:'—','of tracked leaves'],['Score consistency',variance===null?'—':`±${variance.toFixed(1)}`,'standard deviation'],['Games analyzed',games.length,'saved games']];
   box.innerHTML=values.map(([label,value,detail])=>`<div class="stat"><small>${label}</small><b>${value}</b><span class="muted small">${detail}</span></div>`).join('');
+}
+
+function renderAdvancedBreakdowns(){
+  const box=document.getElementById('advancedBreakdowns'); if(!box) return;
+  const games=getActiveGames();
+  if(!games.length){box.innerHTML='<div class="muted small">Save games to unlock advanced breakdowns.</div>';return;}
+  const summary=LaneLabStats.summarizeGames(games);
+  const spareAttempts=summary.spareOpportunities||0, spareMakes=summary.spares||0;
+  const spareRate=spareAttempts?Math.round(spareMakes/spareAttempts*100):null;
+  const spareCard=`<div class="advancedBreakdown"><h3>Spare opportunities</h3><div class="sub">Every non-strike frame where a second-ball spare chance was recorded.</div><div class="compareGrid"><div class="compareGroup"><strong>Opportunities</strong><b>${spareAttempts||'—'}</b><span>tracked chances</span></div><div class="compareGroup"><strong>Converted</strong><b>${spareMakes||'—'}</b><span>${spareRate===null?'—':spareRate+'%'} conversion</span></div></div></div>`;
+
+  const pinStats=Array.from({length:10},(_,i)=>({pin:i+1,attempts:0,makes:0}));
+  const pinCounts=Array(11).fill(0);
+  games.forEach(game=>(Array.isArray(game.pinData)?game.pinData:[]).forEach(frame=>{
+    const pins=Array.isArray(frame?.pinsLeftAfterFirst)?frame.pinsLeftAfterFirst.map(Number).filter(pin=>pin>=1&&pin<=10):[];
+    const after=Array.isArray(frame?.pinsLeftAfterSecond)?frame.pinsLeftAfterSecond.map(Number):null;
+    pins.forEach(pin=>{pinStats[pin-1].attempts++;pinCounts[pin]++;if(after&&after.length===0)pinStats[pin-1].makes++;});
+  }));
+  const singleRows=pinStats.filter(item=>item.attempts).map(item=>{const pct=Math.round(item.makes/item.attempts*100);return `<div class="breakdownRow"><div><b>${item.pin} pin</b><div class="breakdownTrack"><i style="width:${pct}%"></i></div></div><span>${pct}%<br><small class="muted">${item.makes}/${item.attempts}</small></span></div>`}).join('');
+  const singleCard=`<div class="advancedBreakdown"><h3>Single-pin conversion</h3><div class="sub">Conversion rate for each single pin left after the first ball.</div><div class="breakdownRows">${singleRows||'<span class="muted small">No exact single-pin data yet.</span>'}</div></div>`;
+
+  const positions={1:[58,70],2:[47,52],3:[69,52],4:[36,34],5:[58,34],6:[80,34],7:[25,16],8:[47,16],9:[69,16],10:[91,16]};
+  const maxPin=Math.max(1,...pinCounts); const heatSvg=`<svg class="heatmapSvg" viewBox="0 0 116 82" role="img" aria-label="Pin leave frequency heatmap">${Object.entries(positions).map(([pin,[x,y]])=>{const count=pinCounts[Number(pin)],heat=count?` hot`:'',opacity=count?(0.35+0.65*count/maxPin).toFixed(2):.35;return `<circle class="${heat.trim()}" style="opacity:${opacity}" cx="${x}" cy="${y}" r="6"><title>Pin ${pin}: ${count} leave${count===1?'':'s'}</title></circle>`}).join('')}</svg>`;
+  const heatCard=`<div class="advancedBreakdown"><h3>Leave frequency heatmap</h3><div class="sub">Brighter pins are left more often in your tracked games.</div><div class="heatmapWrap">${heatSvg}<div class="breakdownRows">${pinCounts.slice(1).map((count,i)=>count?`<div class="breakdownRow"><span>Pin ${i+1}</span><b>${count}</b></div>`:'').join('')||'<span class="muted small">No exact pin data yet.</span>'}</div></div></div>`;
+
+  const frameTotals=Array(10).fill(0), frameCounts=Array(10).fill(0);
+  games.forEach(game=>(Array.isArray(game.frames)?game.frames.slice(0,10):[]).forEach((token,index)=>{const t=String(token||'').replace(/\s+/g,'').trim();if(!t)return;let pins=0;if(/^X/i.test(t))pins=10;else{const nums=(t.match(/\d/g)||[]).map(Number);pins=nums.reduce((a,b)=>a+b,0);if(t.includes('/'))pins=10;}frameTotals[index]+=pins;frameCounts[index]++;}));
+  const frameValues=frameTotals.map((total,i)=>frameCounts[i]?total/frameCounts[i]:0), maxFrame=Math.max(10,...frameValues); const frameBars=frameValues.map((value,i)=>`<div class="frameBar"><i style="height:${Math.max(3,value/maxFrame*78).toFixed(1)}px"><title>Frame ${i+1}: ${value.toFixed(1)} pins</title></i><span>F${i+1}</span></div>`).join('');
+  const frameCard=`<div class="advancedBreakdown"><h3>Frame-by-frame scoring</h3><div class="sub">Average pins recorded in each frame across your saved games.</div><div class="frameBars">${frameBars}</div></div>`;
+
+  const handMap={}; games.forEach(game=>{const hand=String(game.hand||'').trim();if(!hand)return;const item=handMap[hand]||{games:0,total:0};item.games++;item.total+=Number(game.score)||0;handMap[hand]=item;});
+  const ballNames=[...new Set(games.map(game=>String(game.ball||'').trim()).filter(Boolean))];
+  const ballRows=ballNames.map(name=>{const scores=games.filter(game=>String(game.ball||'').trim()===name).map(game=>Number(game.score)).filter(Number.isFinite);return `<div class="compareGroup"><strong>${escapeHtml(name)}</strong><b>${scores.length?(scores.reduce((a,b)=>a+b,0)/scores.length).toFixed(1):'—'}</b><span>${scores.length} game${scores.length===1?'':'s'} · average</span></div>`}).join('');
+  const handRows=Object.entries(handMap).map(([name,item])=>`<div class="compareGroup"><strong>${escapeHtml(name)}</strong><b>${item.games?(item.total/item.games).toFixed(1):'—'}</b><span>${item.games} game${item.games===1?'':'s'} · average</span></div>`).join('');
+  const compareCard=`<div class="advancedBreakdown"><h3>Ball &amp; hand comparisons</h3><div class="sub">Compare average scores using your recorded equipment and hand.</div><div class="compareGrid">${ballRows||'<span class="muted small">No ball-tagged games yet.</span>'}${handRows||''}</div></div>`;
+  box.innerHTML=spareCard+singleCard+heatCard+frameCard+compareCard;
 }
 
 function isFrameComplete(i){
