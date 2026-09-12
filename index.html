@@ -924,6 +924,14 @@ body.light-mode .ballMatchPreview img{
         <div class="grid" id="sessionMetrics"></div>
       </div>
 
+      <div class="card" data-stats-mode="standard">
+        <div class="row"><h2>Ball performance</h2><span class="pill" id="statsBallName">—</span></div>
+        <p class="small" style="margin-top:0">Slide through every ball in your Arsenal to compare saved-game results.</p>
+        <input id="statsBallSlider" type="range" min="0" max="0" value="0" step="1" aria-label="Select ball for performance stats" oninput="renderSelectedBallStats()">
+        <div class="muted small" id="statsBallSliderMeta" style="display:flex;justify-content:space-between;margin-top:4px"><span>—</span><span>—</span></div>
+        <div class="grid" id="statsBallMetrics" style="margin-top:12px"></div>
+      </div>
+
       <div class="grid" data-stats-mode="standard">
         <div class="stat"><small>Single-pin leaves</small><b id="singlePinCount">—</b><span class="muted small" id="singlePinMeta">calculated from frame history</span></div>
       </div>
@@ -2720,7 +2728,7 @@ function go(id){
     renderScoreControls();
   }
   if(id==='personalStats') renderPersonalStats();
-  if(id==='stats'){ renderChart(); renderSessionMetrics(); renderAdvancedCharts(); setStatsMode(statsMode); }
+  if(id==='stats'){ renderChart(); renderSessionMetrics(); renderAdvancedCharts(); renderBallStatsSelector(); setStatsMode(statsMode); }
   if(id==='pinLayStats') renderPinLayStats();
   if(id==='splitStats') renderSplitStats();
   try{getGameStorage()?.setItem(CURRENT_SCREEN_STORAGE_KEY,id)}catch(e){}
@@ -2751,6 +2759,21 @@ function renderAdvancedCharts(){
     return `<div class="advancedChart"><h3>${label}</h3><div class="advancedChartValue">${values.length?latest.toFixed(1):'—'}${key==='openPerGame'?'':'%'}</div><svg class="advancedChartPlot" viewBox="0 0 260 100" role="img" aria-label="${label} trend line chart"><line class="advancedChartGrid" x1="${left}" y1="${top}" x2="${right}" y2="${top}"/><line class="advancedChartGrid" x1="${left}" y1="${yMid}" x2="${right}" y2="${yMid}"/><line class="advancedChartGrid" x1="${left}" y1="${bottom}" x2="${right}" y2="${bottom}"/><line class="advancedChartAxis" x1="${left}" y1="${top}" x2="${left}" y2="${bottom}"/><line class="advancedChartAxis" x1="${left}" y1="${bottom}" x2="${right}" y2="${bottom}"/><text class="advancedChartLabel" x="2" y="${top+3}">${chartMax}${key==='openPerGame'?'':'%'}</text><text class="advancedChartLabel" x="12" y="${yMid+3}">${(chartMax/2).toFixed(0)}${key==='openPerGame'?'':'%'}</text><text class="advancedChartLabel" x="18" y="${bottom+3}">0</text><text class="advancedChartLabel" x="${left}" y="96">${values.length?'1':'—'}</text><text class="advancedChartLabel" x="${right-8}" y="96">${values.length?values.length:'—'}</text><polyline class="advancedChartLine ${klass}" points="${line}"/>${dots}</svg><div class="muted small" style="text-align:center">Game number</div></div>`;
   }).join('');
 }
+
+function renderBallStatsSelector(){
+  const slider=document.getElementById('statsBallSlider'), name=document.getElementById('statsBallName'), meta=document.getElementById('statsBallSliderMeta'), metrics=document.getElementById('statsBallMetrics');
+  if(!slider||!name||!meta||!metrics) return;
+  const balls=Array.isArray(arsenal)?arsenal:[];
+  if(!balls.length){
+    slider.disabled=true; slider.max='0'; slider.value='0'; name.textContent='No balls'; meta.innerHTML='<span>Add balls in Arsenal</span><span>—</span>'; metrics.innerHTML='<div class="listItem center"><b>No ball stats yet</b><div class="muted small" style="margin-top:4px">Add a ball to your Arsenal, then select it while recording games.</div></div>'; return;
+  }
+  slider.disabled=balls.length<2; slider.max=String(Math.max(0,balls.length-1));
+  const index=Math.min(Number(slider.value)||0,balls.length-1); slider.value=String(index);
+  const ball=balls[index], stats=LaneLabArsenalFeature.statsFor(state.games,ball.name);
+  name.textContent=ball.name; meta.innerHTML=`<span>Ball ${index+1} of ${balls.length}</span><span>${stats.games} game${stats.games===1?'':'s'}</span>`;
+  metrics.innerHTML=[['Average',stats.average??'—'],['High',stats.high??'—'],['Strike rate',stats.strikeRate===null?'—':`${stats.strikeRate}%`],['Spare rate',stats.spareRate===null?'—':`${stats.spareRate}%`]].map(([label,value])=>`<div class="stat"><small>${label}</small><b>${value}</b><span class="muted small">${stats.games?'saved games':'no saved games'}</span></div>`).join('');
+}
+function renderSelectedBallStats(){renderBallStatsSelector();}
 
 function isFrameComplete(i){
   if(typeof LaneLabScoring!=='undefined') return LaneLabScoring.isFrameComplete(state.frames,i);
