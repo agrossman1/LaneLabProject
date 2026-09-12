@@ -2757,7 +2757,9 @@ function renderAdvancedMetrics(){
   const box=document.getElementById('advancedMetrics'); if(!box) return;
   const games=getActiveGames(), frames=games.flatMap(game=>Array.isArray(game.frames)?game.frames.slice(0,10).map(frame=>String(frame||'').trim()).filter(Boolean):[]);
   if(!games.length||!frames.length){box.innerHTML='<div class="muted small">Save games to unlock advanced metrics.</div>';return;}
-  const firstBall=frames.map(frame=>{const match=frame.match(/^(X|\d+)/i);return match?(match[1].toUpperCase()==='X'?10:Number(match[1])):null}).filter(Number.isFinite);
+  // Frame notation such as "81" means 8 pins then 1 pin; only the first
+  // delivery belongs in first-ball pinfall. A strike contributes 10.
+  const firstBall=frames.map(frame=>{const match=frame.match(/^(X|[0-9])/i);return match?(match[1].toUpperCase()==='X'?10:Number(match[1])):null}).filter(value=>Number.isFinite(value)&&value>=0&&value<=10);
   const marks=frames.filter(frame=>/^X/i.test(frame)||frame.includes('/')).length;
   const clean=games.filter(game=>{const gameFrames=(Array.isArray(game.frames)?game.frames:[]).slice(0,10).map(frame=>String(frame||'').trim()).filter(Boolean);return gameFrames.length>=10&&gameFrames.every(frame=>/^X/i.test(frame)||frame.includes('/'))}).length;
   const scores=games.map(game=>Number(game.score)).filter(Number.isFinite),average=scores.reduce((sum,score)=>sum+score,0)/(scores.length||1),variance=scores.length>1?Math.sqrt(scores.reduce((sum,score)=>sum+(score-average)**2,0)/scores.length):null;
