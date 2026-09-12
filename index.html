@@ -893,6 +893,8 @@ body.light-mode .ballMatchPreview img{
 
       <div class="card" data-stats-mode="advanced"><div class="row"><div><h2 style="margin-bottom:3px">Performance trends</h2><span class="muted small">Track how your game is changing</span></div><select id="advancedRange" class="advancedChartsControls" onchange="renderAdvancedCharts()"><option value="10">Last 10</option><option value="all">All time</option></select></div><div id="advancedCharts" class="advancedCharts" style="margin-top:14px"></div></div>
 
+      <div class="card" data-stats-mode="advanced"><div class="row"><h2>Advanced metrics</h2><span class="muted small">Calculated from saved games</span></div><div class="grid" id="advancedMetrics"></div></div>
+
       <div class="card" data-stats-mode="standard">
         <div class="row">
           <h2 id="trendTitle">Game scores</h2>
@@ -2223,7 +2225,7 @@ function renderHistoryMetrics(games=state.games){
     leaves.innerHTML=ranked.length?ranked.map(([pins,count])=>commonLeaveMarkup(`${pins.split('-').length} pin${pins.split('-').length===1?'':'s'} left (${pins})`,pins.split('-').map(Number),null,count)).join(''):'<div class="row"><span>Exact leaves</span><b>—</b></div><div class="muted small">Pin-level leave tracking will appear for games recorded with exact pin tracking.</div>';
   }
   renderSplitStats();
-  renderAdvancedCharts();
+  renderAdvancedCharts(); renderAdvancedMetrics();
   return analysis;
 }
 function syncGameSummaries(){
@@ -2715,7 +2717,7 @@ function go(id){
     renderScoreControls();
   }
   if(id==='personalStats') renderPersonalStats();
-  if(id==='stats'){ renderChart(); renderSessionMetrics(); renderAdvancedCharts(); setStatsMode(statsMode); }
+  if(id==='stats'){ renderChart(); renderSessionMetrics(); renderAdvancedCharts(); renderAdvancedMetrics(); setStatsMode(statsMode); }
   if(id==='pinLayStats') renderPinLayStats();
   if(id==='splitStats') renderSplitStats();
   try{getGameStorage()?.setItem(CURRENT_SCREEN_STORAGE_KEY,id)}catch(e){}
@@ -2749,6 +2751,19 @@ function renderAdvancedCharts(){
     const yMid=(top+bottom)/2;
     return `<div class="advancedChart"><h3>${label}</h3><div class="advancedChartValue">${aggregate!==null&&Number.isFinite(aggregate)?aggregate.toFixed(1):'—'}${key==='openPerGame'?'':'%'}</div><svg class="advancedChartPlot" viewBox="0 0 260 100" role="img" aria-label="${label} trend line chart"><line class="advancedChartGrid" x1="${left}" y1="${top}" x2="${right}" y2="${top}"/><line class="advancedChartGrid" x1="${left}" y1="${yMid}" x2="${right}" y2="${yMid}"/><line class="advancedChartGrid" x1="${left}" y1="${bottom}" x2="${right}" y2="${bottom}"/><line class="advancedChartAxis" x1="${left}" y1="${top}" x2="${left}" y2="${bottom}"/><line class="advancedChartAxis" x1="${left}" y1="${bottom}" x2="${right}" y2="${bottom}"/><text class="advancedChartLabel" x="2" y="${top+3}">${chartMax}${key==='openPerGame'?'':'%'}</text><text class="advancedChartLabel" x="12" y="${yMid+3}">${(chartMax/2).toFixed(0)}${key==='openPerGame'?'':'%'}</text><text class="advancedChartLabel" x="18" y="${bottom+3}">0</text><text class="advancedChartLabel" x="${left}" y="96">${values.length?'1':'—'}</text><text class="advancedChartLabel" x="${right-8}" y="96">${values.length?values.length:'—'}</text><polyline class="advancedChartLine ${klass}" points="${line}"/>${dots}</svg><div class="muted small" style="text-align:center">Game number</div></div>`;
   }).join('');
+}
+
+function renderAdvancedMetrics(){
+  const box=document.getElementById('advancedMetrics'); if(!box) return;
+  const games=getActiveGames(), frames=games.flatMap(game=>Array.isArray(game.frames)?game.frames.slice(0,10).map(frame=>String(frame||'').trim()).filter(Boolean):[]);
+  if(!games.length||!frames.length){box.innerHTML='<div class="muted small">Save games to unlock advanced metrics.</div>';return;}
+  const firstBall=frames.map(frame=>{const match=frame.match(/^(X|\d+)/i);return match?(match[1].toUpperCase()==='X'?10:Number(match[1])):null}).filter(Number.isFinite);
+  const marks=frames.filter(frame=>/^X/i.test(frame)||frame.includes('/')).length;
+  const clean=games.filter(game=>{const gameFrames=(Array.isArray(game.frames)?game.frames:[]).slice(0,10).map(frame=>String(frame||'').trim()).filter(Boolean);return gameFrames.length>=10&&gameFrames.every(frame=>/^X/i.test(frame)||frame.includes('/'))}).length;
+  const scores=games.map(game=>Number(game.score)).filter(Number.isFinite),average=scores.reduce((sum,score)=>sum+score,0)/(scores.length||1),variance=scores.length>1?Math.sqrt(scores.reduce((sum,score)=>sum+(score-average)**2,0)/scores.length):null;
+  const summary=LaneLabStats.summarizeGames(games),splitAttempts=summary.leaves.filter(item=>pinLeaveIsSplit(item.pins)).reduce((sum,item)=>sum+item.attempts,0),totalLeaves=summary.leaves.reduce((sum,item)=>sum+item.attempts,0);
+  const values=[['First-ball pinfall',firstBall.length?(firstBall.reduce((a,b)=>a+b,0)/firstBall.length).toFixed(1):'—','pins / frame'],['Mark percentage',`${Math.round(marks/frames.length*100)}%`,'strikes + spares'],['Clean games',`${Math.round(clean/games.length*100)}%`,` ${clean} of ${games.length} games`],['Split frequency',totalLeaves?`${Math.round(splitAttempts/totalLeaves*100)}%`:'—','of tracked leaves'],['Score consistency',variance===null?'—':`±${variance.toFixed(1)}`,'standard deviation'],['Games analyzed',games.length,'saved games']];
+  box.innerHTML=values.map(([label,value,detail])=>`<div class="stat"><small>${label}</small><b>${value}</b><span class="muted small">${detail}</span></div>`).join('');
 }
 
 function isFrameComplete(i){
