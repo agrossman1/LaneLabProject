@@ -1956,10 +1956,12 @@ try{pinTrackingEnabled=getGameStorage()?.getItem('lanelab-pin-tracking')!=='off'
 let handTrackingEnabled=true;
 let ballTrackingEnabled=true;
 let trackingMode='advanced';
+let statsMode='standard';
 try{
   handTrackingEnabled=getGameStorage()?.getItem('lanelab-hand-tracking')!=='off';
   ballTrackingEnabled=getGameStorage()?.getItem('lanelab-ball-tracking')!=='off';
   trackingMode=getGameStorage()?.getItem('lanelab-tracking-mode')==='simple'?'simple':'advanced';
+  statsMode=getGameStorage()?.getItem('lanelab-stats-mode')==='advanced'?'advanced':'standard';
 }catch(e){}
 
 if(trackingMode==='simple'){
@@ -2718,7 +2720,7 @@ function go(id){
     renderScoreControls();
   }
   if(id==='personalStats') renderPersonalStats();
-  if(id==='stats'){ renderChart(); renderSessionMetrics(); renderAdvancedCharts(); setStatsMode('standard'); }
+  if(id==='stats'){ renderChart(); renderSessionMetrics(); renderAdvancedCharts(); setStatsMode(statsMode); }
   if(id==='pinLayStats') renderPinLayStats();
   if(id==='splitStats') renderSplitStats();
   try{getGameStorage()?.setItem(CURRENT_SCREEN_STORAGE_KEY,id)}catch(e){}
@@ -2726,6 +2728,8 @@ function go(id){
 }
 function setStatsMode(mode){
   const selected=mode==='advanced'?'advanced':'standard';
+  statsMode=selected;
+  try{getGameStorage()?.setItem('lanelab-stats-mode',statsMode)}catch(e){}
   document.querySelectorAll('[data-stats-mode]').forEach(item=>item.classList.toggle('hidden',item.dataset.statsMode!==selected));
   document.getElementById('standardStatsBtn')?.classList.toggle('active',selected==='standard');
   document.getElementById('advancedStatsBtn')?.classList.toggle('active',selected==='advanced');
