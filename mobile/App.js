@@ -1,0 +1,130 @@
+import React, { useEffect, useState } from 'react';
+import { Image, Pressable, SafeAreaView as NativeSafeAreaView, StatusBar, StyleSheet, Text, TextInput, View, ScrollView } from 'react-native';
+import { SafeAreaProvider, SafeAreaView } from 'react-native-safe-area-context';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+
+const screens = {
+  Home: { eyebrow: 'LANELAB', title: 'Your bowling, at a glance.', body: 'The React Native shell is ready. Score, stats, arsenal, and coaching will be ported one feature at a time.' },
+  Score: { eyebrow: 'RECORD GAME', title: 'Score a game.', body: 'Score entry is the next porting milestone.' },
+  Stats: { eyebrow: 'YOUR STATS', title: 'See your game.', body: 'Standard and Advanced Stats will arrive after Score.' },
+  Arsenal: { eyebrow: 'YOUR ARSENAL', title: 'Your bowling balls.', body: 'Ball tracking will be connected to the shared data model later.' },
+  Coach: { eyebrow: 'LANELAB COACH', title: 'Practice with purpose.', body: 'Coaching recommendations will be ported after stats.' }
+};
+const navScreens = ['Home', 'Score', 'Stats', 'Arsenal', 'Coach'];
+
+function frameComplete(frame, index) {
+  const rolls = frame || [];
+  if (index < 9) return (rolls.length === 1 && rolls[0] === 10) || rolls.length >= 2;
+  if (rolls.length < 2) return false;
+  return rolls[0] === 10 || rolls[0] + rolls[1] === 10 ? rolls.length >= 3 : true;
+}
+function cumulativeScores(frames) {
+  const out = []; let total = 0;
+  for (let i = 0; i < 10; i += 1) {
+    const rolls = frames[i]; let value = null;
+    if (i < 9) {
+      const next = frames.slice(i + 1).flat();
+      if (rolls[0] === 10 && next.length >= 2) value = 10 + next[0] + next[1];
+      else if (rolls.length >= 2 && rolls[0] + rolls[1] === 10 && next.length) value = 10 + next[0];
+      else if (rolls.length >= 2) value = rolls[0] + rolls[1];
+    } else if (frameComplete(rolls, 9)) value = rolls.reduce((a, b) => a + b, 0);
+    out.push(value === null ? null : (total += value));
+  }
+  return out;
+}
+function isSplit(pins) {
+  return Array.isArray(pins) && pins.length > 1 && !pins.includes(1) && !(pins.length === 2 && pins[0] === 3 && pins[1] === 9);
+}
+
+function Nav({ active, onChange }) {
+  return <View style={styles.nav}>{navScreens.map(name => <Pressable key={name} accessibilityRole="tab" accessibilityState={{ selected: active === name }} onPress={() => onChange(name)} style={[styles.navItem, active === name && styles.navItemActive]}><Text style={styles.navIcon}>{name === 'Home' ? '⌂' : name === 'Score' ? '▤' : name === 'Stats' ? '▥' : name === 'Arsenal' ? '◉' : '✦'}</Text><Text style={[styles.navLabel, active === name && styles.navLabelActive]}>{name}</Text></Pressable>)}</View>;
+}
+const pinPositions = { 1: [1, 4], 2: [2, 3], 3: [2, 5], 4: [3, 2], 5: [3, 4], 6: [3, 6], 7: [4, 1], 8: [4, 3], 9: [4, 5], 10: [4, 7] };
+function PinPicker({ pins, onToggle }) {
+  return <View style={{ width: 190, height: 132, alignSelf: 'center', marginVertical: 4 }}>{Object.entries(pinPositions).map(([pin, [row, col]]) => <Pressable key={pin} accessibilityLabel={`Pin ${pin} ${pins.includes(Number(pin)) ? 'standing' : 'down'}`} onPress={() => onToggle(Number(pin))} style={{ position: 'absolute', top: (row - 1) * 28, left: (col - 1) * 25, width: 22, height: 22, borderRadius: 11, backgroundColor: pins.includes(Number(pin)) ? '#7c9cff' : '#263a60', borderWidth: 1, borderColor: pins.includes(Number(pin)) ? '#9ab2ff' : '#405273' }} />)}</View>;
+}
+
+function StatsScreen() {
+  const [games, setGames] = useState([]);
+  const [range, setRange] = useState('10');
+  useEffect(() => { AsyncStorage.getItem('lanelab-rn-games').then(raw => { try { setGames(raw ? JSON.parse(raw) : []); } catch (_) { setGames([]); } }).catch(() => {}); }, []);
+  const selected = range === 'all' ? games : games.slice(-10);
+  const average = selected.length ? Math.round(selected.reduce((sum, game) => sum + game.score, 0) / selected.length) : null;
+  const strikeRate = selected.length ? Math.round(selected.reduce((sum, game) => sum + (game.strikes || 0), 0) / Math.max(1, selected.reduce((sum, game) => sum + (game.frames || 0), 0)) * 100) : null;
+  const openFrames = selected.length ? selected.reduce((sum, game) => sum + (game.openFrames || 0), 0) / selected.length : null;
+  const leaves = {}; selected.forEach(game => Object.values(game.pinLeaves || {}).forEach(pins => { if (Array.isArray(pins) && pins.length) { const key = pins.slice().sort((a, b) => a - b).join('-'); leaves[key] = (leaves[key] || 0) + 1; } }));
+  const commonLeaves = Object.entries(leaves).sort((a, b) => b[1] - a[1]).slice(0, 3);
+  const commonSplits = commonLeaves.filter(([key]) => isSplit(key.split('-').map(Number)));
+  const rows = items => items.length ? items.map(([key, count]) => <View key={key} style={styles.trendRow}><Text style={styles.trendLabel}>{key}</Text><Text style={styles.trendValue}>{count} attempt{count === 1 ? '' : 's'}</Text></View>) : <Text style={styles.cardBody}>No tracked data yet.</Text>;
+  return <View style={styles.statsScreen}><Text style={styles.eyebrow}>YOUR STATS</Text><Text style={styles.title}>See your game.</Text><Text style={styles.body}>Standard scoring at a glance, with deeper trends in Advanced Stats.</Text><View style={styles.rangeRow}><Pressable onPress={() => setRange('10')} style={[styles.rangeButton, range === '10' && styles.rangeActive]}><Text style={styles.rangeText}>Last 10</Text></Pressable><Pressable onPress={() => setRange('all')} style={[styles.rangeButton, range === 'all' && styles.rangeActive]}><Text style={styles.rangeText}>All time</Text></Pressable></View><View style={styles.metricGrid}><View style={styles.metric}><Text style={styles.metricValue}>{average ?? '—'}</Text><Text style={styles.metricLabel}>Average</Text></View><View style={styles.metric}><Text style={styles.metricValue}>{strikeRate === null ? '—' : `${strikeRate}%`}</Text><Text style={styles.metricLabel}>Strike rate</Text></View><View style={styles.metric}><Text style={styles.metricValue}>{openFrames === null ? '—' : openFrames.toFixed(1)}</Text><Text style={styles.metricLabel}>Open frames/game</Text></View></View><View style={styles.card}><Text style={styles.cardTitle}>Advanced Stats</Text><Text style={styles.cardBody}>Performance trends, common leaves, and split conversion tracking.</Text><View style={styles.trendRow}><Text style={styles.trendLabel}>Strike %</Text><Text style={styles.trendValue}>{strikeRate === null ? '—' : `${strikeRate}%`}</Text></View><View style={styles.trendRow}><Text style={styles.trendLabel}>Spare %</Text><Text style={styles.trendValue}>—</Text></View><View style={styles.trendRow}><Text style={styles.trendLabel}>Open frames</Text><Text style={styles.trendValue}>{openFrames === null ? '—' : openFrames.toFixed(1)}</Text></View></View><View style={styles.card}><Text style={styles.cardTitle}>Common leaves & conversion</Text>{rows(commonLeaves)}</View><View style={styles.card}><Text style={styles.cardTitle}>Common split leaves & conversion</Text>{rows(commonSplits)}</View></View>;
+}
+function ArsenalScreen() {
+  const [balls, setBalls] = useState([]); const [name, setName] = useState('');
+  useEffect(() => { AsyncStorage.getItem('lanelab-rn-arsenal').then(raw => { try { setBalls(raw ? JSON.parse(raw) : []); } catch (_) {} }).catch(() => {}); }, []);
+  const add = () => { const value = name.trim(); if (!value) return; const next = [...balls, { id: Date.now().toString(), name: value }]; setBalls(next); setName(''); AsyncStorage.setItem('lanelab-rn-arsenal', JSON.stringify(next)).catch(() => {}); };
+  return <View style={styles.content}><Text style={styles.eyebrow}>YOUR ARSENAL</Text><Text style={styles.title}>Your bowling balls.</Text><Text style={styles.body}>Track the equipment you use while you bowl.</Text><View style={styles.card}><TextInput accessibilityLabel="Ball name" placeholder="Ball name" placeholderTextColor="#7182a3" value={name} onChangeText={setName} style={styles.input} /><Pressable onPress={add} style={styles.saveGame}><Text style={styles.saveGameText}>Add ball</Text></Pressable></View>{balls.map(ball => <View key={ball.id} style={styles.listRow}><Text style={styles.listText}>{ball.name}</Text><Text style={styles.mutedText}>No games yet</Text></View>)}</View>;
+}
+function CoachScreen() { return <View style={styles.content}><Text style={styles.eyebrow}>LANELAB COACH</Text><Text style={styles.title}>Practice with purpose.</Text><Text style={styles.body}>Your coaching recommendations will be based on your saved games and trends.</Text><View style={styles.card}><Text style={styles.cardTitle}>Build your baseline</Text><Text style={styles.cardBody}>Save a few games to unlock personalized practice focus.</Text></View></View>; }
+function ProfileScreen() { const [name, setName] = useState(''); useEffect(() => { AsyncStorage.getItem('lanelab-rn-profile').then(raw => { try { setName(JSON.parse(raw || '{}').name || ''); } catch (_) {} }).catch(() => {}); }, []); const save = () => AsyncStorage.setItem('lanelab-rn-profile', JSON.stringify({ name })).catch(() => {}); return <View style={styles.content}><Text style={styles.eyebrow}>PROFILE</Text><Text style={styles.title}>Your LaneLab.</Text><Text style={styles.body}>Your profile stays on this device.</Text><View style={styles.card}><Text style={styles.detailLabel}>Display name</Text><TextInput accessibilityLabel="Display name" placeholder="Your name" placeholderTextColor="#7182a3" value={name} onChangeText={setName} onBlur={save} style={styles.input} /><Pressable onPress={save} style={styles.saveGame}><Text style={styles.saveGameText}>Save profile</Text></Pressable></View></View>; }
+
+function ScoreScreen() {
+  const [frames, setFrames] = useState(Array.from({ length: 10 }, () => []));
+  const [current, setCurrent] = useState(0);
+  const [hydrated, setHydrated] = useState(false);
+  const [mode, setMode] = useState('simple');
+  const [hand, setHand] = useState('Right');
+  const [ball, setBall] = useState('Ball 1');
+  const [pinLeaves, setPinLeaves] = useState({});
+  useEffect(() => { AsyncStorage.getItem('lanelab-rn-current-game').then(raw => { if (raw) { try { const saved = JSON.parse(raw); if (Array.isArray(saved.frames) && saved.frames.length === 10) { setFrames(saved.frames.map(frame => Array.isArray(frame) ? frame.filter(value => Number.isInteger(value) && value >= 0 && value <= 10).slice(0, 3) : [])); setCurrent(Math.max(0, Math.min(9, Number(saved.current) || 0))); setMode(saved.mode === 'advanced' ? 'advanced' : 'simple'); setHand(saved.hand === 'Left' ? 'Left' : 'Right'); setBall(typeof saved.ball === 'string' ? saved.ball : 'Ball 1'); } } catch (_) {} } setHydrated(true); }).catch(() => setHydrated(true)); }, []);
+  useEffect(() => { if (hydrated) AsyncStorage.setItem('lanelab-rn-current-game', JSON.stringify({ frames, current, mode, hand, ball, pinLeaves })).catch(() => {}); }, [frames, current, mode, hand, ball, pinLeaves, hydrated]);
+  const scores = cumulativeScores(frames);
+  const rolls = frames[current];
+  const max = rolls[0] === 10 ? 10 : rolls.length ? 10 - rolls[0] : 10;
+  const addRoll = value => {
+    if (value > max || frameComplete(rolls, current)) return;
+    const next = frames.map((frame, index) => index === current ? [...frame, value] : frame);
+    setFrames(next);
+    if (frameComplete(next[current], current) && current < 9) setCurrent(current + 1);
+  };
+  const togglePin = pin => setPinLeaves(previous => ({ ...previous, [current]: (previous[current] || []).includes(pin) ? (previous[current] || []).filter(item => item !== pin) : [...(previous[current] || []), pin].sort((a, b) => a - b) }));
+  const notation = frame => frame.length ? frame.map((roll, index) => roll === 10 ? 'X' : index === 1 && frame[0] + roll === 10 ? '/' : String(roll)).join(' ') : '—';
+  const complete = frames.every((frame, index) => frameComplete(frame, index));
+  const saveGame = () => { if (!complete) return; const record = { id: `game-${Date.now()}`, score: scores[9] || 0, frames: frames.map(frame => frame.length), pinLeaves, strikes: frames.flat().filter(roll => roll === 10).length, openFrames: frames.filter((frame, index) => frameComplete(frame, index) && frame.length >= 2 && frame[0] + frame[1] < 10).length, mode, hand, ball, date: new Date().toISOString() }; AsyncStorage.getItem('lanelab-rn-games').then(raw => { let records = []; try { records = raw ? JSON.parse(raw) : []; } catch (_) {} return AsyncStorage.setItem('lanelab-rn-games', JSON.stringify([...records, record].slice(-250))); }).then(() => { setFrames(Array.from({ length: 10 }, () => [])); setCurrent(0); setPinLeaves({}); }).catch(() => {}); };
+  return <ScrollView style={styles.scoreScreen} contentContainerStyle={styles.scoreContent} showsVerticalScrollIndicator={false}>
+    <View style={styles.scoreHeader}><Text style={styles.eyebrow}>RECORD GAME</Text><Text style={styles.title}>Game 1</Text><Text style={styles.body}>Score only for now. Detailed tracking comes in the Advanced Score step.</Text></View>
+    <View style={styles.card}><View style={styles.cardRow}><Text style={styles.cardTitle}>Scorecard</Text><Text style={styles.total}>{scores[9] || 0}</Text></View><View style={styles.scoreGrid}>{frames.map((frame, index) => <View key={index} style={[styles.frame, current === index && styles.frameActive]}><Text style={styles.frameLabel}>F{index + 1}</Text><Text style={styles.frameValue}>{notation(frame)}</Text><Text style={styles.frameScore}>{scores[index] ?? '—'}</Text></View>)}</View></View>
+    <View style={styles.modeCard}><Text style={styles.modeTitle}>Tracking mode</Text><View style={styles.modeRow}><Pressable onPress={() => setMode('simple')} style={[styles.modeButton, mode === 'simple' && styles.modeActive]}><Text style={styles.modeText}>Simple</Text></Pressable><Pressable onPress={() => setMode('advanced')} style={[styles.modeButton, mode === 'advanced' && styles.modeActive]}><Text style={styles.modeText}>Advanced</Text></Pressable></View>{mode === 'advanced' && <View style={styles.detailRow}><View><Text style={styles.detailLabel}>Hand</Text><View style={styles.inline}><Pressable onPress={() => setHand('Left')} style={[styles.chip, hand === 'Left' && styles.chipActive]}><Text style={styles.chipText}>L</Text></Pressable><Pressable onPress={() => setHand('Right')} style={[styles.chip, hand === 'Right' && styles.chipActive]}><Text style={styles.chipText}>R</Text></Pressable></View></View><View><Text style={styles.detailLabel}>Ball</Text><View style={styles.inline}><Pressable onPress={() => setBall('Ball 1')} style={[styles.chip, ball === 'Ball 1' && styles.chipActive]}><Text style={styles.chipText}>Ball 1</Text></Pressable><Pressable onPress={() => setBall('Ball 2')} style={[styles.chip, ball === 'Ball 2' && styles.chipActive]}><Text style={styles.chipText}>Ball 2</Text></Pressable></View></View></View>}</View>
+    <View style={styles.currentRoll}><Text style={styles.body}>Frame {current + 1} · Ball {rolls.length + 1}</Text><Text style={styles.prompt}>{current === 9 && rolls.length >= 2 ? 'Fill ball' : 'How many pins?'}</Text></View>
+    {mode === 'advanced' && rolls.length === 1 && rolls[0] < 10 && <View style={styles.card}><Text style={styles.cardTitle}>Pin leave</Text><Text style={styles.body}>Tap the pins still standing after Ball 1.</Text><PinPicker pins={pinLeaves[current] || []} onToggle={togglePin} /></View>}
+    {complete && <Pressable onPress={saveGame} style={styles.saveGame}><Text style={styles.saveGameText}>Save finished game</Text></Pressable>}
+    <View style={styles.keypad}>{Array.from({ length: 11 }, (_, value) => <Pressable key={value} disabled={value > max} onPress={() => addRoll(value)} style={[styles.key, value > max && styles.keyDisabled]}><Text style={styles.keyText}>{value === 10 ? 'X' : value}</Text></Pressable>)}<Pressable disabled={rolls.length !== 1 || rolls[0] === 10} onPress={() => addRoll(10 - rolls[0])} style={[styles.key, styles.spareKey]}><Text style={styles.keyText}>/</Text></Pressable></View>
+  </ScrollView>;
+}
+
+function App() {
+  const [active, setActive] = useState('Home');
+  const screen = screens[active];
+  const home = active === 'Home';
+  if (active === 'Stats') return <SafeAreaView style={styles.safe}><StatusBar barStyle="light-content" /><View style={styles.container}><View style={styles.header}><Text style={styles.logo}>Lane<Text style={styles.logoAccent}>Lab</Text></Text><View style={styles.avatar}><Text style={styles.avatarText}>AG</Text></View></View><StatsScreen /><Nav active={active} onChange={setActive} /></View></SafeAreaView>;
+  if (active === 'Arsenal' || active === 'Coach' || active === 'Profile') { const Feature = active === 'Arsenal' ? ArsenalScreen : active === 'Coach' ? CoachScreen : ProfileScreen; return <SafeAreaView style={styles.safe}><StatusBar barStyle="light-content" /><View style={styles.container}><View style={styles.header}><Text style={styles.logo}>Lane<Text style={styles.logoAccent}>Lab</Text></Text><View style={styles.avatar}><Text style={styles.avatarText}>AG</Text></View></View><Feature /><Nav active={active} onChange={setActive} /></View></SafeAreaView>; }
+  if (active === 'Score') return <SafeAreaView style={styles.safe}><StatusBar barStyle="light-content" /><View style={styles.container}><View style={styles.header}><Text style={styles.logo}>Lane<Text style={styles.logoAccent}>Lab</Text></Text><View style={styles.avatar}><Text style={styles.avatarText}>AG</Text></View></View><ScoreScreen /><View style={styles.nav}>{Object.keys(screens).map(name => <Pressable key={name} accessibilityRole="tab" accessibilityState={{ selected: active === name }} onPress={() => setActive(name)} style={[styles.navItem, active === name && styles.navItemActive]}><Text style={styles.navIcon}>{name === 'Home' ? '⌂' : name === 'Score' ? '▤' : name === 'Stats' ? '▥' : name === 'Arsenal' ? '◉' : '✦'}</Text><Text style={[styles.navLabel, active === name && styles.navLabelActive]}>{name}</Text></Pressable>)}</View></View></SafeAreaView>;
+  return (
+    <SafeAreaView style={styles.safe}>
+      <StatusBar barStyle="light-content" />
+      <View style={styles.container}>
+        <View style={styles.header}><Image source={require('./assets/Logo-merge.png')} style={styles.logoImage} resizeMode="contain" /><View style={styles.avatar}><Text style={styles.avatarText}>AG</Text></View></View>
+        <View style={styles.content}><Text style={styles.eyebrow}>{screen.eyebrow}</Text><Text style={styles.title}>{home ? 'Your bowling, at a glance.' : screen.title}</Text><Text style={styles.body}>{home ? 'Track bowling games, scores, pin leaves, ball usage, and practice insights.' : screen.body}</Text>{home ? <><View style={styles.heroCard}><Text style={styles.heroLabel}>YOUR AVERAGE</Text><Text style={styles.heroValue}>—</Text><Text style={styles.heroMeta}>No games recorded yet</Text></View><View style={styles.card}><Text style={styles.cardTitle}>Quick start</Text><Text style={styles.cardBody}>Record your first game to unlock your score history and performance trends.</Text><Pressable onPress={() => setActive('Score')} style={styles.primaryButton}><Text style={styles.primaryText}>Record a game</Text></Pressable></View></> : <View style={styles.card}><Text style={styles.cardTitle}>{active === 'Coach' ? 'Build your baseline' : active === 'Arsenal' ? 'Add your bowling balls' : 'Your LaneLab profile'}</Text><Text style={styles.cardBody}>{screen.body}</Text></View>}</View>
+        <View style={styles.nav}>{Object.keys(screens).map(name => <Pressable key={name} accessibilityRole="tab" accessibilityState={{ selected: active === name }} onPress={() => setActive(name)} style={[styles.navItem, active === name && styles.navItemActive]}><Text style={styles.navIcon}>{name === 'Home' ? '⌂' : name === 'Score' ? '▤' : name === 'Stats' ? '▥' : name === 'Arsenal' ? '◉' : '✦'}</Text><Text style={[styles.navLabel, active === name && styles.navLabelActive]}>{name}</Text></Pressable>)}</View>
+      </View>
+    </SafeAreaView>
+  );
+}
+
+export default function Root() { return <SafeAreaProvider><App /></SafeAreaProvider>; }
+
+const styles = StyleSheet.create({ safe: { flex: 1, backgroundColor: '#080f1f' }, container: { flex: 1, backgroundColor: '#080f1f' }, header: { height: 88, paddingHorizontal: 24, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', borderBottomWidth: 1, borderBottomColor: '#223250' }, logo: { color: '#f5f7ff', fontSize: 30, fontWeight: '900' }, logoAccent: { color: '#7c9cff' }, avatar: { width: 44, height: 44, borderRadius: 22, backgroundColor: '#172542', alignItems: 'center', justifyContent: 'center', borderWidth: 1, borderColor: '#304568' }, avatarText: { color: '#dfe7ff', fontWeight: '800' }, content: { flex: 1, padding: 24 }, scoreScreen: { flex: 1, padding: 20 }, scoreHeader: { marginBottom: 12 }, eyebrow: { color: '#91a1c0', fontSize: 12, fontWeight: '800', letterSpacing: 2 }, title: { color: '#f5f7ff', fontSize: 32, fontWeight: '900', marginTop: 10 }, body: { color: '#aebbd3', fontSize: 15, lineHeight: 21, marginTop: 8 }, card: { padding: 14, borderRadius: 18, backgroundColor: '#121d34', borderWidth: 1, borderColor: '#2b3c60' }, cardRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }, cardTitle: { color: '#f5f7ff', fontSize: 18, fontWeight: '800' }, total: { color: '#f5f7ff', fontSize: 20, fontWeight: '900' }, scoreGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 7, marginTop: 12 }, frame: { width: '18.4%', minHeight: 72, padding: 8, borderRadius: 12, backgroundColor: '#0e182c', borderWidth: 1, borderColor: '#263a60' }, frameActive: { borderColor: '#7c9cff', borderWidth: 2 }, frameLabel: { color: '#91a1c0', fontSize: 11 }, frameValue: { color: '#f5f7ff', fontSize: 16, fontWeight: '800', marginTop: 8 }, frameScore: { color: '#91a1c0', fontSize: 11, marginTop: 4 }, modeCard: { padding: 12, marginTop: 12, borderRadius: 16, backgroundColor: '#101c32', borderWidth: 1, borderColor: '#2a3d62' }, modeTitle: { color: '#91a1c0', fontSize: 11, fontWeight: '800', letterSpacing: 1, textTransform: 'uppercase' }, modeRow: { flexDirection: 'row', gap: 8, marginTop: 8 }, modeButton: { flex: 1, paddingVertical: 10, borderRadius: 11, backgroundColor: '#172542', alignItems: 'center' }, modeActive: { backgroundColor: '#7c9cff' }, modeText: { color: '#f5f7ff', fontWeight: '800' }, detailRow: { flexDirection: 'row', gap: 18, marginTop: 13 }, detailLabel: { color: '#91a1c0', fontSize: 12, marginBottom: 6 }, inline: { flexDirection: 'row', gap: 6 }, chip: { paddingHorizontal: 11, paddingVertical: 7, borderRadius: 10, backgroundColor: '#172542' }, chipActive: { backgroundColor: '#2b4d89' }, chipText: { color: '#f5f7ff', fontSize: 12, fontWeight: '800' }, currentRoll: { paddingVertical: 15 }, prompt: { color: '#f5f7ff', fontSize: 18, fontWeight: '800', marginTop: 4 }, keypad: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 }, key: { width: '17.5%', aspectRatio: 1, borderRadius: 14, backgroundColor: '#172542', alignItems: 'center', justifyContent: 'center' }, keyDisabled: { opacity: 0.35 }, spareKey: { backgroundColor: '#2a416d' }, keyText: { color: '#f5f7ff', fontSize: 20, fontWeight: '900' }, nav: { minHeight: 78, paddingHorizontal: 8, paddingBottom: 8, flexDirection: 'row', justifyContent: 'space-around', borderTopWidth: 1, borderTopColor: '#223250', backgroundColor: '#091326' }, navItem: { minWidth: 62, paddingVertical: 8, borderRadius: 14, alignItems: 'center', justifyContent: 'center' }, navItemActive: { backgroundColor: '#1a2949' }, navIcon: { color: '#91a1c0', fontSize: 22 }, navLabel: { color: '#91a1c0', fontSize: 11 }, navLabelActive: { color: '#f5f7ff', fontWeight: '800' } });
+const layoutStyles = StyleSheet.create({ statsScreen: { flex: 1, padding: 20 }, rangeRow: { flexDirection: 'row', gap: 8, marginVertical: 14 }, rangeButton: { flex: 1, paddingVertical: 10, borderRadius: 11, backgroundColor: '#172542', alignItems: 'center' }, rangeActive: { backgroundColor: '#7c9cff' }, rangeText: { color: '#f5f7ff', fontWeight: '800' }, metricGrid: { flexDirection: 'row', gap: 8, marginBottom: 12 }, metric: { flex: 1, padding: 12, borderRadius: 14, backgroundColor: '#121d34', borderWidth: 1, borderColor: '#2b3c60' }, metricValue: { color: '#f5f7ff', fontSize: 20, fontWeight: '900' }, metricLabel: { color: '#91a1c0', fontSize: 11, marginTop: 4 }, trendRow: { flexDirection: 'row', justifyContent: 'space-between', paddingVertical: 10, borderTopWidth: 1, borderTopColor: '#263a60' }, trendLabel: { color: '#aebbd3' }, trendValue: { color: '#7c9cff', fontWeight: '800' }, saveGame: { marginBottom: 12, padding: 14, borderRadius: 14, backgroundColor: '#57d6a4', alignItems: 'center' }, saveGameText: { color: '#081126', fontWeight: '900' } });
+Object.assign(styles, layoutStyles);
+Object.assign(styles, { input: { color: '#f5f7ff', borderBottomWidth: 1, borderBottomColor: '#405273', paddingVertical: 10, marginBottom: 12 }, listRow: { flexDirection: 'row', justifyContent: 'space-between', padding: 14, marginTop: 8, borderRadius: 14, backgroundColor: '#121d34' }, listText: { color: '#f5f7ff', fontWeight: '800' }, mutedText: { color: '#91a1c0', fontSize: 12 } });
+Object.assign(styles, { heroCard: { marginTop: 24, padding: 20, borderRadius: 22, backgroundColor: '#172542', borderWidth: 1, borderColor: '#304b7a' }, heroLabel: { color: '#9aaed2', fontSize: 11, fontWeight: '800', letterSpacing: 1.5 }, heroValue: { color: '#f5f7ff', fontSize: 48, fontWeight: '900', marginTop: 4 }, heroMeta: { color: '#aebbd3', fontSize: 13, marginTop: 2 }, primaryButton: { marginTop: 16, paddingVertical: 13, borderRadius: 13, backgroundColor: '#7c9cff', alignItems: 'center' }, primaryText: { color: '#091326', fontWeight: '900' } });
+Object.assign(styles, { logoImage: { width: 238, height: 82, marginLeft: -18 }, header: { height: 104, paddingHorizontal: 22, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', borderBottomWidth: 1, borderBottomColor: '#223250' }, scoreContent: { paddingBottom: 24 } });

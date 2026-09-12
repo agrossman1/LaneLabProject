@@ -1,0 +1,12 @@
+{
+  "expo": {
+    "name": "LaneLab",
+    "slug": "lanelab",
+    "version": "0.1.0",
+    "orientation": "portrait",
+    "userInterfaceStyle": "dark",
+    "scheme": "lanelab",
+    "android": { "package": "com.lanelab.app" },
+    "ios": { "bundleIdentifier": "com.lanelab.app" }
+  }
+}
