@@ -518,7 +518,7 @@ body.preview-mobile .scoreChoices{grid-template-columns:auto 1fr}
 .trackingModeChoices button{border:1px solid var(--line);background:var(--panel);color:var(--muted);border-radius:12px;padding:10px 8px;font-weight:800}
 .trackingModeChoices button.active{background:var(--accent);border-color:var(--accent);color:#081126}
 .trackingModeDescription{margin:9px 0 0;color:var(--muted);font-size:12px;line-height:1.4}
-.ballSliderGroup{min-width:0;flex:1}.scoreBallSlider{width:100%;accent-color:var(--accent);margin:4px 0 2px}.scoreBallSliderName{display:block;color:var(--text);font-size:12px;font-weight:800;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:150px}
+.ballChoiceScroller{display:flex;gap:8px;max-width:100%;overflow-x:auto;padding:2px 2px 8px;scroll-snap-type:x proximity;-webkit-overflow-scrolling:touch;touch-action:pan-x}.ballChoiceScroller .ballChoice{flex:0 0 auto;scroll-snap-align:start}.ballChoiceScroller::-webkit-scrollbar{height:4px}.ballChoiceScroller::-webkit-scrollbar-thumb{background:var(--line);border-radius:4px}
 .scanPreview{
   min-height:180px;
   border:1px dashed #405277;
@@ -791,7 +791,7 @@ body.light-mode .ballMatchPreview img{
 
       <div class="scoreChoices" aria-label="Game hand and ball">
         <div class="choiceGroup"><span class="choiceLabel">Hand</span><button type="button" class="roundChoice" id="handLeftChoice" onclick="setHandChoice('Left')">L</button><button type="button" class="roundChoice" id="handRightChoice" onclick="setHandChoice('Right')">R</button></div>
-        <div class="choiceGroup ballSliderGroup"><span class="choiceLabel">Ball</span><input id="scoreBallSlider" class="scoreBallSlider" type="range" min="0" max="0" value="0" step="1" aria-label="Select bowling ball" oninput="selectBallFromSlider()"><output id="scoreBallSliderName" class="scoreBallSliderName">No balls</output></div>
+        <div class="choiceGroup"><span class="choiceLabel">Ball</span><div id="ballChoiceScroller" class="ballChoiceScroller" role="listbox" aria-label="Select bowling ball"></div></div>
       </div>
 
       <div class="currentRoll">
@@ -3508,18 +3508,9 @@ function renderScoreControls(){
   document.getElementById('handLeftChoice')?.classList.toggle('active',hand==='Left');
   document.getElementById('handRightChoice')?.classList.toggle('active',hand==='Right');
   const ball=document.getElementById('ballSelect')?.value;
-  const slider=document.getElementById('scoreBallSlider'), label=document.getElementById('scoreBallSliderName'), balls=Array.isArray(arsenal)?arsenal:[];
-  if(!slider||!label) return;
-  slider.disabled=!balls.length; slider.max=String(Math.max(0,balls.length-1));
-  const selectedIndex=Math.max(0,balls.findIndex(item=>item.name===ball));
-  slider.value=String(selectedIndex);
-  label.textContent=balls.length?`${balls[selectedIndex]?.name||'Select a ball'} · ${selectedIndex+1}/${balls.length}`:'Add a ball in Arsenal';
-  label.title=balls[selectedIndex]?.name||'No balls in Arsenal';
-}
-function selectBallFromSlider(){
-  const slider=document.getElementById('scoreBallSlider'), ball=arsenal?.[Number(slider?.value)||0], select=document.getElementById('ballSelect');
-  if(!ball||!select) return;
-  select.value=ball.name; rememberBallSelection(); renderScoreControls();
+  const scroller=document.getElementById('ballChoiceScroller'), balls=Array.isArray(arsenal)?arsenal:[];
+  if(!scroller) return;
+  scroller.innerHTML=balls.length?balls.map((item,index)=>`<button type="button" role="option" aria-selected="${ball===item.name}" class="roundChoice ballChoice${ball===item.name?' active':''}" onclick="setBallPreset(${index})" aria-label="Ball ${index+1}: ${escapeHtml(item.name)}">🎳<b>${escapeHtml(item.name)}</b></button>`).join(''):'<span class="muted small">Add a ball in Arsenal</span>';
 }
 
 function renderArsenal(){
