@@ -2777,7 +2777,9 @@ function renderAdvancedBreakdowns(){
   if(!games.length){box.innerHTML='<div class="muted small">Save games to unlock advanced breakdowns.</div>';return;}
   const summary=LaneLabStats.summarizeGames(games);
   const trackedSpare=games.reduce((out,game)=>(Array.isArray(game.pinData)?game.pinData:[]).reduce((acc,frame)=>{const first=Array.isArray(frame?.pinsLeftAfterFirst)?frame.pinsLeftAfterFirst:[];const second=Array.isArray(frame?.pinsLeftAfterSecond)?frame.pinsLeftAfterSecond:null;if(first.length>0){acc.attempts++;if(second&&second.length===0)acc.makes++;}return acc;},out),{attempts:0,makes:0});
-  const spareAttempts=Math.max(summary.spareOpportunities||0,trackedSpare.attempts), spareMakes=Math.max(summary.spares||0,trackedSpare.makes);
+  const useNotation=Number(summary.spareOpportunities)>0;
+  const spareAttempts=useNotation?Number(summary.spareOpportunities):trackedSpare.attempts;
+  const spareMakes=useNotation?Number(summary.spares||0):trackedSpare.makes;
   const spareRate=spareAttempts?Math.round(spareMakes/spareAttempts*100):null;
   const spareCard=`<div class="advancedBreakdown"><h3>Spare opportunities</h3><div class="sub">Every non-strike frame where a second-ball spare chance was recorded.</div><div class="compareGrid"><div class="compareGroup"><strong>Opportunities</strong><b>${spareAttempts||'—'}</b><span>tracked chances</span></div><div class="compareGroup"><strong>Converted</strong><b>${spareMakes||'—'}</b><span>${spareRate===null?'—':spareRate+'%'} conversion</span></div></div></div>`;
 
