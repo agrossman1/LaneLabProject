@@ -774,6 +774,15 @@ body.light-mode .ballMatchPreview img{
         </button>
       </div>
 
+      <div class="trackingModeCard" aria-label="Tracking mode">
+        <div class="trackingModeTitle">Choose tracking mode</div>
+        <div class="trackingModeChoices" role="tablist" aria-label="Tracking mode">
+          <button type="button" id="simpleTrackingBtn" role="tab" aria-selected="false" onclick="setTrackingMode('simple')">Simple tracking</button>
+          <button type="button" id="advancedTrackingBtn" role="tab" aria-selected="true" onclick="setTrackingMode('advanced')">Advanced tracking</button>
+        </div>
+        <p class="trackingModeDescription" id="trackingModeDescription">Track hand, ball, and exact pin leaves along with every score.</p>
+      </div>
+
       <div class="card">
         <div class="row"><h2>Scorecard</h2><b id="runningTotal">0</b></div>
         <div class="scoreboard" id="scoreboard"></div>
@@ -931,14 +940,6 @@ body.light-mode .ballMatchPreview img{
         </button>
       </div>
 
-      <div class="trackingModeCard" aria-label="Tracking mode">
-        <div class="trackingModeTitle">Choose tracking mode</div>
-        <div class="trackingModeChoices" role="tablist" aria-label="Tracking mode">
-          <button type="button" id="simpleTrackingBtn" role="tab" aria-selected="false" onclick="setTrackingMode('simple')">Simple tracking</button>
-          <button type="button" id="advancedTrackingBtn" role="tab" aria-selected="true" onclick="setTrackingMode('advanced')">Advanced tracking</button>
-        </div>
-        <p class="trackingModeDescription" id="trackingModeDescription">Track hand, ball, and exact pin leaves along with every score.</p>
-      </div>
       <div class="card" data-stats-mode="advanced">
         <div class="row"><h2>Common split leaves &amp; conversion</h2></div>
         <p class="small" style="margin-top:0">See the splits that cost you most often and how well you convert them.</p>
