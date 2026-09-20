@@ -3028,7 +3028,8 @@ function renderPinTracker(){
     const unavailable=leavePhase && active && !on && selectedCount>=target;
     return `<button class="pinButton ${on?'selected':''} ${!active?'down':''} ${unavailable?'unavailable':''}" ${canSelect?`onclick="toggleTrackedPin(${pin})"`: 'disabled'} aria-label="Pin ${pin}">${active?pin:''}</button>`;
   }).join('');
-  box.innerHTML=`<div class="muted small">${prompt}</div><b class="pinTrackerDetail">${detail}${!leavePhase && selectedCount===t.standing.length?' ✓':''}</b><div class="muted small" style="margin-top:4px">${hint}</div><div class="pinRack">${buttons}${leavePhase?'':`<button class="pinButton zeroPinButton" aria-label="0 pins" title="0 pins knocked down" onclick="recordGutterBall()">−</button>`}</div><div class="pinTrackerActions"><button class="cta secondary" onclick="skipPinTracking()">Skip pin tracking</button>${leavePhase?`${t.editing?`<button class="cta secondary" onclick="restartEditedFrame()">Edit Ball 1</button>`:''}${t.firstBall===0?`<button class="cta secondary" onclick="selectAllStanding()">All pins still up</button>`:''}<button class="cta" ${selectedCount===target?'':'disabled'} onclick="saveTrackedLeave()">Save Leave</button>`:`<button class="cta secondary" onclick="selectAllStanding();saveTrackedThrow()">Knock Down All / Spare</button><button class="cta" onclick="saveTrackedThrow()">Save Throw</button>`}</div>`;
+  const useOtherPins=leavePhase&&selectedCount>0&&selectedCount!==target?`<button class="cta secondary" onclick="selectUnselectedPins()">Use other ${target} pins</button>`:'';
+  box.innerHTML=`<div class="muted small">${prompt}</div><b class="pinTrackerDetail">${detail}${!leavePhase && selectedCount===t.standing.length?' ✓':''}</b><div class="muted small" style="margin-top:4px">${hint}${leavePhase&&selectedCount!==target?' Select exactly the pins still standing, or use the other-pins button below.':''}</div><div class="pinRack">${buttons}${leavePhase?'':`<button class="pinButton zeroPinButton" aria-label="0 pins" title="0 pins knocked down" onclick="recordGutterBall()">−</button>`}</div><div class="pinTrackerActions"><button class="cta secondary" onclick="skipPinTracking()">Skip pin tracking</button>${leavePhase?`${t.editing?`<button class="cta secondary" onclick="restartEditedFrame()">Edit Ball 1</button>`:''}${t.firstBall===0?`<button class="cta secondary" onclick="selectAllStanding()">All pins still up</button>`:''}${useOtherPins}<button class="cta" ${selectedCount===target?'':'disabled'} onclick="saveTrackedLeave()">Save Leave</button>`:`<button class="cta secondary" onclick="selectAllStanding();saveTrackedThrow()">Knock Down All / Spare</button><button class="cta" onclick="saveTrackedThrow()">Save Throw</button>`}</div>`;
   box.querySelectorAll('.pinButton:not(.zeroPinButton)').forEach(button=>{
     const pin=Number(button.getAttribute('aria-label')?.replace('Pin ',''));
     button.setAttribute('onpointerdown',`pinDragStart(event,${pin})`);
@@ -3126,6 +3127,14 @@ function selectAllStanding(){
   if(!t) return;
   if(t.phase==='leave') t.leave=Array.from({length:10},(_,i)=>i+1);
   else t.knocked=t.standing.slice();
+  renderPinTracker();
+}
+function selectUnselectedPins(){
+  const t=state.pinTracking;
+  if(!t || t.phase!=='leave') return;
+  const target=t.firstBall===0?10:10-t.firstBall;
+  const selected=new Set(t.leave);
+  t.leave=Array.from({length:10},(_,i)=>i+1).filter(pin=>!selected.has(pin)).slice(0,target);
   renderPinTracker();
 }
 function saveTrackedLeave(){
